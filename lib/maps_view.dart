@@ -95,7 +95,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
       body: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
@@ -103,6 +102,7 @@ class _HomePageState extends State<HomePage> {
             Flexible(
               child: FlutterMap(
                 options: MapOptions(
+                  maxZoom: 15,
                   bounds: LatLngBounds(
                     const LatLng(-15.7706446, 93.1003771),
                     const LatLng(8.2454688, 141.6626464),
@@ -115,24 +115,24 @@ class _HomePageState extends State<HomePage> {
                   //     const LatLng(50, 180),
                   //   ),)
                 ),
-                nonRotatedChildren: [
-                  RichAttributionWidget(
-                    popupInitialDisplayDuration: const Duration(seconds: 5),
-                    animationConfig: const ScaleRAWA(),
-                    attributions: [
-                      TextSourceAttribution(
-                        'OpenStreetMap contributors',
-                        onTap: () => launchUrl(
-                          Uri.parse('https://openstreetmap.org/copyright'),
-                        ),
-                      ),
-                      const TextSourceAttribution(
-                        'This attribution is the same throughout this app, except where otherwise specified',
-                        prependCopyright: false,
-                      ),
-                    ],
-                  ),
-                ],
+                // nonRotatedChildren: [
+                //   RichAttributionWidget(
+                //     popupInitialDisplayDuration: const Duration(seconds: 5),
+                //     animationConfig: const ScaleRAWA(),
+                //     attributions: [
+                //       TextSourceAttribution(
+                //         'OpenStreetMap contributors',
+                //         onTap: () => launchUrl(
+                //           Uri.parse('https://openstreetmap.org/copyright'),
+                //         ),
+                //       ),
+                //       const TextSourceAttribution(
+                //         'This attribution is the same throughout this app, except where otherwise specified',
+                //         prependCopyright: false,
+                //       ),
+                //     ],
+                //   ),
+                // ],
                 children: [
                   TileLayer(
                     urlTemplate:
