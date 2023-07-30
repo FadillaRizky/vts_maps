@@ -5,7 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'api/GetAllVessel.dart';
+import 'api/GetAllVesselCoor.dart';
 import 'api/api.dart';
 
 class HomePage extends StatefulWidget {
@@ -166,11 +166,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                   MarkerLayer(
                     markers: [
-                      for (var i in dummy)
+                      for (var i in result)
                       Marker(
                           width: 50,
                           height: 50,
-                          point: LatLng(-7.8515680+i, 111.1283210+i),
+                          point: LatLng(i.coorGga!.latitude!.toDouble(),i.coorGga!.longitude!.toDouble()),
                           builder: (ctx) =>
                               GestureDetector(
                                   onTap: () {
