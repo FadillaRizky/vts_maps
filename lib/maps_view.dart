@@ -5,6 +5,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'api/GetAllVessel.dart';
+import 'api/api.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -13,9 +16,31 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<Data> result = [];
+  List dummy =[1,2,3];
+  List dummyLat =[-6.8515680,-7.8515680,-8.8515680];
+  List dummyLong =[];
+
+  initCoorVessel() {
+    result.clear();
+    Api.getAllVessel().then((value) {
+      if (value.total! == 0) {
+        setState(() {
+          result = [];
+        });
+      }
+      if (value.total! > 0) {
+       setState(() {
+         result.addAll(value.data!);
+       }); 
+      }  
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    initCoorVessel();
     //
     // const seenIntroBoxKey = 'seenIntroBox(a)';
     // if (kIsWeb && Uri.base.host.trim() == 'demo.fleaflet.dev') {
@@ -136,179 +161,194 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   TileLayer(
                     urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                   ),
                   MarkerLayer(
                     markers: [
+                      for (var i in dummy)
                       Marker(
                           width: 50,
                           height: 50,
-                          point: const LatLng(-7.8515680, 111.1283210),
-                          builder: (ctx) => GestureDetector(
-                              onTap: () {
-                                showModalBottomSheet(
-                                    backgroundColor: Colors.transparent,
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return Container(
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(20.0),
-                                          ),
-                                        ),
-                                        padding: EdgeInsets.fromLTRB(16, 0, 16, 5),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Row(
+                          point: LatLng(-7.8515680+i, 111.1283210+i),
+                          builder: (ctx) =>
+                              GestureDetector(
+                                  onTap: () {
+                                    showModalBottomSheet(
+                                        backgroundColor: Colors.transparent,
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Container(
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius
+                                                  .vertical(
+                                                top: Radius.circular(20.0),
+                                              ),
+                                            ),
+                                            padding: EdgeInsets.fromLTRB(
+                                                16, 0, 16, 5),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Image.asset(
-                                                  "model_kapal.jpg",
-                                                  height: 100,
-                                                  width: 100,
-                                                ),
-                                                SizedBox(
-                                                  width: 20,
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
+                                                Row(
                                                   children: [
-                                                    Text(
-                                                      'Kapal Pesiar 101-Abc',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
+                                                    Image.asset(
+                                                      "model_kapal.jpg",
+                                                      height: 100,
+                                                      width: 100,
                                                     ),
-                                                    Text(
-                                                      'Rute : Jakarta - Pontianak',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    )
+                                                    SizedBox(
+                                                      width: 20,
+                                                    ),
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                      children: [
+                                                        Text(
+                                                          'Kapal ...',
+                                                          style: TextStyle(
+                                                              fontSize: 20),
+                                                        ),
+                                                        Text(
+                                                          'Negara : ....',
+                                                          style: TextStyle(
+                                                              fontSize: 20),
+                                                        ),
+                                                        Text(
+                                                          'Tahun : ....',
+                                                          style: TextStyle(
+                                                              fontSize: 20),
+                                                        )
+                                                      ],
+                                                    ),
                                                   ],
                                                 ),
                                               ],
                                             ),
-                                          ],
-                                        ),
-                                      );
-                                    });
-                              },
-                              child: Image.asset("kapal.png"))),
-                      Marker(
-                          width: 50,
-                          height: 50,
-                          point: const LatLng(-7.9515680, 111.1283210),
-                          builder: (ctx) => GestureDetector(
-                              onTap: () {
-                                showModalBottomSheet(
-                                    backgroundColor: Colors.transparent,
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return Container(
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(20.0),
-                                          ),
-                                        ),
-                                        padding: EdgeInsets.fromLTRB(16, 0, 16, 5),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Image.asset(
-                                                  "model_kapal.jpg",
-                                                  height: 100,
-                                                  width: 100,
-                                                ),
-                                                SizedBox(
-                                                  width: 20,
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'Kapal Pesiar 104-AKH',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    Text(
-                                                      'Rute : Semarang - Surabaya',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    )
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    });
-                              },
-                              child: Image.asset("kapal.png"))),
-                      Marker(
-                          width: 50,
-                          height: 50,
-                          point: const LatLng(-7.6515680, 111.1283210),
-                          builder: (ctx) => GestureDetector(
-                              onTap: () {
-                                showModalBottomSheet(
-                                    backgroundColor: Colors.transparent,
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return Container(
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(20.0),
-                                          ),
-                                        ),
-                                        padding: EdgeInsets.fromLTRB(16, 0, 16, 5),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Image.asset(
-                                                  "model_kapal.jpg",
-                                                  height: 100,
-                                                  width: 100,
-                                                ),
-                                                SizedBox(
-                                                  width: 20,
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'Kapal Pesiar 109-KLS',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    Text(
-                                                      'Rute : PAPUA - SURABAYA',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    )
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    });
-                              },
-                              child: Image.asset("kapal.png"))),
+                                          );
+                                        });
+                                  },
+                                  child: Image.asset("kapal.png"))),
+                      // Marker(
+                      //     width: 50,
+                      //     height: 50,
+                      //     point: const LatLng(-7.9515680, 111.1283210),
+                      //     builder: (ctx) =>
+                      //         GestureDetector(
+                      //             onTap: () {
+                      //               showModalBottomSheet(
+                      //                   backgroundColor: Colors.transparent,
+                      //                   context: context,
+                      //                   builder: (BuildContext context) {
+                      //                     return Container(
+                      //                       width: double.infinity,
+                      //                       decoration: BoxDecoration(
+                      //                         color: Colors.white,
+                      //                         borderRadius: BorderRadius
+                      //                             .vertical(
+                      //                           top: Radius.circular(20.0),
+                      //                         ),
+                      //                       ),
+                      //                       padding: EdgeInsets.fromLTRB(
+                      //                           16, 0, 16, 5),
+                      //                       child: Column(
+                      //                         mainAxisSize: MainAxisSize.min,
+                      //                         children: [
+                      //                           Row(
+                      //                             children: [
+                      //                               Image.asset(
+                      //                                 "model_kapal.jpg",
+                      //                                 height: 100,
+                      //                                 width: 100,
+                      //                               ),
+                      //                               SizedBox(
+                      //                                 width: 20,
+                      //                               ),
+                      //                               Column(
+                      //                                 crossAxisAlignment:
+                      //                                 CrossAxisAlignment.start,
+                      //                                 children: [
+                      //                                   Text(
+                      //                                     'Kapal Pesiar 104-AKH',
+                      //                                     style: TextStyle(
+                      //                                         fontSize: 20),
+                      //                                   ),
+                      //                                   Text(
+                      //                                     'Rute : Semarang - Surabaya',
+                      //                                     style: TextStyle(
+                      //                                         fontSize: 20),
+                      //                                   )
+                      //                                 ],
+                      //                               ),
+                      //                             ],
+                      //                           ),
+                      //                         ],
+                      //                       ),
+                      //                     );
+                      //                   });
+                      //             },
+                      //             child: Image.asset("kapal.png"))),
+                      // Marker(
+                      //     width: 50,
+                      //     height: 50,
+                      //     point: const LatLng(-7.6515680, 111.1283210),
+                      //     builder: (ctx) =>
+                      //         GestureDetector(
+                      //             onTap: () {
+                      //               showModalBottomSheet(
+                      //                   backgroundColor: Colors.transparent,
+                      //                   context: context,
+                      //                   builder: (BuildContext context) {
+                      //                     return Container(
+                      //                       width: double.infinity,
+                      //                       decoration: BoxDecoration(
+                      //                         color: Colors.white,
+                      //                         borderRadius: BorderRadius
+                      //                             .vertical(
+                      //                           top: Radius.circular(20.0),
+                      //                         ),
+                      //                       ),
+                      //                       padding: EdgeInsets.fromLTRB(
+                      //                           16, 0, 16, 5),
+                      //                       child: Column(
+                      //                         mainAxisSize: MainAxisSize.min,
+                      //                         children: [
+                      //                           Row(
+                      //                             children: [
+                      //                               Image.asset(
+                      //                                 "model_kapal.jpg",
+                      //                                 height: 100,
+                      //                                 width: 100,
+                      //                               ),
+                      //                               SizedBox(
+                      //                                 width: 20,
+                      //                               ),
+                      //                               Column(
+                      //                                 crossAxisAlignment:
+                      //                                 CrossAxisAlignment.start,
+                      //                                 children: [
+                      //                                   Text(
+                      //                                     'Kapal Pesiar 109-KLS',
+                      //                                     style: TextStyle(
+                      //                                         fontSize: 20),
+                      //                                   ),
+                      //                                   Text(
+                      //                                     'Rute : PAPUA - SURABAYA',
+                      //                                     style: TextStyle(
+                      //                                         fontSize: 20),
+                      //                                   )
+                      //                                 ],
+                      //                               ),
+                      //                             ],
+                      //                           ),
+                      //                         ],
+                      //                       ),
+                      //                     );
+                      //                   });
+                      //             },
+                      //             child: Image.asset("kapal.png"))),
                     ],
                   ),
                 ],
