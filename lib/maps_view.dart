@@ -30,6 +30,17 @@ class _HomePageState extends State<HomePage> {
   int predictMovementVessel = 0;
   String? onClickVessel;
 
+  int? vesselIndex;
+  DraggableScrollableController dragController = DraggableScrollableController();
+
+  bool _isSheetOpen = false;
+
+  void _toggleSheet() {
+    setState(() {
+      _isSheetOpen = !_isSheetOpen;
+    });
+  }
+
   initCoorVessel() {
     result.clear();
     setState(() {
@@ -47,7 +58,7 @@ class _HomePageState extends State<HomePage> {
         });
       }
     });
-    Timer.periodic(Duration(minutes: 5), (timer) { 
+    Timer.periodic(Duration(minutes: 5), (timer) {
       result.clear();
       setState(() {
         predictMovementVessel = 0;
@@ -315,14 +326,25 @@ class _HomePageState extends State<HomePage> {
                             return GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  onClickVessel = i.callSign!; 
+                                  onClickVessel = i.callSign!;
                                 });
                                 showModalBottomSheet(
+                                  enableDrag:true,
                                     barrierColor: Colors.transparent,
-                                    isDismissible: false,
+                                    isScrollControlled: true,
+                                    isDismissible: true,
                                     context: context,
+                                    backgroundColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(20))
+                                    ),
                                     builder: (BuildContext context) {
-                                      return Container(
+                                      return DraggableScrollableSheet(
+                                          initialChildSize: 0.3,
+                                          minChildSize: 0.2,
+                                          maxChildSize: 0.7,
+                                          builder: (BuildContext context,ScrollController _controller)
+                                      =>   Container(
                                         width: double.infinity,
                                         decoration: BoxDecoration(
                                           color: Colors.white,
@@ -331,15 +353,16 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                         ),
                                         padding:
-                                            EdgeInsets.fromLTRB(16, 0, 16, 5),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Image.asset(
+                                        EdgeInsets.fromLTRB(16, 10, 16, 5),
+                                        child: SingleChildScrollView(
+                                          controller: _controller,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Image.asset(
                                                   "model_kapal.jpg",
-                                                  height: 100,
                                                   width: 100,
                                                 ),
                                                 SizedBox(
@@ -347,7 +370,7 @@ class _HomePageState extends State<HomePage> {
                                                 ),
                                                 Column(
                                                   crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
+                                                  CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
                                                       'Call Sign : ${vessel.first.callSign}',
@@ -368,14 +391,41 @@ class _HomePageState extends State<HomePage> {
                                                       'Tahun : ${vessel.first.yearBuilt}',
                                                       style: TextStyle(
                                                           fontSize: 20),
-                                                    )
+                                                    ),
+                                                    Text(
+                                                      'Buatan : ${vessel.first.builder}',
+                                                      style: TextStyle(
+                                                          fontSize: 20),
+                                                    ),
+                                                    Text(
+                                                      'Buatan : ${vessel.first.builder}',
+                                                      style: TextStyle(
+                                                          fontSize: 20),
+                                                    ),
+                                                    Text(
+                                                      'Buatan : ${vessel.first.builder}',
+                                                      style: TextStyle(
+                                                          fontSize: 20),
+                                                    ),
+                                                    Text(
+                                                      'Buatan : ${vessel.first.builder}',
+                                                      style: TextStyle(
+                                                          fontSize: 20),
+                                                    ),
+                                                    Text(
+                                                      'Buatan : ${vessel.first.builder}',
+                                                      style: TextStyle(
+                                                          fontSize: 20),
+                                                    ),
                                                   ],
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                                ),]
+                                              ),
+                                            ],
+                                          ),
                                         ),
+                                      )
                                       );
+
                                     });
                               },
                               child: Transform.rotate(
@@ -505,6 +555,7 @@ class _HomePageState extends State<HomePage> {
                       //             child: Image.asset("kapal.png"))),
                     ],
                   ),
+
                 ],
               ),
             ),
