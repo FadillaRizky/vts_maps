@@ -38,6 +38,7 @@ dependencies:
   flutter_map: ^5.0.0
   url_launcher: ^6.1.10
   http: ^1.1.0
+  snapping_sheet: ^3.1.0
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +50,11 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+
+dependency_overrides:
+  flutter_map:
+    git:
+      url: https://github.com/fleaflet/flutter_map.git
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

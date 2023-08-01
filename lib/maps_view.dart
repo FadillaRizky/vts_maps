@@ -4,9 +4,11 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/plugin_api.dart';
+import 'package:latlong2/latlong.dart';
 
 import 'api/GetAllVesselCoor.dart' as LatestVesselCoor;
 import 'api/GetAllLatLangCoor.dart' as LatLangCoor;
@@ -20,7 +22,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   List<LatestVesselCoor.Data> result = [];
   List<Vessel.Data> vesselResult = [];
   List<LatLangCoor.Data> latLangResult = [];
@@ -29,6 +31,12 @@ class _HomePageState extends State<HomePage> {
   List dummyLong = [];
   int predictMovementVessel = 0;
   String? onClickVessel;
+  late final MapController mapController;
+
+  // Animated Map Variable
+  static const _startedId = 'AnimatedMapController#MoveStarted';
+  static const _inProgressId = 'AnimatedMapController#MoveInProgress';
+  static const _finishedId = 'AnimatedMapController#MoveFinished';
 
   int? vesselIndex;
 
@@ -100,18 +108,22 @@ class _HomePageState extends State<HomePage> {
       }
     });
   }
-  void initKalmanFilter(){
+
+  void initKalmanFilter() {
     Timer.periodic(Duration(milliseconds: 1000), ((timer) {
       setState(() {
         predictMovementVessel += 1;
       });
     }));
   }
+
   double degreesToRadians(double degrees) {
     return degrees * (pi / 180.0);
   }
+
   // Speed per minutes
-  double predictLat(double latitude,double speed,double course,int movementTime) {
+  double predictLat(
+      double latitude, double speed, double course, int movementTime) {
     double courseRad = degreesToRadians(course);
     double speedMps = speed / 60.0;
     double distanceM = speedMps * movementTime;
@@ -119,8 +131,10 @@ class _HomePageState extends State<HomePage> {
     double newLatitude = latitude + deltaLatitude;
     return newLatitude;
   }
-  double predictLong(double latitude,double longitude,double speed,double course,int movementTime){
-  // Convert course from degrees to radians
+
+  double predictLong(double latitude, double longitude, double speed,
+      double course, int movementTime) {
+    // Convert course from degrees to radians
     double courseRad = degreesToRadians(course);
 
     // Convert speed from meters per minute to meters per second
@@ -131,7 +145,9 @@ class _HomePageState extends State<HomePage> {
 
     // Calculate the change in latitude and longitude
     double deltaLatitude = distanceM * math.cos(courseRad) / 111111.1;
-    double deltaLongitude = distanceM * math.sin(courseRad) / (111111.1 * math.cos(degreesToRadians(latitude)));
+    double deltaLongitude = distanceM *
+        math.sin(courseRad) /
+        (111111.1 * math.cos(degreesToRadians(latitude)));
 
     // Calculate the new latitude and longitude
     double newLatitude = latitude + deltaLatitude;
@@ -147,80 +163,61 @@ class _HomePageState extends State<HomePage> {
     initCoorVessel();
     initLatLangCoor();
     initKalmanFilter();
-    //
-    // const seenIntroBoxKey = 'seenIntroBox(a)';
-    // if (kIsWeb && Uri.base.host.trim() == 'demo.fleaflet.dev') {
-    //   SchedulerBinding.instance.addPostFrameCallback(
-    //         (_) async {
-    //       final prefs = await SharedPreferences.getInstance();
-    //       if (prefs.getBool(seenIntroBoxKey) ?? false) return;
-    //
-    //       if (!mounted) return;
-    //
-    //       final width = MediaQuery.of(context).size.width;
-    //       await showDialog<void>(
-    //         context: context,
-    //         builder: (context) => AlertDialog(
-    //           icon: UnconstrainedBox(
-    //             child: SizedBox.square(
-    //               dimension: 64,
-    //               child:
-    //               Image.asset('assets/ProjectIcon.png', fit: BoxFit.fill),
-    //             ),
-    //           ),
-    //           title: const Text('flutter_map Live Web Demo'),
-    //           content: ConstrainedBox(
-    //             constraints: BoxConstraints(
-    //               maxWidth: width < 750
-    //                   ? double.infinity
-    //                   : (width / (width < 1100 ? 1.5 : 2.5)),
-    //             ),
-    //             child: Column(
-    //               mainAxisSize: MainAxisSize.min,
-    //               children: [
-    //                 const Text(
-    //                   "This is built automatically off of the latest commits to 'master', so may not reflect the latest release available on pub.dev.\nThis is hosted on Firebase Hosting, meaning there's limited bandwidth to share between all users, so please keep loads to a minimum.",
-    //                   textAlign: TextAlign.center,
-    //                 ),
-    //                 Padding(
-    //                   padding:
-    //                   const EdgeInsets.only(right: 8, top: 16, bottom: 4),
-    //                   child: Align(
-    //                     alignment: Alignment.centerRight,
-    //                     child: Text(
-    //                       "This won't be shown again",
-    //                       style: TextStyle(
-    //                         color: Theme.of(context)
-    //                             .colorScheme
-    //                             .inverseSurface
-    //                             .withOpacity(0.5),
-    //                       ),
-    //                       textAlign: TextAlign.right,
-    //                     ),
-    //                   ),
-    //                 ),
-    //               ],
-    //             ),
-    //           ),
-    //           actions: [
-    //             TextButton.icon(
-    //               onPressed: () => Navigator.of(context).pop(),
-    //               label: const Text('OK'),
-    //               icon: const Icon(Icons.done),
-    //             ),
-    //           ],
-    //           contentPadding: const EdgeInsets.only(
-    //             left: 24,
-    //             top: 16,
-    //             bottom: 0,
-    //             right: 24,
-    //           ),
-    //         ),
-    //       );
-    //       await prefs.setBool(seenIntroBoxKey, true);
-    //     },
-    //   );
-    // }
+    mapController = MapController();
+  }
+
+  void _animatedMapMove(LatLng destLocation, double destZoom) {
+    // Create some tweens. These serve to split up the transition from one location to another.
+    // In our case, we want to split the transition be<tween> our current map center and the destination.
+    final camera = mapController.camera;
+    final latTween = Tween<double>(
+        begin: camera.center.latitude, end: destLocation.latitude);
+    final lngTween = Tween<double>(
+        begin: camera.center.longitude, end: destLocation.longitude);
+    final zoomTween = Tween<double>(begin: camera.zoom, end: destZoom);
+
+    // Create a animation controller that has a duration and a TickerProvider.
+    final controller = AnimationController(
+        duration: const Duration(milliseconds: 500), vsync: this);
+    // The animation determines what path the animation will take. You can try different Curves values, although I found
+    // fastOutSlowIn to be my favorite.
+    final Animation<double> animation =
+        CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
+
+    // Note this method of encoding the target destination is a workaround.
+    // When proper animated movement is supported (see #1263) we should be able
+    // to detect an appropriate animated movement event which contains the
+    // target zoom/center.
+    final startIdWithTarget =
+        '$_startedId#${destLocation.latitude},${destLocation.longitude},$destZoom';
+    bool hasTriggeredMove = false;
+
+    controller.addListener(() {
+      final String id;
+      if (animation.value == 1.0) {
+        id = _finishedId;
+      } else if (!hasTriggeredMove) {
+        id = startIdWithTarget;
+      } else {
+        id = _inProgressId;
+      }
+
+      hasTriggeredMove |= mapController.move(
+        LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
+        zoomTween.evaluate(animation),
+        id: id,
+      );
+    });
+
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.dispose();
+      } else if (status == AnimationStatus.dismissed) {
+        controller.dispose();
+      }
+    });
+
+    controller.forward();
   }
 
   @override
@@ -232,6 +229,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Flexible(
               child: FlutterMap(
+                mapController: mapController,
                 options: MapOptions(
                     maxZoom: 18,
                     // bounds: LatLngBounds(
@@ -274,23 +272,32 @@ class _HomePageState extends State<HomePage> {
                   PolylineLayer(
                     polylines: [
                       for (var i in result)
-                        if(onClickVessel == i.callSign)
-                        Polyline(
-                          strokeWidth: 5,
-                          points: [
-                            for (var x in latLangResult)
-                              LatLng(x.latitude!, x.longitude!),
-                            LatLng(37.764403, -121.996522),
-                            for (var i in result)
-                            LatLng(
-                              predictLat(i.coorGga!.latitude!.toDouble(),35,i.coorHdt!.headingDegree!.toDouble(),predictMovementVessel),
-                              predictLong(i.coorGga!.latitude!.toDouble(),i.coorGga!.longitude!.toDouble(),35,i.coorHdt!.headingDegree!.toDouble(),predictMovementVessel)
-                              // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
-                              //   i.coorGga!.longitude!.toDouble()
-                                ),
-                          ],
-                          color: Colors.blue,
-                        ),
+                        if (onClickVessel == i.callSign)
+                          Polyline(
+                            strokeWidth: 5,
+                            points: [
+                              for (var x in latLangResult.reversed)
+                                LatLng(x.latitude!, x.longitude!),
+                              // LatLng(37.764403, -121.996522),
+                              for (var i in result)
+                                LatLng(
+                                    predictLat(
+                                        i.coorGga!.latitude!.toDouble(),
+                                        100,
+                                        i.coorHdt!.headingDegree!.toDouble(),
+                                        predictMovementVessel),
+                                    predictLong(
+                                        i.coorGga!.latitude!.toDouble(),
+                                        i.coorGga!.longitude!.toDouble(),
+                                        100,
+                                        i.coorHdt!.headingDegree!.toDouble(),
+                                        predictMovementVessel)
+                                    // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
+                                    //   i.coorGga!.longitude!.toDouble()
+                                    ),
+                            ],
+                            color: Colors.blue,
+                          ),
                     ],
                   ),
                   MarkerLayer(
@@ -300,10 +307,19 @@ class _HomePageState extends State<HomePage> {
                           width: 75,
                           height: 75,
                           point: LatLng(
-                            predictLat(i.coorGga!.latitude!.toDouble(),35,i.coorHdt!.headingDegree!.toDouble(),predictMovementVessel),
-                            predictLong(i.coorGga!.latitude!.toDouble(),i.coorGga!.longitude!.toDouble(),35,i.coorHdt!.headingDegree!.toDouble(),predictMovementVessel)
-                            // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
-                            //   i.coorGga!.longitude!.toDouble()
+                              predictLat(
+                                  i.coorGga!.latitude!.toDouble(),
+                                  100,
+                                  i.coorHdt!.headingDegree!.toDouble(),
+                                  predictMovementVessel),
+                              predictLong(
+                                  i.coorGga!.latitude!.toDouble(),
+                                  i.coorGga!.longitude!.toDouble(),
+                                  100,
+                                  i.coorHdt!.headingDegree!.toDouble(),
+                                  predictMovementVessel)
+                              // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
+                              //   i.coorGga!.longitude!.toDouble()
                               ),
                           rotateOrigin: Offset(10, -10),
                           builder: (context) {
@@ -319,108 +335,120 @@ class _HomePageState extends State<HomePage> {
                                 setState(() {
                                   onClickVessel = i.callSign!;
                                 });
+                                _animatedMapMove(
+                                    LatLng(
+                                      i.coorGga!.latitude!.toDouble(),
+                                      i.coorGga!.longitude!.toDouble(),
+                                    ),
+                                    10);
                                 showModalBottomSheet(
-                                  enableDrag:true,
+                                    enableDrag: true,
                                     barrierColor: Colors.transparent,
                                     isScrollControlled: true,
                                     isDismissible: true,
                                     context: context,
+                                    // showDragHandle: ,
                                     backgroundColor: Colors.transparent,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(top: Radius.circular(20))
-                                    ),
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(20))),
                                     builder: (BuildContext context) {
                                       return DraggableScrollableSheet(
+                                          snap: true,
                                           initialChildSize: 0.3,
-                                          minChildSize: 0.2,
+                                          minChildSize: 0.3,
                                           maxChildSize: 0.7,
-                                          builder: (BuildContext context,ScrollController _controller)
-                                      =>   Container(
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(20.0),
-                                          ),
-                                        ),
-                                        padding:
-                                        EdgeInsets.fromLTRB(16, 10, 16, 5),
-                                        child: SingleChildScrollView(
-                                          controller: _controller,
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Image.asset(
-                                                  "model_kapal.jpg",
-                                                  width: 100,
+                                          builder: (BuildContext context,
+                                                  ScrollController
+                                                      _controller) =>
+                                              Container(
+                                                width: double.infinity,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.vertical(
+                                                    top: Radius.circular(20.0),
+                                                  ),
                                                 ),
-                                                SizedBox(
-                                                  width: 20,
+                                                padding: EdgeInsets.fromLTRB(
+                                                    16, 10, 16, 5),
+                                                child: SingleChildScrollView(
+                                                  controller: _controller,
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(children: [
+                                                        Image.asset(
+                                                          "model_kapal.jpg",
+                                                          width: 100,
+                                                        ),
+                                                        SizedBox(
+                                                          width: 20,
+                                                        ),
+                                                        Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              'Call Sign : ${vessel.first.callSign}',
+                                                              style: TextStyle(
+                                                                  fontSize: 20),
+                                                            ),
+                                                            Text(
+                                                              'Negara : ${vessel.first.flag}',
+                                                              style: TextStyle(
+                                                                  fontSize: 20),
+                                                            ),
+                                                            Text(
+                                                              'Kelas : ${vessel.first.kelas}',
+                                                              style: TextStyle(
+                                                                  fontSize: 20),
+                                                            ),
+                                                            Text(
+                                                              'Tahun : ${vessel.first.yearBuilt}',
+                                                              style: TextStyle(
+                                                                  fontSize: 20),
+                                                            ),
+                                                            Text(
+                                                              'Buatan : ${vessel.first.builder}',
+                                                              style: TextStyle(
+                                                                  fontSize: 20),
+                                                            ),
+                                                            Text(
+                                                              'Buatan : ${vessel.first.builder}',
+                                                              style: TextStyle(
+                                                                  fontSize: 20),
+                                                            ),
+                                                            Text(
+                                                              'Buatan : ${vessel.first.builder}',
+                                                              style: TextStyle(
+                                                                  fontSize: 20),
+                                                            ),
+                                                            Text(
+                                                              'Buatan : ${vessel.first.builder}',
+                                                              style: TextStyle(
+                                                                  fontSize: 20),
+                                                            ),
+                                                            Text(
+                                                              'Buatan : ${vessel.first.builder}',
+                                                              style: TextStyle(
+                                                                  fontSize: 20),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ]),
+                                                    ],
+                                                  ),
                                                 ),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'Call Sign : ${vessel.first.callSign}',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    Text(
-                                                      'Negara : ${vessel.first.flag}',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    Text(
-                                                      'Kelas : ${vessel.first.kelas}',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    Text(
-                                                      'Tahun : ${vessel.first.yearBuilt}',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    Text(
-                                                      'Buatan : ${vessel.first.builder}',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    Text(
-                                                      'Buatan : ${vessel.first.builder}',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    Text(
-                                                      'Buatan : ${vessel.first.builder}',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    Text(
-                                                      'Buatan : ${vessel.first.builder}',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    Text(
-                                                      'Buatan : ${vessel.first.builder}',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                  ],
-                                                ),]
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                      );
-
+                                              ));
                                     });
                               },
                               child: Transform.rotate(
-                                angle: double.parse(i.coorHdt!.headingDegree!.toString()) / 180 * math.pi,
+                                angle: degreesToRadians(
+                                    i.coorHdt!.headingDegree!.toDouble()),
                                 child: Image.asset("ship.png"),
                               ),
                             );
@@ -546,7 +574,6 @@ class _HomePageState extends State<HomePage> {
                       //             child: Image.asset("kapal.png"))),
                     ],
                   ),
-
                 ],
               ),
             ),
