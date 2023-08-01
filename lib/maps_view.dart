@@ -31,15 +31,6 @@ class _HomePageState extends State<HomePage> {
   String? onClickVessel;
 
   int? vesselIndex;
-  DraggableScrollableController dragController = DraggableScrollableController();
-
-  bool _isSheetOpen = false;
-
-  void _toggleSheet() {
-    setState(() {
-      _isSheetOpen = !_isSheetOpen;
-    });
-  }
 
   initCoorVessel() {
     result.clear();
