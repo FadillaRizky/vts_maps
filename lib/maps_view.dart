@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:snapping_sheet/snapping_sheet.dart';
+import 'package:vts_maps/system/scale_bar.dart';
+import 'package:vts_maps/utils/snipping_sheet.dart';
+import 'package:xml/xml.dart' as xml;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -9,11 +13,13 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:xml/xml.dart';
 
 import 'api/GetAllVesselCoor.dart' as LatestVesselCoor;
 import 'api/GetAllLatLangCoor.dart' as LatLangCoor;
 import 'api/GetAllVessel.dart' as Vessel;
 import 'api/api.dart';
+import 'system/zoom_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -22,16 +28,39 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+class KmlPolygon {
+  final List<LatLng> points;
+  final Color color;
+
+  KmlPolygon({required this.points, required this.color});
+}
+
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  // Controller
+  final SnappingSheetController snappingSheetController =
+      new SnappingSheetController();
+
+  // List API
   List<LatestVesselCoor.Data> result = [];
   List<Vessel.Data> vesselResult = [];
   List<LatLangCoor.Data> latLangResult = [];
-  List dummy = [1, 2, 3];
-  List dummyLat = [-6.8515680, -7.8515680, -8.8515680];
-  List dummyLong = [];
+
+  // Random Variable
   int predictMovementVessel = 0;
-  String? onClickVessel;
+  String onClickVessel = "";
   late final MapController mapController;
+
+  // List<KmlPolygon> kmlOverlayPolygons = [];
+  // Map<String, Color> HEX_MAP = {
+  //   '#yellowLine': Color(0xFFFFFF00),
+  //   '#purpleLine': Color(0xFF800080),
+  //   '#brownLine': Color(0xFFA52A2A),
+  //   '#pinkLine': Color(0xFFFFC0CB),
+  //   '#orangeLine': Color(0xFFFFA500),
+  //   '#greenLine': Color(0xFF00FF00),
+  //   '#redLine': Color(0xFFFF0000),
+  //   '#blueLine': Color(0xFF0000FF),
+  // };
 
   // Animated Map Variable
   static const _startedId = 'AnimatedMapController#MoveStarted';
@@ -58,11 +87,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
     });
     Timer.periodic(Duration(minutes: 5), (timer) {
-      result.clear();
       setState(() {
         predictMovementVessel = 0;
       });
       Api.getAllVesselLatestCoor().then((value) {
+        result.clear();
         if (value.total! == 0) {
           setState(() {
             result = [];
@@ -156,9 +185,69 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return newLongitude;
   }
 
+  // void loadKmlData() async {
+  //   final String kmlData = await loadKmlFromFile('assets/kml/cta.kml');
+  //   setState(() {
+  //     kmlOverlayPolygons = parseKmlForOverlay(kmlData);
+  //   });
+  // }
+
+  // Future<String> loadKmlFromFile(String filePath) async {
+  //   return await DefaultAssetBundle.of(context).loadString(filePath);
+  // }
+
+  // List<KmlPolygon> parseKmlForOverlay(String kmlData) {
+  //   final List<KmlPolygon> polygons = [];
+  //   final XmlDocument doc = xml.XmlDocument.parse(kmlData);
+  //   final Iterable<xml.XmlElement> placemarks =
+  //       doc.findAllElements('Placemark');
+  //   for (final placemark in placemarks) {
+  //     final xml.XmlElement? polygonElement = placemark.getElement('LineString');
+  //     if (polygonElement != null) {
+  //       final List<LatLng> polygonPoints = [];
+
+  //       final xml.XmlElement? coordinatesElement =
+  //           polygonElement.getElement('coordinates');
+  //       if (coordinatesElement != null) {
+  //         final String coordinatesText = coordinatesElement.text;
+  //         final List<String> coordinateList = coordinatesText.split('\n');
+
+  //         for (final coordinate in coordinateList) {
+  //           final List<String> latLng = coordinate.split(',');
+  //           if (latLng.length >= 2) {
+  //             double? latitude = double.tryParse(latLng[1]);
+  //             double? longitude = double.tryParse(latLng[0]);
+  //             if (latitude != null && longitude != null) {
+  //               polygonPoints.add(LatLng(latitude, longitude));
+  //             }
+  //           }
+  //         }
+  //       }
+
+  //         // print(placemark.getElement('styleUrl')!.text);
+  //       if (polygonPoints.isNotEmpty) {
+  //         polygons.add(KmlPolygon(points: polygonPoints, color: HEX_MAP[placemark.getElement('styleUrl')!.text]!));
+  //       }
+  //     }
+  //   }
+
+  //   return polygons;
+  // }
+  Vessel.Data vesselDescription(String vessel) {
+    var dataVessel = vesselResult.where((e) => e.callSign == vessel).first;
+    return dataVessel;
+  }
+
+  LatestVesselCoor.Data vesselLatestCoor(String vessel) {
+    LatestVesselCoor.Data latestCoor =
+        result.where((e) => e.callSign == vessel).first;
+    return latestCoor;
+  }
+
   @override
   void initState() {
     super.initState();
+    // loadKmlData();
     initVessel();
     initCoorVessel();
     initLatLangCoor();
@@ -231,81 +320,306 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: FlutterMap(
                 mapController: mapController,
                 options: MapOptions(
-                    maxZoom: 18,
-                    // bounds: LatLngBounds(
-                    //   const LatLng(-15.7706446, 93.1003771),
-                    //   const LatLng(8.2454688, 141.6626464),
-                    // ),
-                    // initialCenter: const LatLng(51.5, -0.09),
-                    zoom: 10,
-                    center: LatLng(37.764403, -122.412687)
-                    // cameraConstraint: CameraConstraint.contain(
-                    //   bounds: LatLngBounds(
-                    //     const LatLng(-90, -180),
-                    //     const LatLng(50, 180),
-                    //   ),)
+                  maxZoom: 18,
+                  // bounds: LatLngBounds(
+                  //   const LatLng(-15.7706446, 93.1003771),
+                  //   const LatLng(8.2454688, 141.6626464),
+                  // ),
+                  initialZoom: 10,
+                  initialCenter: const LatLng(-1.089955, 117.360343),
+                  // cameraConstraint: CameraConstraint.contain(
+                  //   bounds: LatLngBounds(
+                  //     const LatLng(-90, -180),
+                  //     const LatLng(50, 180),
+                  //   ),)
+                ),
+                nonRotatedChildren: [
+                  FlutterMapZoomButtons(
+                    minZoom: 4,
+                    maxZoom: 19,
+                    mini: true,
+                    padding: 10,
+                    alignment: Alignment.bottomRight,
+                  ),
+                  ScaleLayerWidget(
+                    options: ScaleLayerPluginOption(
+                      lineColor: Colors.blue,
+                      lineWidth: 2,
+                      textStyle:
+                          const TextStyle(color: Colors.blue, fontSize: 12),
+                      padding: const EdgeInsets.all(10),
                     ),
-                // nonRotatedChildren: [
-                //   RichAttributionWidget(
-                //     popupInitialDisplayDuration: const Duration(seconds: 5),
-                //     animationConfig: const ScaleRAWA(),
-                //     attributions: [
-                //       TextSourceAttribution(
-                //         'OpenStreetMap contributors',
-                //         onTap: () => launchUrl(
-                //           Uri.parse('https://openstreetmap.org/copyright'),
-                //         ),
-                //       ),
-                //       const TextSourceAttribution(
-                //         'This attribution is the same throughout this app, except where otherwise specified',
-                //         prependCopyright: false,
-                //       ),
-                //     ],
-                //   ),
-                // ],
+                  ),
+                  if (onClickVessel != "")
+                    Center(
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: 600,
+                        ),
+                        child: SnappingSheet(
+                          controller: snappingSheetController,
+                          // child: Background(),
+                          lockOverflowDrag: true,
+                          snappingPositions: [
+                            SnappingPosition.factor(
+                              snappingCurve: Curves.elasticOut,
+                              snappingDuration: Duration(milliseconds: 1750),
+                              positionFactor: 0.44,
+                            ),
+                            SnappingPosition.factor(
+                              positionFactor: 0.0,
+                              snappingCurve: Curves.easeOutExpo,
+                              snappingDuration: Duration(seconds: 1),
+                              grabbingContentOffset: GrabbingContentOffset.top,
+                            ),
+                            // SnappingPosition.factor(
+                            //   grabbingContentOffset:
+                            //       GrabbingContentOffset.bottom,
+                            //   snappingCurve: Curves.easeInExpo,
+                            //   snappingDuration: Duration(seconds: 1),
+                            //   positionFactor: 0.9,
+                            // ),
+                          ],
+                          grabbing: GrabbingWidget(),
+                          grabbingHeight: 75,
+                          sheetAbove: null,
+                          sheetBelow: SnappingSheetContent(
+                            draggable: true,
+                            // childScrollController: listViewController,
+                            child: ScrollConfiguration(
+                              behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                              child: SingleChildScrollView(
+                                physics: NeverScrollableScrollPhysics(),
+                                child: Container(
+                                  color: Colors.white,
+                                  child: Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          snappingSheetController.snapToPosition(
+                                            SnappingPosition.factor(
+                                                positionFactor: -0.5),
+                                          );
+                                          Timer(Duration(milliseconds: 300), () {
+                                            setState(() {
+                                              onClickVessel = "";
+                                            });
+                                          });
+                                        },
+                                        child: Container(
+                                          alignment: Alignment.topRight,
+                                          child: Container(
+                                            width: 45,
+                                            height: 45,
+                                            decoration: BoxDecoration(
+                                                color: Colors.black12),
+                                            padding: EdgeInsets.all(4),
+                                            child: Center(
+                                              child: Text(
+                                                "X",
+                                                style: TextStyle(fontSize: 20),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.symmetric(
+                                            horizontal: 15, vertical: 10),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Container(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "${onClickVessel}",
+                                                    style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  Text(
+                                                    "${vesselDescription(onClickVessel).flag}",
+                                                    style: TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w400),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Image.asset(
+                                              "assets/model_kapal.jpg",
+                                              width: 100,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.symmetric(
+                                            horizontal: 15, vertical: 10),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Position Information"
+                                                  .toUpperCase(),
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(10),
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.grey,
+                                                            width: 1)),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          'Latitude',
+                                                          style: TextStyle(
+                                                            fontSize: 14,
+                                                            color: const Color
+                                                                    .fromARGB(
+                                                                255, 61, 61, 61),
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          "${predictLat(vesselLatestCoor(onClickVessel).coorGga!.latitude!.toDouble(), 100, vesselLatestCoor(onClickVessel).coorHdt!.headingDegree!.toDouble(), predictMovementVessel).toStringAsFixed(5)}",
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: const Color
+                                                                    .fromARGB(
+                                                                255, 61, 61, 61),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(10),
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.grey,
+                                                            width: 1)),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          'Longitude',
+                                                          style: TextStyle(
+                                                            fontSize: 14,
+                                                            color: const Color
+                                                                    .fromARGB(
+                                                                255, 61, 61, 61),
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          "${predictLong(vesselLatestCoor(onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(onClickVessel).coorHdt!.headingDegree!.toDouble(), predictMovementVessel).toStringAsFixed(5)}",
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: const Color
+                                                                    .fromARGB(
+                                                                255, 61, 61, 61),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
                 children: [
                   TileLayer(
                     urlTemplate:
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                   ),
+                  // if (kmlOverlayPolygons.isNotEmpty)
+                  // PolylineLayer(
+                  //   polylines: kmlOverlayPolygons.map((kmlPolygon) {
+                  //     // print(polygonPoints);
+                  //     return Polyline(
+                  //       strokeWidth: 5,
+                  //       points: kmlPolygon.points,
+                  //       color: kmlPolygon.color,
+                  //     );
+                  //   }).toList(),
+                  // ),
                   PolylineLayer(
                     polylines: [
-                      for (var i in result)
-                        if (onClickVessel == i.callSign)
-                          Polyline(
-                            strokeWidth: 5,
-                            points: [
-                              for (var x in latLangResult.reversed)
-                                LatLng(x.latitude!, x.longitude!),
-                              // LatLng(37.764403, -121.996522),
-                              for (var i in result)
-                                LatLng(
-                                    predictLat(
-                                        i.coorGga!.latitude!.toDouble(),
-                                        100,
-                                        i.coorHdt!.headingDegree!.toDouble(),
-                                        predictMovementVessel),
-                                    predictLong(
-                                        i.coorGga!.latitude!.toDouble(),
-                                        i.coorGga!.longitude!.toDouble(),
-                                        100,
-                                        i.coorHdt!.headingDegree!.toDouble(),
-                                        predictMovementVessel)
-                                    // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
-                                    //   i.coorGga!.longitude!.toDouble()
-                                    ),
-                            ],
-                            color: Colors.blue,
-                          ),
+                      Polyline(
+                        strokeWidth: 5,
+                        points: [
+                          for (var x in latLangResult.reversed)
+                            if (x.callSign == onClickVessel)
+                              LatLng(x.latitude!, x.longitude!),
+                          for (var i in result)
+                            if (i.callSign == onClickVessel)
+                              LatLng(
+                                  predictLat(
+                                      i.coorGga!.latitude!.toDouble(),
+                                      100,
+                                      i.coorHdt!.headingDegree!.toDouble(),
+                                      predictMovementVessel),
+                                  predictLong(
+                                      i.coorGga!.latitude!.toDouble(),
+                                      i.coorGga!.longitude!.toDouble(),
+                                      100,
+                                      i.coorHdt!.headingDegree!.toDouble(),
+                                      predictMovementVessel)
+                                  // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
+                                  //   i.coorGga!.longitude!.toDouble()
+                                  ),
+                        ],
+                        color: Colors.blue,
+                      ),
                     ],
                   ),
                   MarkerLayer(
                     markers: [
                       for (var i in result)
                         Marker(
-                          width: 75,
-                          height: 75,
+                          width: 50,
+                          height: 50,
                           point: LatLng(
                               predictLat(
                                   i.coorGga!.latitude!.toDouble(),
@@ -340,116 +654,96 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                       i.coorGga!.latitude!.toDouble(),
                                       i.coorGga!.longitude!.toDouble(),
                                     ),
-                                    10);
-                                showModalBottomSheet(
-                                    enableDrag: true,
-                                    barrierColor: Colors.transparent,
-                                    isScrollControlled: true,
-                                    isDismissible: true,
-                                    context: context,
-                                    // showDragHandle: ,
-                                    backgroundColor: Colors.transparent,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(20))),
-                                    builder: (BuildContext context) {
-                                      return DraggableScrollableSheet(
-                                          snap: true,
-                                          initialChildSize: 0.3,
-                                          minChildSize: 0.3,
-                                          maxChildSize: 0.7,
-                                          builder: (BuildContext context,
-                                                  ScrollController
-                                                      _controller) =>
-                                              Container(
-                                                width: double.infinity,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.vertical(
-                                                    top: Radius.circular(20.0),
-                                                  ),
-                                                ),
-                                                padding: EdgeInsets.fromLTRB(
-                                                    16, 10, 16, 5),
-                                                child: SingleChildScrollView(
-                                                  controller: _controller,
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Row(children: [
-                                                        Image.asset(
-                                                          "model_kapal.jpg",
-                                                          width: 100,
-                                                        ),
-                                                        SizedBox(
-                                                          width: 20,
-                                                        ),
-                                                        Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              'Call Sign : ${vessel.first.callSign}',
-                                                              style: TextStyle(
-                                                                  fontSize: 20),
-                                                            ),
-                                                            Text(
-                                                              'Negara : ${vessel.first.flag}',
-                                                              style: TextStyle(
-                                                                  fontSize: 20),
-                                                            ),
-                                                            Text(
-                                                              'Kelas : ${vessel.first.kelas}',
-                                                              style: TextStyle(
-                                                                  fontSize: 20),
-                                                            ),
-                                                            Text(
-                                                              'Tahun : ${vessel.first.yearBuilt}',
-                                                              style: TextStyle(
-                                                                  fontSize: 20),
-                                                            ),
-                                                            Text(
-                                                              'Buatan : ${vessel.first.builder}',
-                                                              style: TextStyle(
-                                                                  fontSize: 20),
-                                                            ),
-                                                            Text(
-                                                              'Buatan : ${vessel.first.builder}',
-                                                              style: TextStyle(
-                                                                  fontSize: 20),
-                                                            ),
-                                                            Text(
-                                                              'Buatan : ${vessel.first.builder}',
-                                                              style: TextStyle(
-                                                                  fontSize: 20),
-                                                            ),
-                                                            Text(
-                                                              'Buatan : ${vessel.first.builder}',
-                                                              style: TextStyle(
-                                                                  fontSize: 20),
-                                                            ),
-                                                            Text(
-                                                              'Buatan : ${vessel.first.builder}',
-                                                              style: TextStyle(
-                                                                  fontSize: 20),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ]),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ));
-                                    });
+                                    13);
+                                // showModalBottomSheet(
+                                //     enableDrag: true,
+                                //     barrierColor: Colors.transparent,
+                                //     isScrollControlled: true,
+                                //     isDismissible: true,
+                                //     context: context,
+                                //     // showDragHandle: ,
+                                //     backgroundColor: Colors.transparent,
+                                //     shape: RoundedRectangleBorder(
+                                //         borderRadius: BorderRadius.vertical(
+                                //             top: Radius.circular(20))),
+                                //     builder: (BuildContext context) {
+                                //       return DraggableScrollableSheet(
+                                //           snap: true,
+                                //           initialChildSize: 0.3,
+                                //           minChildSize: 0.3,
+                                //           maxChildSize: 0.7,
+                                //           builder: (BuildContext context,
+                                //                   ScrollController
+                                //                       _controller) =>
+                                //               Container(
+                                //                 width: double.infinity,
+                                //                 decoration: BoxDecoration(
+                                //                   color: Colors.white,
+                                //                   borderRadius:
+                                //                       BorderRadius.vertical(
+                                //                     top: Radius.circular(20.0),
+                                //                   ),
+                                //                 ),
+                                //                 padding: EdgeInsets.fromLTRB(
+                                //                     16, 10, 16, 5),
+                                //                 child: SingleChildScrollView(
+                                //                   controller: _controller,
+                                //                   child: Column(
+                                //                     crossAxisAlignment:
+                                //                         CrossAxisAlignment
+                                //                             .start,
+                                //                     children: [
+                                //                       Row(children: [
+                                //                         Image.asset(
+                                //                           "assets/model_kapal.jpg",
+                                //                           width: 100,
+                                //                         ),
+                                //                         SizedBox(
+                                //                           width: 20,
+                                //                         ),
+                                //                         Column(
+                                //                           crossAxisAlignment:
+                                //                               CrossAxisAlignment
+                                //                                   .start,
+                                //                           children: [
+                                //                             Text(
+                                //                               'Call Sign : ${vessel.first.callSign}',
+                                //                               style: TextStyle(
+                                //                                   fontSize: 16),
+                                //                             ),
+                                //                             Text(
+                                //                               'Negara : ${vessel.first.flag}',
+                                //                               style: TextStyle(
+                                //                                   fontSize: 16),
+                                //                             ),
+                                //                             Text(
+                                //                               'Kelas : ${vessel.first.kelas}',
+                                //                               style: TextStyle(
+                                //                                   fontSize: 16),
+                                //                             ),
+                                //                             Text(
+                                //                               'Tahun : ${vessel.first.yearBuilt}',
+                                //                               style: TextStyle(
+                                //                                   fontSize: 16),
+                                //                             ),
+                                //                             Text(
+                                //                               'Buatan : ${vessel.first.builder}',
+                                //                               style: TextStyle(
+                                //                                   fontSize: 16),
+                                //                             ),
+                                //                           ],
+                                //                         ),
+                                //                       ]),
+                                //                     ],
+                                //                   ),
+                                //                 ),
+                                //               ));
+                                //     });
                               },
                               child: Transform.rotate(
                                 angle: degreesToRadians(
                                     i.coorHdt!.headingDegree!.toDouble()),
-                                child: Image.asset("ship.png"),
+                                child: Image.asset("assets/ship.png"),
                               ),
                             );
                           },

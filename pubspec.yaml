@@ -39,6 +39,7 @@ dependencies:
   url_launcher: ^6.1.10
   http: ^1.1.0
   snapping_sheet: ^3.1.0
+  xml: ^6.3.0
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,8 @@ flutter:
   assets:
     - assets/kapal.png
     - assets/model_kapal.jpg
+    - assets/kml/cta.kml
+    - assets/kml/
     - assets/
 
   #   - images/a_dot_ham.jpeg
