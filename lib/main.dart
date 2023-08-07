@@ -2,7 +2,10 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vts_maps/maps_view.dart';
+
+import 'login_page.dart';
 
 void main() {
   // String message = "Hello, this is a UDP message!";
@@ -42,12 +45,15 @@ class MyApp extends StatelessWidget {
       title: 'VTS Maps',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    textTheme: GoogleFonts.robotoTextTheme().copyWith(
+      titleSmall: GoogleFonts.roboto()
+    ),
         useMaterial3: true,
       ),
       scrollBehavior: MaterialScrollBehavior().copyWith(
         dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
       ),
-      home: HomePage(),
+      home: Login(),
     );
   }
 }
