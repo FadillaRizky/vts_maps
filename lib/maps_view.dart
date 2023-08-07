@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:searchfield/searchfield.dart';
 import 'package:snapping_sheet/snapping_sheet.dart';
 import 'package:vts_maps/system/scale_bar.dart';
 import 'package:vts_maps/utils/snipping_sheet.dart';
@@ -39,6 +40,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // Controller
   final SnappingSheetController snappingSheetController =
       new SnappingSheetController();
+  TextEditingController SearchVessel = TextEditingController();
 
   // List API
   List<LatestVesselCoor.Data> result = [];
@@ -244,6 +246,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return latestCoor;
   }
 
+  searchVessel(String callSign){
+    var vessel = vesselLatestCoor(callSign);
+    setState(() {
+      onClickVessel = vessel.callSign!;
+    });
+    _animatedMapMove(
+        LatLng(
+          vessel.coorGga!.latitude!.toDouble(),
+          vessel.coorGga!.longitude!.toDouble(),
+        ),
+        13);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -316,6 +331,89 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         padding: const EdgeInsets.all(8),
         child: Column(
           children: [
+            Container(
+              color: Colors.white,
+              height: 60,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(),
+                  Row(
+                    children: [
+                      Container(
+                        width: 300,
+                        child: SearchField<Vessel.Data>(
+                          controller: SearchVessel,
+                          suggestions: vesselResult
+                              .map(
+                                (e) => SearchFieldListItem<Vessel.Data>(
+                                  e.callSign!,
+                                  item: e,
+                                  // Use child to show Custom Widgets in the suggestions
+                                  // defaults to Text widget
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(e.callSign!),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          searchInputDecoration: InputDecoration(
+                            hintText: "Pilih Call Sign Kapal",
+                            labelText: "Pilih Call Sign Kapal",
+                            hintStyle: TextStyle(color: Colors.black),
+                            labelStyle: TextStyle(color: Colors.black),
+                            prefixIcon: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Icon(Icons.search),
+                            ),
+                            filled: true,
+                            fillColor: Color.fromARGB(255, 230, 230, 230),
+                            prefixIconColor: Colors.black,
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  width: 3,
+                                  color: const Color.fromARGB(255, 230, 230, 230)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  width: 3,
+                                  color: const Color.fromARGB(255, 230, 230, 230)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10,),
+                      InkWell(
+                        onTap: (){
+                          searchVessel(SearchVessel.text);
+                        },
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration:BoxDecoration(
+                            color:Colors.grey,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(
+                            Icons.search
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
             Flexible(
               child: FlutterMap(
                 mapController: mapController,
@@ -364,7 +462,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             SnappingPosition.factor(
                               snappingCurve: Curves.elasticOut,
                               snappingDuration: Duration(milliseconds: 1750),
-                              positionFactor: 0.44,
+                              positionFactor: 0.47,
                             ),
                             SnappingPosition.factor(
                               positionFactor: 0.0,
@@ -387,7 +485,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             draggable: true,
                             // childScrollController: listViewController,
                             child: ScrollConfiguration(
-                              behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                              behavior: ScrollConfiguration.of(context)
+                                  .copyWith(scrollbars: false),
                               child: SingleChildScrollView(
                                 physics: NeverScrollableScrollPhysics(),
                                 child: Container(
@@ -396,11 +495,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     children: [
                                       GestureDetector(
                                         onTap: () {
-                                          snappingSheetController.snapToPosition(
+                                          snappingSheetController
+                                              .snapToPosition(
                                             SnappingPosition.factor(
                                                 positionFactor: -0.5),
                                           );
-                                          Timer(Duration(milliseconds: 300), () {
+                                          Timer(Duration(milliseconds: 300),
+                                              () {
                                             setState(() {
                                               onClickVessel = "";
                                             });
@@ -494,7 +595,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             fontSize: 14,
                                                             color: const Color
                                                                     .fromARGB(
-                                                                255, 61, 61, 61),
+                                                                255,
+                                                                61,
+                                                                61,
+                                                                61),
                                                             fontWeight:
                                                                 FontWeight.w700,
                                                           ),
@@ -507,7 +611,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                 FontWeight.w600,
                                                             color: const Color
                                                                     .fromARGB(
-                                                                255, 61, 61, 61),
+                                                                255,
+                                                                61,
+                                                                61,
+                                                                61),
                                                           ),
                                                         ),
                                                       ],
@@ -532,7 +639,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             fontSize: 14,
                                                             color: const Color
                                                                     .fromARGB(
-                                                                255, 61, 61, 61),
+                                                                255,
+                                                                61,
+                                                                61,
+                                                                61),
                                                             fontWeight:
                                                                 FontWeight.w700,
                                                           ),
@@ -545,7 +655,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                 FontWeight.w600,
                                                             color: const Color
                                                                     .fromARGB(
-                                                                255, 61, 61, 61),
+                                                                255,
+                                                                61,
+                                                                61,
+                                                                61),
                                                           ),
                                                         ),
                                                       ],
@@ -646,99 +759,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             // print(vessel.first.callSign);
                             return GestureDetector(
                               onTap: () {
-                                setState(() {
-                                  onClickVessel = i.callSign!;
-                                });
-                                _animatedMapMove(
-                                    LatLng(
-                                      i.coorGga!.latitude!.toDouble(),
-                                      i.coorGga!.longitude!.toDouble(),
-                                    ),
-                                    13);
-                                // showModalBottomSheet(
-                                //     enableDrag: true,
-                                //     barrierColor: Colors.transparent,
-                                //     isScrollControlled: true,
-                                //     isDismissible: true,
-                                //     context: context,
-                                //     // showDragHandle: ,
-                                //     backgroundColor: Colors.transparent,
-                                //     shape: RoundedRectangleBorder(
-                                //         borderRadius: BorderRadius.vertical(
-                                //             top: Radius.circular(20))),
-                                //     builder: (BuildContext context) {
-                                //       return DraggableScrollableSheet(
-                                //           snap: true,
-                                //           initialChildSize: 0.3,
-                                //           minChildSize: 0.3,
-                                //           maxChildSize: 0.7,
-                                //           builder: (BuildContext context,
-                                //                   ScrollController
-                                //                       _controller) =>
-                                //               Container(
-                                //                 width: double.infinity,
-                                //                 decoration: BoxDecoration(
-                                //                   color: Colors.white,
-                                //                   borderRadius:
-                                //                       BorderRadius.vertical(
-                                //                     top: Radius.circular(20.0),
-                                //                   ),
-                                //                 ),
-                                //                 padding: EdgeInsets.fromLTRB(
-                                //                     16, 10, 16, 5),
-                                //                 child: SingleChildScrollView(
-                                //                   controller: _controller,
-                                //                   child: Column(
-                                //                     crossAxisAlignment:
-                                //                         CrossAxisAlignment
-                                //                             .start,
-                                //                     children: [
-                                //                       Row(children: [
-                                //                         Image.asset(
-                                //                           "assets/model_kapal.jpg",
-                                //                           width: 100,
-                                //                         ),
-                                //                         SizedBox(
-                                //                           width: 20,
-                                //                         ),
-                                //                         Column(
-                                //                           crossAxisAlignment:
-                                //                               CrossAxisAlignment
-                                //                                   .start,
-                                //                           children: [
-                                //                             Text(
-                                //                               'Call Sign : ${vessel.first.callSign}',
-                                //                               style: TextStyle(
-                                //                                   fontSize: 16),
-                                //                             ),
-                                //                             Text(
-                                //                               'Negara : ${vessel.first.flag}',
-                                //                               style: TextStyle(
-                                //                                   fontSize: 16),
-                                //                             ),
-                                //                             Text(
-                                //                               'Kelas : ${vessel.first.kelas}',
-                                //                               style: TextStyle(
-                                //                                   fontSize: 16),
-                                //                             ),
-                                //                             Text(
-                                //                               'Tahun : ${vessel.first.yearBuilt}',
-                                //                               style: TextStyle(
-                                //                                   fontSize: 16),
-                                //                             ),
-                                //                             Text(
-                                //                               'Buatan : ${vessel.first.builder}',
-                                //                               style: TextStyle(
-                                //                                   fontSize: 16),
-                                //                             ),
-                                //                           ],
-                                //                         ),
-                                //                       ]),
-                                //                     ],
-                                //                   ),
-                                //                 ),
-                                //               ));
-                                //     });
+                                searchVessel(i.callSign!);
                               },
                               child: Transform.rotate(
                                 angle: degreesToRadians(
