@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
       scrollBehavior: MaterialScrollBehavior().copyWith(
         dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
       ),
-      home: HomePage(),
+      home: Login(),
     );
   }
 }
