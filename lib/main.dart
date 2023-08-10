@@ -8,29 +8,6 @@ import 'package:vts_maps/maps_view.dart';
 import 'login_page.dart';
 
 void main() {
-  // String message = "Hello, this is a UDP message!";
-  // RawDatagramSocket.bind(InternetAddress.anyIPv6, 0)
-  //     .then((RawDatagramSocket socket) {
-  //   print('UDP socket ready to send messages.');
-  //   socket.send(message.codeUnits, InternetAddress('127.0.0.1'), 56906);
-  //   print('Message sent: $message');
-  //   socket.close();
-  // });
-
-  // RawDatagramSocket.bind(InternetAddress.anyIPv6, 56906)
-  //     .then((RawDatagramSocket socket) {
-  //   print('UDP socket ready to receive messages.');
-  //   socket.listen((RawSocketEvent event) {
-  //     if (event == RawSocketEvent.read) {
-  //       Datagram? datagram = socket.receive();
-  //       if (datagram != null) {
-  //         String message = String.fromCharCodes(datagram.data);
-  //         print('Received message: $message');
-  //       }
-  //     }
-  //   });
-  // });
-
   runApp(const MyApp());
 }
 
@@ -53,7 +30,7 @@ class MyApp extends StatelessWidget {
       scrollBehavior: MaterialScrollBehavior().copyWith(
         dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
       ),
-      home: Login(),
+      home: HomePage(),
     );
   }
 }

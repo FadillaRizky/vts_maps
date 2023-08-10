@@ -6,4 +6,8 @@ class Constants {
   static TextStyle button1 = TextStyle(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold);
 
 
+  static double getPointX(BuildContext context) {
+    return 35;
+  }
+  
 }

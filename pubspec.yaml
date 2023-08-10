@@ -42,6 +42,7 @@ dependencies:
   xml: ^6.3.0
   searchfield: ^0.8.3
   google_fonts: ^5.1.0
+  latlong2: ^0.9.0
 
 
 dev_dependencies:
