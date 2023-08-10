@@ -1,0 +1,3 @@
+class DataUser{
+  String? token;
+}

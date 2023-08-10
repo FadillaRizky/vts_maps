@@ -1,7 +1,15 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:vts_maps/dashboard.dart';
 import 'package:vts_maps/maps_view.dart';
 import 'package:vts_maps/utils/constants.dart';
+import 'package:http/http.dart' as http;
+import 'package:vts_maps/utils/shared_pref.dart';
+
+import 'api/LoginResponse.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -11,9 +19,74 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  TextEditingController usernameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool invisible = true;
+
+  login() async {
+    var email = emailController.text;
+    var password = passwordController.text;
+    //validasi
+    if (email.isEmpty) {
+      EasyLoading.showError('Masukan Email Anda..');
+      return;
+    }
+    if (password.isEmpty) {
+      EasyLoading.showError('Masukan Password Anda..');
+      return;
+    }
+    var data = {
+      "email": email,
+      "password": password,
+    };
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "Login ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    try {
+      var url = "https://client-project.enricko.site/api/login";
+      var response = await http
+          .post(Uri.parse(url), body: data)
+          .timeout(Duration(seconds: 3));
+      var result = LoginResponse.fromJson(jsonDecode(response.body));
+      if (result.message == "Login Success") {
+        LoginPref.saveToSharedPref(result.token!);
+        EasyLoading.showSuccess("Login Berhasil");
+        Navigator.pop(context);
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (ctx) => Dashboard()));
+      } else if (result.message != "Login Success") {
+        EasyLoading.showError("Login Gagal..");
+        Navigator.pop(context);
+      }
+    } on TimeoutException catch (_) {
+      EasyLoading.showError("Sinyal Buruk..");
+      Navigator.pop(context);
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +111,10 @@ class _LoginState extends State<Login> {
               ),
               ListTile(
                 leading: Text("Show Map"),
-                trailing: Image.asset("assets/maps-icon.png",width: 30,),
+                trailing: Image.asset(
+                  "assets/maps-icon.png",
+                  width: 30,
+                ),
                 onTap: () {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => HomePage()));
@@ -75,10 +151,10 @@ class _LoginState extends State<Login> {
                   Container(
                     child: TextFormField(
                       keyboardType: TextInputType.text,
-                      controller: usernameController,
+                      controller: emailController,
                       decoration: InputDecoration(
                         contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
-                        hintText: "Username",
+                        hintText: "Email",
                         // hintStyle: Constants.hintStyle,
                         border: OutlineInputBorder(
                           borderSide:
@@ -141,12 +217,7 @@ class _LoginState extends State<Login> {
                         shadowColor: Colors.transparent,
                       ),
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (ctx) => Dashboard(),
-                          ),
-                        );
+                        login();
                       },
                       child: Text(
                         "Login",
