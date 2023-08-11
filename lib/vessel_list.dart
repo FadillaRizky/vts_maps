@@ -1,13 +1,45 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vts_maps/api/api.dart';
 import 'package:vts_maps/utils/constants.dart';
 
-class Vessel extends StatelessWidget {
-  Vessel({Key? key}) : super(key: key);
+class Vessel extends StatefulWidget {
+  const Vessel({Key? key}) : super(key: key);
 
+  @override
+  State<Vessel> createState() => _VesselState();
+}
+
+class _VesselState extends State<Vessel> {
   final DataTableSource _data = MyData();
+
+  TextEditingController callsignController = TextEditingController();
+  TextEditingController flagController = TextEditingController();
+  TextEditingController classController = TextEditingController();
+  TextEditingController builderController = TextEditingController();
+  TextEditingController yearbuiltController = TextEditingController();
+
+  submitVessel(){
+    var data = {
+      "callsign": callsignController.text,
+      "flag": flagController.text,
+      "class": classController.text,
+      "builder": builderController.text,
+      "year_built": yearbuiltController.text,
+    };
+    Api.createVessel(data).then((value) {
+      if (value.status == 200) {
+        EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
+        // Navigator.pop(context);
+      }  else{
+        EasyLoading.showError("Gagal Menambahkan Kapal");
+        // Navigator.pop(context);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,25 +91,6 @@ class Vessel extends StatelessWidget {
                                         keyboardType: TextInputType.text,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
-                                          hintText: "Nama Kapal",
-                                          // hintStyle: Constants.hintStyle,
-                                          border: OutlineInputBorder(
-                                            borderSide:
-                                            BorderSide(width: 0, style: BorderStyle.none),
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          filled: true,
-                                          fillColor: Colors.black12,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 10,),
-                                    Container(
-                                      width: 500,
-                                      child: TextFormField(
-                                        keyboardType: TextInputType.text,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
                                           hintText: "Call Sign",
                                           // hintStyle: Constants.hintStyle,
                                           border: OutlineInputBorder(
@@ -97,7 +110,45 @@ class Vessel extends StatelessWidget {
                                         keyboardType: TextInputType.text,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
-                                          hintText: "Jenis Kapal",
+                                          hintText: "Flag",
+                                          // hintStyle: Constants.hintStyle,
+                                          border: OutlineInputBorder(
+                                            borderSide:
+                                            BorderSide(width: 0, style: BorderStyle.none),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.black12,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 10,),
+                                    Container(
+                                      width: 500,
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.text,
+                                        decoration: InputDecoration(
+                                          contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
+                                          hintText: "Class",
+                                          // hintStyle: Constants.hintStyle,
+                                          border: OutlineInputBorder(
+                                            borderSide:
+                                            BorderSide(width: 0, style: BorderStyle.none),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.black12,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 10,),
+                                    Container(
+                                      width: 500,
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.text,
+                                        decoration: InputDecoration(
+                                          contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
+                                          hintText: "Builder",
                                           // hintStyle: Constants.hintStyle,
                                           border: OutlineInputBorder(
                                             borderSide:
@@ -135,7 +186,8 @@ class Vessel extends StatelessWidget {
                                       children: [
                                         InkWell(
                                           onTap: (){
-                                            Navigator.pop(context);
+                                            submitVessel();
+                                            print("asdasda");
                                           },
                                           child: Container(
                                             decoration: BoxDecoration(
