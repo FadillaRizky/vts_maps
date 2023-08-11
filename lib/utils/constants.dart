@@ -7,7 +7,7 @@ class Constants {
 
 
   static double getPointX(BuildContext context) {
-    return 35;
+    return 40;
   }
   
 }

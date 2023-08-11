@@ -31,6 +31,13 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+class KmlPolygon {
+  final List<LatLng> points;
+  final String color;
+
+  KmlPolygon({required this.points, required this.color});
+}
+
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // Controller
   final SnappingSheetController snappingSheetController =
@@ -57,6 +64,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   static const _finishedId = 'AnimatedMapController#MoveFinished';
 
   int? vesselIndex;
+
+  List<KmlPolygon> kmlOverlayPolygons = [];
+  // Map<String, Color> HEX_MAP = {
+  //   '#yellowLine': Color(0xFFFFFF00),
+  //   '#purpleLine': Color(0xFF800080),
+  //   '#brownLine': Color(0xFFA52A2A),
+  //   '#pinkLine': Color(0xFFFFC0CB),
+  //   '#orangeLine': Color(0xFFFFA500),
+  //   '#greenLine': Color(0xFF00FF00),
+  //   '#redLine': Color(0xFFFF0000),
+  //   '#blueLine': Color(0xFF0000FF),
+  // };
 
   initCoorVessel() {
     result.clear();
@@ -205,9 +224,77 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         13);
   }
 
+  void loadKmlData() async {
+    final String kmlData = await loadKmlFromFile('assets/kml/format_pipa.kml');
+    setState(() {
+      kmlOverlayPolygons = parseKmlForOverlay(kmlData);
+    });
+  }
+
+  Future<String> loadKmlFromFile(String filePath) async {
+    return await DefaultAssetBundle.of(context).loadString(filePath);
+  }
+
+  List<KmlPolygon> parseKmlForOverlay(String kmlData) {
+    final List<KmlPolygon> polygons = [];
+    final XmlDocument doc = xml.XmlDocument.parse(kmlData);
+    final Iterable<xml.XmlElement> placemarks =
+        doc.findAllElements('Placemark');
+    for (final placemark in placemarks) {
+      final xml.XmlElement? extendedDataElement =
+          placemark.getElement("ExtendedData");
+      final xml.XmlElement? schemaDataElement =
+          extendedDataElement!.getElement("SchemaData");
+      final Iterable<xml.XmlElement> simpleDataElement =
+          schemaDataElement!.findAllElements("SimpleData");
+      if (simpleDataElement!
+              .where((element) => element.getAttribute("name") == "SubClasses")
+              .first
+              .innerText ==
+          "AcDbEntity:AcDbPolyline") {
+        final styleElement = placemark.findAllElements('Style').first;
+        final lineStyleElement = styleElement.findElements('LineStyle').first;
+        final colorLine =
+            lineStyleElement.findElements('color').first.innerText;
+
+        final xml.XmlElement? polygonElement =
+            placemark.getElement('LineString');
+        if (polygonElement != null) {
+          final List<LatLng> polygonPoints = [];
+
+          final xml.XmlElement? coordinatesElement =
+              polygonElement.getElement('coordinates');
+          if (coordinatesElement != null) {
+            final String coordinatesText = coordinatesElement.text;
+            final List<String> coordinateList = coordinatesText.split(' ');
+
+            for (final coordinate in coordinateList) {
+              final List<String> latLng = coordinate.split(',');
+              if (latLng.length >= 2) {
+                double? latitude = double.tryParse(latLng[1]);
+                double? longitude = double.tryParse(latLng[0]);
+                if (latitude != null && longitude != null) {
+                  polygonPoints.add(LatLng(latitude, longitude));
+                }
+              }
+            }
+          }
+
+          // print(placemark.getElement('styleUrl')!.text);
+          if (polygonPoints.isNotEmpty) {
+            polygons.add(KmlPolygon(points: polygonPoints, color: colorLine));
+          }
+        }
+      }
+    }
+
+    return polygons;
+  }
+
   @override
   void initState() {
     super.initState();
+    loadKmlData();
     initVessel();
     initCoorVessel();
     initLatLangCoor();
@@ -277,7 +364,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(),
+                  Container(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue
+                      ),
+                      onPressed: () {
+                        _animatedMapMove(
+                            LatLng(
+                              -1.2437,
+                              104.79504,
+                            ),
+                            13);
+                      },
+                      child: Text("To Overlay DWG",style: TextStyle(color: Colors.white),),
+                    ),
+                  ),
                   Row(
                     children: [
                       Container(
@@ -622,6 +724,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                   ),
+                  if (kmlOverlayPolygons.isNotEmpty)
+                    PolylineLayer(
+                      polylines: kmlOverlayPolygons.map((kmlPolygon) {
+                        // print(polygonPoints);
+                        return Polyline(
+                          strokeWidth: 3,
+                          points: kmlPolygon.points,
+                          color: Color(int.parse(kmlPolygon.color, radix: 16)),
+                        );
+                      }).toList(),
+                    ),
                   PolylineLayer(
                     polylines: [
                       Polyline(
