@@ -51,19 +51,22 @@ class Api{
     throw "Gagal request all vessel:\n${response.body}";
 
   }
-  static Future<SubmitVesselResponse> createVessel(Map<String,String>body) async {
-    var url = "$BASE_URL/api/insert_kapal";
+  static Future<SubmitVesselResponse> createVessel(Map<String,String> data) async {
+    var url = "https://client-project.enricko.site/api/insert_kapal";
     var datatoken = await LoginPref.getPref();
     var token = datatoken.token!;
     var response = await http.post(
       Uri.parse(url),
-      body: body,
+      body: data,
       headers: {
-        'Content-type': 'application/json',
         'Authorization': 'Bearer $token',
       },
     );
+    print(response.statusCode);
     if (response.statusCode == 200) {
+      return SubmitVesselResponse.fromJson(jsonDecode(response.body));
+    }
+    if (response.statusCode == 400) {
       return SubmitVesselResponse.fromJson(jsonDecode(response.body));
     }
     //jika tidak,muncul pesan error
