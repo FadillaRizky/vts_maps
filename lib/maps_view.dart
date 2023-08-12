@@ -24,6 +24,15 @@ import 'api/GetAllVessel.dart' as Vessel;
 import 'api/api.dart';
 import 'system/zoom_button.dart';
 
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_map/flutter_map.dart';
+// import 'package:latlong2/latlong.dart';
+import 'package:xml/xml.dart';
+import 'package:archive/archive.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -65,7 +74,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   int? vesselIndex;
 
-  List<KmlPolygon> kmlOverlayPolygons = [];
+  List<List<KmlPolygon>> kmlOverlayPolygons = [];
   // Map<String, Color> HEX_MAP = {
   //   '#yellowLine': Color(0xFFFFFF00),
   //   '#purpleLine': Color(0xFF800080),
@@ -224,22 +233,54 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         13);
   }
 
-  void loadKmlData() async {
-    final String kmlData = await loadKmlFromFile('assets/kml/format_pipa.kml');
-    setState(() {
-      kmlOverlayPolygons = parseKmlForOverlay(kmlData);
-    });
-  }
+  // void loadKmlData() async {
+  //   final String kmlData = await loadKmlFromFile('assets/kml/format_pipa.kml');
+  //   setState(() {
+  //     kmlOverlayPolygons = parseKmlForOverlay(kmlData);
+  //   });
+  // }
 
   Future<String> loadKmlFromFile(String filePath) async {
     return await DefaultAssetBundle.of(context).loadString(filePath);
   }
 
-  List<KmlPolygon> parseKmlForOverlay(String kmlData) {
+  Future<void> loadKMZData() async {
+    // final file = "assets/kml/Pipa.kmz";
+    // final file = "assets/kml/format_pipa.kml";
+    List files = [
+      "assets/kml/Pipa.kmz",
+      "assets/kml/format_pipa.kml",
+    ];
+    for (var file in files) {
+      if (file.endsWith(".kmz")) {
+        final ByteData data = await rootBundle.load(file);
+        final List<int> bytes = data.buffer.asUint8List();
+        final kmlData = Constants.extractKMLDataFromKMZ(bytes);
+        if (kmlData != null) {
+          print("asdasd");
+          kmlOverlayPolygons.add(parseKmlForOverlay(kmzData: kmlData));
+          setState(() {});
+        }
+      } else if (file.endsWith(".kml")) {
+        final String kmlData = await loadKmlFromFile(file);
+        kmlOverlayPolygons.add(parseKmlForOverlay(kmlData: kmlData));
+        setState(() {});
+      }
+    }
+  }
+
+  List<KmlPolygon> parseKmlForOverlay({List<int>? kmzData, String? kmlData}) {
     final List<KmlPolygon> polygons = [];
-    final XmlDocument doc = xml.XmlDocument.parse(kmlData);
+    XmlDocument? doc;
+
+    if (kmzData != null) {
+      doc = XmlDocument.parse(utf8.decode(kmzData));
+    } else if (kmlData != null) {
+      doc = xml.XmlDocument.parse(kmlData);
+    }
+
     final Iterable<xml.XmlElement> placemarks =
-        doc.findAllElements('Placemark');
+        doc!.findAllElements('Placemark');
     for (final placemark in placemarks) {
       final xml.XmlElement? extendedDataElement =
           placemark.getElement("ExtendedData");
@@ -247,11 +288,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           extendedDataElement!.getElement("SchemaData");
       final Iterable<xml.XmlElement> simpleDataElement =
           schemaDataElement!.findAllElements("SimpleData");
-      if (simpleDataElement!
-              .where((element) => element.getAttribute("name") == "SubClasses")
-              .first
-              .innerText ==
-          "AcDbEntity:AcDbPolyline") {
+      final subClass = simpleDataElement!
+          .where((element) => element.getAttribute("name") == "SubClasses")
+          .first
+          .innerText;
+      if (subClass == "AcDbEntity:AcDb2dPolyline" ||
+          subClass == "AcDbEntity:AcDbPolyline") {
         final styleElement = placemark.findAllElements('Style').first;
         final lineStyleElement = styleElement.findElements('LineStyle').first;
         final colorLine =
@@ -294,7 +336,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    loadKmlData();
+    // loadKmlData();
+    loadKMZData();
     initVessel();
     initCoorVessel();
     initLatLangCoor();
@@ -367,8 +410,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   Container(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue
-                      ),
+                          backgroundColor: Colors.blue),
                       onPressed: () {
                         _animatedMapMove(
                             LatLng(
@@ -377,7 +419,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ),
                             13);
                       },
-                      child: Text("To Overlay DWG",style: TextStyle(color: Colors.white),),
+                      child: Text(
+                        "To Overlay DWG",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                   Row(
@@ -725,9 +770,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                   ),
                   if (kmlOverlayPolygons.isNotEmpty)
+                    for(final kmlOverlayPolygon in kmlOverlayPolygons)
                     PolylineLayer(
-                      polylines: kmlOverlayPolygons.map((kmlPolygon) {
-                        // print(polygonPoints);
+                      polylines: kmlOverlayPolygon.map((kmlPolygon) {
                         return Polyline(
                           strokeWidth: 3,
                           points: kmlPolygon.points,
