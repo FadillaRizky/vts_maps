@@ -79,6 +79,7 @@ flutter:
     - assets/kapal.png
     - assets/model_kapal.jpg
     - assets/kml/cta.kml
+    - assets/kml/format_pipa.kml
     - assets/kml/
     - assets/
     - assets/background-login.jpg
