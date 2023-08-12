@@ -22,22 +22,59 @@ class _VesselState extends State<Vessel> {
   TextEditingController builderController = TextEditingController();
   TextEditingController yearbuiltController = TextEditingController();
 
-  submitVessel(){
+  submitVessel() async {
     var data = {
-      "callsign": callsignController.text,
+      "call_sign": callsignController.text,
       "flag": flagController.text,
       "class": classController.text,
       "builder": builderController.text,
       "year_built": yearbuiltController.text,
     };
-    Api.createVessel(data).then((value) {
-      if (value.status == 200) {
-        EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
-        // Navigator.pop(context);
-      }  else{
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "Loading..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+   await Api.createVessel(data).then((value) {
+      print(value.message);
+       if (value.message != "Data berhasil masuk database") {
         EasyLoading.showError("Gagal Menambahkan Kapal");
-        // Navigator.pop(context);
       }
+       if (value.message == "Data berhasil masuk database") {
+         EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
+         callsignController.clear();
+         flagController.clear();
+         classController.clear();
+         builderController.clear();
+         yearbuiltController.clear();
+         Navigator.pop(context);
+         Navigator.pop(context);
+       }
+       if (value.message == "Validator Fails") {
+        EasyLoading.showError("Call Sign sudah terdaftar");
+        Navigator.pop(context);
+      }
+      return;
     });
   }
 
@@ -88,6 +125,7 @@ class _VesselState extends State<Vessel> {
                                     Container(
                                       width: 500,
                                       child: TextFormField(
+                                        controller: callsignController,
                                         keyboardType: TextInputType.text,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
@@ -107,6 +145,7 @@ class _VesselState extends State<Vessel> {
                                     Container(
                                       width: 500,
                                       child: TextFormField(
+                                        controller: flagController,
                                         keyboardType: TextInputType.text,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
@@ -126,6 +165,7 @@ class _VesselState extends State<Vessel> {
                                     Container(
                                       width: 500,
                                       child: TextFormField(
+                                        controller: classController,
                                         keyboardType: TextInputType.text,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
@@ -145,6 +185,7 @@ class _VesselState extends State<Vessel> {
                                     Container(
                                       width: 500,
                                       child: TextFormField(
+                                        controller: builderController,
                                         keyboardType: TextInputType.text,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
@@ -164,6 +205,7 @@ class _VesselState extends State<Vessel> {
                                     Container(
                                       width: 500,
                                       child: TextFormField(
+                                        controller: yearbuiltController,
                                         keyboardType: TextInputType.text,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
@@ -187,7 +229,6 @@ class _VesselState extends State<Vessel> {
                                         InkWell(
                                           onTap: (){
                                             submitVessel();
-                                            print("asdasda");
                                           },
                                           child: Container(
                                             decoration: BoxDecoration(

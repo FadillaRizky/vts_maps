@@ -71,6 +71,7 @@ class _LoginState extends State<Login> {
           .timeout(Duration(seconds: 3));
       var result = LoginResponse.fromJson(jsonDecode(response.body));
       if (result.message == "Login Success") {
+        print(result.token);
         LoginPref.saveToSharedPref(result.token!);
         EasyLoading.showSuccess("Login Berhasil");
         Navigator.pop(context);
