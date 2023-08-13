@@ -319,7 +319,7 @@ class _VesselState extends State<Vessel> {
 class MyData extends DataTableSource {
   // Generate some made-up data
   final List<Map<String, dynamic>> _data = List.generate(
-      10,
+      2,
       (index) => {
             "id": index,
             "title": "Item $index",

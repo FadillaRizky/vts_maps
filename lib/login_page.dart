@@ -24,8 +24,10 @@ class _LoginState extends State<Login> {
   bool invisible = true;
 
   login() async {
-    var email = emailController.text;
-    var password = passwordController.text;
+    // var email = emailController.text;
+    // var password = passwordController.text;
+    var email = "1@gmail.com";
+    var password = "111";
     //validasi
     if (email.isEmpty) {
       EasyLoading.showError('Masukan Email Anda..');
@@ -76,7 +78,7 @@ class _LoginState extends State<Login> {
         EasyLoading.showSuccess("Login Berhasil");
         Navigator.pop(context);
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (ctx) => Dashboard()));
+            context, MaterialPageRoute(builder: (ctx) => HomePage()));
       } else if (result.message != "Login Success") {
         EasyLoading.showError("Login Gagal..");
         Navigator.pop(context);
