@@ -1,11 +1,16 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:math' as math;
 import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:snapping_sheet/snapping_sheet.dart';
 import 'package:vts_maps/system/scale_bar.dart';
 import 'package:vts_maps/utils/constants.dart';
 import 'package:vts_maps/utils/snipping_sheet.dart';
+import 'package:vts_maps/vessel_list.dart';
+import 'package:vts_maps/vessel_models.dart';
 import 'package:xml/xml.dart' as xml;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -29,6 +34,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
+
 // import 'package:latlong2/latlong.dart';
 import 'package:xml/xml.dart';
 import 'package:archive/archive.dart';
@@ -54,6 +60,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   TextEditingController SearchVessel = TextEditingController();
   late final MapController mapController;
 
+  final DataTableSource _dummydata = MyData();
+
   // List API
   List<LatestVesselCoor.Data> result = [];
   List<Vessel.Data> vesselResult = [];
@@ -67,6 +75,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   LatLng? latLng;
 
+  int _currentPage = 1;
+  int _pageSize = 10;
+  List<DataModel> _data = [];
+  bool _isLoading = false;
+
   // Animated Map Variable
   static const _startedId = 'AnimatedMapController#MoveStarted';
   static const _inProgressId = 'AnimatedMapController#MoveInProgress';
@@ -75,6 +88,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int? vesselIndex;
 
   List<List<KmlPolygon>> kmlOverlayPolygons = [];
+
   // Map<String, Color> HEX_MAP = {
   //   '#yellowLine': Color(0xFFFFFF00),
   //   '#purpleLine': Color(0xFF800080),
@@ -331,6 +345,33 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return polygons;
   }
+  Future<void> fetchDataVessel() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final response = await http.get(Uri.parse(
+        "https://client-project.enricko.site/api/kapal?page=$_currentPage&perpage=$_pageSize"));
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      inspect(jsonData);
+      final dataList = jsonData['data'] as List<dynamic>;
+
+      final List<DataModel> newData =
+      dataList.map((item) => DataModel.fromJson(item)).toList();
+
+      setState(() {
+        _data.addAll(newData);
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      throw Exception('Failed to fetch data');
+    }
+  }
+
 
   // void calculateCenter() {
   //   for(var kmlOverlayPolygon in kmlOverlayPolygons){
@@ -354,6 +395,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     // loadKmlData();
+    fetchDataVessel();
     initVessel();
     initCoorVessel();
     initLatLangCoor();
@@ -423,6 +465,130 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+                  PopupMenuButton(
+                    icon: Icon(Icons.menu),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'btnAddVessel',
+                        child: Text('Vessel List'),
+                      ),
+                    ],
+                    onSelected: (item) {
+                      switch (item) {
+                        case "btnAddVessel":
+                          showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                var height = MediaQuery.of(context).size.height;
+                                var width = MediaQuery.of(context).size.width;
+
+                                return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(5))),
+                                    child: Container(
+                                        width: width / 2,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              color: Colors.black12,
+                                              padding: EdgeInsets.all(5),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text("Vessel List",style: GoogleFonts.openSans(
+                                                    fontSize: 20
+                                                  ),),
+                                                  IconButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    icon: Icon(Icons.close),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.all(5),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .end,
+                                                children: [
+                                                  InkWell(
+                                                    onTap: () {},
+                                                    child: Container(
+                                                      decoration:
+                                                      BoxDecoration(
+                                                        borderRadius:
+                                                        BorderRadius
+                                                            .circular(
+                                                            10),
+                                                        color: Color(
+                                                            0xFF399D44),
+                                                      ),
+                                                      padding:
+                                                      EdgeInsets
+                                                          .all(5),
+                                                      alignment:
+                                                      Alignment
+                                                          .center,
+                                                      height: 40,
+                                                      child: Icon(
+                                                          Icons.add),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                            Container(
+                                              height: 300,
+                                              child: ListView(
+                                                  scrollDirection:
+                                                      Axis.vertical,
+                                                  children: [
+                                                    _isLoading
+                                                    ? CircularProgressIndicator()
+                                                    : PaginatedDataTable(
+                                                      columns: [
+                                                        DataColumn(
+                                                            label: Text(
+                                                                'Call Sign')),
+                                                        DataColumn(
+                                                            label: Text(
+                                                                'Flag')),
+                                                        DataColumn(
+                                                            label: Text(
+                                                                'Kelas')),
+                                                        DataColumn(
+                                                            label: Text(
+                                                                'Builder')),
+                                                        DataColumn(
+                                                            label: Text(
+                                                                'Year Built')),
+                                                      ],
+                                                      arrowHeadColor:
+                                                          Colors.black,
+                                                      columnSpacing: 100,
+                                                      horizontalMargin: 10,
+                                                      rowsPerPage: 10,
+                                                      showCheckboxColumn: false,
+                                                      source: _DataSource(data: _data),
+                                                    ),
+                                                  ]),
+                                            )
+                                          ],
+                                        )));
+                              });
+                      }
+                    },
+                  ),
               Container(),
               // Container(
               //   child: ElevatedButton(
@@ -1030,3 +1196,36 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 }
+
+class _DataSource extends DataTableSource {
+  final List<DataModel> data;
+
+  _DataSource({required this.data});
+
+  @override
+  DataRow? getRow(int index) {
+    if (index >= data.length) {
+      return null;
+    }
+
+    final item = data[index];
+
+    return DataRow(cells: [
+      DataCell(Text(item.call_sign)),
+      DataCell(Text(item.flag)),
+      DataCell(Text(item.kelas)),
+      DataCell(Text(item.builder)),
+      DataCell(Text(item.year_built)),
+    ]);
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => data.length;
+
+  @override
+  int get selectedRowCount => 0;
+}
+

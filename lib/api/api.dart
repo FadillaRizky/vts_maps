@@ -73,7 +73,4 @@ class Api{
     throw "Gagal submit vessel:\n${response.body}";
 
   }
-
-
-
 }
