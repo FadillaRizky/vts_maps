@@ -13,7 +13,7 @@ const BASE_URL = "https://client-project.enricko.site/api";
 class Api{
 
   static Future<GetAllVessel> getAllVessel() async {
-    var url = "$BASE_URL/kapal";
+    var url = "$BASE_URL/kapal?perpage=100";
     var response = await http.get(
       Uri.parse(url),
     );
@@ -26,7 +26,7 @@ class Api{
   
   }
   static Future<GetAllLatLangCoor> getAllLatLangCoor() async {
-    var url = "$BASE_URL/get_all_latlang_coor?page=1";
+    var url = "$BASE_URL/get_all_latlang_coor?page=1&perpage=100";
     var response = await http.get(
       Uri.parse(url),
     );
@@ -39,7 +39,7 @@ class Api{
 
   }
   static Future<GetAllVesselCoor> getAllVesselLatestCoor() async {
-    var url = "$BASE_URL/get_all_latest_coor?page=1";
+    var url = "$BASE_URL/get_all_latest_coor?page=1&perpage=100";
     var response = await http.get(
       Uri.parse(url),
     );

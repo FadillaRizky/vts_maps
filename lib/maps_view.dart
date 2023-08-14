@@ -257,7 +257,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         final List<int> bytes = data.buffer.asUint8List();
         final kmlData = Constants.extractKMLDataFromKMZ(bytes);
         if (kmlData != null) {
-          print("asdasd");
           kmlOverlayPolygons.add(parseKmlForOverlay(kmzData: kmlData));
           setState(() {});
         }
@@ -333,11 +332,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return polygons;
   }
 
+  // void calculateCenter() {
+  //   for(var kmlOverlayPolygon in kmlOverlayPolygons){
+  //     double totalLat = 0.0;
+  //     double totalLng = 0.0;
+  //     int total = 0;
+
+  //     for (final coordinate in kmlOverlayPolygon) {
+  //       for(final latlong in coordinate.points){
+  //         totalLat += latlong.latitude;
+  //         totalLng += latlong.longitude;
+  //         total += coordinate.points.length;
+  //       }
+  //     }
+  //     print(LatLng(totalLat / total, totalLng / total));
+  //     // return LatLng(totalLat / coordinates.length, totalLng / coordinates.length);
+  //   }
+  // }
+
   @override
   void initState() {
     super.initState();
     // loadKmlData();
-    loadKMZData();
     initVessel();
     initCoorVessel();
     initLatLangCoor();
@@ -346,6 +362,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updatePoint(null, context);
     });
+    
   }
 
   void _animatedMapMove(LatLng destLocation, double destZoom) {
@@ -397,112 +414,149 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xFF0E286C),
+        iconTheme: IconThemeData(
+          color: Colors.white, // Change this color to the desired color
+        ),
+        title: Container(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(),
+              // Container(
+              //   child: ElevatedButton(
+              //     style: ElevatedButton.styleFrom(
+              //         backgroundColor: Colors.blue),
+              //     onPressed: () {
+              //       _animatedMapMove(
+              //           LatLng(
+              //             -1.2437,
+              //             104.79504,
+              //           ),
+              //           13);
+              //     },
+              //     child: Text(
+              //       "To Overlay DWG",
+              //       style: TextStyle(color: Colors.white),
+              //     ),
+              //   ),
+              // ),
+              Row(
+                children: [
+                  Container(
+                    width: 300,
+                    child: SearchField<Vessel.Data>(
+                      controller: SearchVessel,
+                      suggestions: vesselResult
+                          .map(
+                            (e) => SearchFieldListItem<Vessel.Data>(
+                              e.callSign!,
+                              item: e,
+                              // Use child to show Custom Widgets in the suggestions
+                              // defaults to Text widget
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 10,
+                                    ),
+                                    Text(e.callSign!),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                          .where((e) => e.searchKey
+                              .toLowerCase()
+                              .contains(SearchVessel.text.toLowerCase()))
+                          .toList(),
+                      searchInputDecoration: InputDecoration(
+                        hintText: "Pilih Call Sign Kapal",
+                        labelText: "Pilih Call Sign Kapal",
+                        hintStyle: TextStyle(color: Colors.black),
+                        labelStyle: TextStyle(color: Colors.black),
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Icon(Icons.search),
+                        ),
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 230, 230, 230),
+                        prefixIconColor: Colors.black,
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              width: 3,
+                              color: const Color.fromARGB(255, 230, 230, 230)),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              width: 3,
+                              color: const Color.fromARGB(255, 230, 230, 230)),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  InkWell(
+                    onTap: () {
+                      searchVessel(SearchVessel.text);
+                    },
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Icon(Icons.search),
+                    ),
+                  )
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      // drawer: Drawer(
+      //   child: Padding(
+      //     padding: const EdgeInsets.all(15),
+      //     child: Column(
+      //       children: [
+      //         Text(
+      //           "Menu",
+      //           style: Constants.title1,
+      //         ),
+      //         SizedBox(
+      //           height: 10,
+      //         ),
+      //         ListTile(
+      //           leading: Icon(Icons.menu),
+      //           trailing: Text(
+      //             "Vessel",
+      //             style: TextStyle(
+      //               fontSize: 16,
+      //             ),
+      //           ),
+      //           onTap: () {
+      //             // Navigator.push(context,
+      //             //     MaterialPageRoute(builder: (context) => HomePage()));
+      //           },
+      //         ),
+      //         ListTile(leading: Text("menu2")),
+      //         ListTile(leading: Text("menu3")),
+      //       ],
+      //     ),
+      //   ),
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
           children: [
-            Container(
-              color: Colors.white,
-              height: 60,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue),
-                      onPressed: () {
-                        _animatedMapMove(
-                            LatLng(
-                              -1.2437,
-                              104.79504,
-                            ),
-                            13);
-                      },
-                      child: Text(
-                        "To Overlay DWG",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 300,
-                        child: SearchField<Vessel.Data>(
-                          controller: SearchVessel,
-                          suggestions: vesselResult
-                              .map(
-                                (e) => SearchFieldListItem<Vessel.Data>(
-                                  e.callSign!,
-                                  item: e,
-                                  // Use child to show Custom Widgets in the suggestions
-                                  // defaults to Text widget
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      children: [
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Text(e.callSign!),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          searchInputDecoration: InputDecoration(
-                            hintText: "Pilih Call Sign Kapal",
-                            labelText: "Pilih Call Sign Kapal",
-                            hintStyle: TextStyle(color: Colors.black),
-                            labelStyle: TextStyle(color: Colors.black),
-                            prefixIcon: Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Icon(Icons.search),
-                            ),
-                            filled: true,
-                            fillColor: Color.fromARGB(255, 230, 230, 230),
-                            prefixIconColor: Colors.black,
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  width: 3,
-                                  color:
-                                      const Color.fromARGB(255, 230, 230, 230)),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  width: 3,
-                                  color:
-                                      const Color.fromARGB(255, 230, 230, 230)),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      InkWell(
-                        onTap: () {
-                          searchVessel(SearchVessel.text);
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Icon(Icons.search),
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ),
             Flexible(
               child: FlutterMap(
                 mapController: mapController,
@@ -545,7 +599,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             SnappingPosition.factor(
                               snappingCurve: Curves.elasticOut,
                               snappingDuration: Duration(milliseconds: 1750),
-                              positionFactor: 0.47,
+                              positionFactor:
+                                  (301.74 / MediaQuery.of(context).size.height),
                             ),
                             SnappingPosition.factor(
                               positionFactor: 0.0,
@@ -567,194 +622,176 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           sheetBelow: SnappingSheetContent(
                             draggable: true,
                             // childScrollController: listViewController,
-                            child: ScrollConfiguration(
-                              behavior: ScrollConfiguration.of(context)
-                                  .copyWith(scrollbars: false),
-                              child: SingleChildScrollView(
-                                physics: NeverScrollableScrollPhysics(),
-                                child: Container(
-                                  color: Colors.white,
-                                  child: Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          snappingSheetController
-                                              .snapToPosition(
-                                            SnappingPosition.factor(
-                                                positionFactor: -0.5),
-                                          );
-                                          Timer(Duration(milliseconds: 300),
-                                              () {
-                                            setState(() {
-                                              onClickVessel = "";
-                                            });
+                            child: SingleChildScrollView(
+                              physics: NeverScrollableScrollPhysics(),
+                              child: Container(
+                                color: Colors.white,
+                                child: Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        snappingSheetController.snapToPosition(
+                                          SnappingPosition.factor(
+                                              positionFactor: -0.5),
+                                        );
+                                        Timer(Duration(milliseconds: 300), () {
+                                          setState(() {
+                                            onClickVessel = "";
                                           });
-                                        },
+                                        });
+                                      },
+                                      child: Container(
+                                        alignment: Alignment.topRight,
                                         child: Container(
-                                          alignment: Alignment.topRight,
-                                          child: Container(
-                                            width: 45,
-                                            height: 45,
-                                            decoration: BoxDecoration(
-                                                color: Colors.black12),
-                                            padding: EdgeInsets.all(4),
-                                            child: Center(
-                                              child: Text(
-                                                "X",
-                                                style: TextStyle(fontSize: 20),
-                                              ),
+                                          width: 45,
+                                          height: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.black12),
+                                          padding: EdgeInsets.all(4),
+                                          child: Center(
+                                            child: Text(
+                                              "X",
+                                              style: TextStyle(fontSize: 20),
                                             ),
                                           ),
                                         ),
                                       ),
-                                      Container(
-                                        margin: EdgeInsets.symmetric(
-                                            horizontal: 15, vertical: 10),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Container(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "${onClickVessel}",
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  Text(
-                                                    "${vesselDescription(onClickVessel).flag}",
-                                                    style: TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w400),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Image.asset(
-                                              "assets/model_kapal.jpg",
-                                              width: 100,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: EdgeInsets.symmetric(
-                                            horizontal: 15, vertical: 10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "Position Information"
-                                                  .toUpperCase(),
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
-                                            Row(
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Container(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
-                                                Expanded(
-                                                  child: Container(
-                                                    padding: EdgeInsets.all(10),
-                                                    decoration: BoxDecoration(
-                                                        border: Border.all(
-                                                            color: Colors.grey,
-                                                            width: 1)),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          'Latitude',
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            color: const Color
-                                                                    .fromARGB(
-                                                                255,
-                                                                61,
-                                                                61,
-                                                                61),
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          "${predictLat(vesselLatestCoor(onClickVessel).coorGga!.latitude!.toDouble(), 100, vesselLatestCoor(onClickVessel).coorHdt!.headingDegree!.toDouble(), predictMovementVessel).toStringAsFixed(5)}",
-                                                          style: TextStyle(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: const Color
-                                                                    .fromARGB(
-                                                                255,
-                                                                61,
-                                                                61,
-                                                                61),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
+                                                Text(
+                                                  "${onClickVessel}",
+                                                  style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold),
                                                 ),
-                                                Expanded(
-                                                  child: Container(
-                                                    padding: EdgeInsets.all(10),
-                                                    decoration: BoxDecoration(
-                                                        border: Border.all(
-                                                            color: Colors.grey,
-                                                            width: 1)),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          'Longitude',
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            color: const Color
-                                                                    .fromARGB(
-                                                                255,
-                                                                61,
-                                                                61,
-                                                                61),
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          "${predictLong(vesselLatestCoor(onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(onClickVessel).coorHdt!.headingDegree!.toDouble(), predictMovementVessel).toStringAsFixed(5)}",
-                                                          style: TextStyle(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: const Color
-                                                                    .fromARGB(
-                                                                255,
-                                                                61,
-                                                                61,
-                                                                61),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
+                                                Text(
+                                                  "${vesselDescription(onClickVessel).flag!}",
+                                                  style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w400),
                                                 ),
                                               ],
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                          Image.asset(
+                                            "assets/model_kapal.jpg",
+                                            width: 100,
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Position Information"
+                                                .toUpperCase(),
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Container(
+                                                  padding: EdgeInsets.all(10),
+                                                  decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: Colors.grey,
+                                                          width: 1)),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        'Latitude',
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          color: const Color
+                                                                  .fromARGB(
+                                                              255, 61, 61, 61),
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        "${predictLat(vesselLatestCoor(onClickVessel).coorGga!.latitude!.toDouble(), 100, vesselLatestCoor(onClickVessel).coorHdt!.headingDegree!.toDouble(), predictMovementVessel).toStringAsFixed(5)}",
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: const Color
+                                                                  .fromARGB(
+                                                              255, 61, 61, 61),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Container(
+                                                  padding: EdgeInsets.all(10),
+                                                  decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: Colors.grey,
+                                                          width: 1)),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        'Longitude',
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          color: const Color
+                                                                  .fromARGB(
+                                                              255, 61, 61, 61),
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        "${predictLong(vesselLatestCoor(onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(onClickVessel).coorHdt!.headingDegree!.toDouble(), predictMovementVessel).toStringAsFixed(5)}",
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: const Color
+                                                                  .fromARGB(
+                                                              255, 61, 61, 61),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -770,16 +807,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                   ),
                   if (kmlOverlayPolygons.isNotEmpty)
-                    for(final kmlOverlayPolygon in kmlOverlayPolygons)
-                    PolylineLayer(
-                      polylines: kmlOverlayPolygon.map((kmlPolygon) {
-                        return Polyline(
-                          strokeWidth: 3,
-                          points: kmlPolygon.points,
-                          color: Color(int.parse(kmlPolygon.color, radix: 16)),
-                        );
-                      }).toList(),
-                    ),
+                    for (final kmlOverlayPolygon in kmlOverlayPolygons)
+                      PolylineLayer(
+                        polylines: kmlOverlayPolygon.map((kmlPolygon) {
+                          return Polyline(
+                            strokeWidth: 3,
+                            points: kmlPolygon.points,
+                            color:
+                                Color(int.parse(kmlPolygon.color, radix: 16)),
+                          );
+                        }).toList(),
+                      ),
                   PolylineLayer(
                     polylines: [
                       Polyline(

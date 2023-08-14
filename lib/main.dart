@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vts_maps/maps_view.dart';
 
@@ -21,22 +20,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'VTS Maps',
-      builder: EasyLoading.init(),
       theme: ThemeData(
-        // colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        textTheme: GoogleFonts.robotoTextTheme()
-            .copyWith(titleSmall: GoogleFonts.roboto()),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    textTheme: GoogleFonts.robotoTextTheme().copyWith(
+      titleSmall: GoogleFonts.roboto()
+    ),
         useMaterial3: true,
       ),
       scrollBehavior: MaterialScrollBehavior().copyWith(
-        dragDevices: {
-          PointerDeviceKind.mouse,
-          PointerDeviceKind.touch,
-          PointerDeviceKind.stylus,
-          PointerDeviceKind.unknown
-        },
+        dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
       ),
-      home: Login(),
+      home: HomePage(),
     );
   }
 }
