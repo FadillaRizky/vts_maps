@@ -24,7 +24,7 @@ class _DashboardState extends State<Dashboard> {
       case 0:
         return HomeWidget();
       case 1:
-        return Vessel();
+        return VesselScreen();
       case 2:
         return SettingsWidget();
       default:

@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -51,26 +52,31 @@ class Api{
     throw "Gagal request all vessel:\n${response.body}";
 
   }
-  static Future<SubmitVesselResponse> createVessel(Map<String,String> data) async {
-    var url = "https://client-project.enricko.site/api/insert_kapal";
-    var datatoken = await LoginPref.getPref();
-    var token = datatoken.token!;
-    var response = await http.post(
-      Uri.parse(url),
-      body: data,
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    print(response.statusCode);
-    if (response.statusCode == 200) {
-      return SubmitVesselResponse.fromJson(jsonDecode(response.body));
+  static Future<SubmitVesselResponse>createVessel(Map<String,String> data) async {
+    try{
+      var url = "https://client-project.enricko.site/api/insert_kapal";
+      var datatoken = await LoginPref.getPref();
+      var token = datatoken.token!;
+      var response = await http.post(
+        Uri.parse(url),
+        body: data,
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        return SubmitVesselResponse.fromJson(jsonDecode(response.body));
+      }
+      if (response.statusCode == 400) {
+        return SubmitVesselResponse.fromJson(jsonDecode(response.body));
+      }
+      else {
+        throw "Gagal submit vessel:\n${response.body}";
+      }
+    }catch(e){
+      print("error nya $e");
+      rethrow;
     }
-    if (response.statusCode == 400) {
-      return SubmitVesselResponse.fromJson(jsonDecode(response.body));
-    }
-    //jika tidak,muncul pesan error
-    throw "Gagal submit vessel:\n${response.body}";
-
   }
 }

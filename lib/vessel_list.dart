@@ -6,14 +6,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:vts_maps/api/api.dart';
 import 'package:vts_maps/utils/constants.dart';
 
-class Vessel extends StatefulWidget {
-  const Vessel({Key? key}) : super(key: key);
+class VesselScreen extends StatefulWidget {
+  const VesselScreen({Key? key}) : super(key: key);
 
   @override
-  State<Vessel> createState() => _VesselState();
+  State<VesselScreen> createState() => _VesselScreenState();
 }
 
-class _VesselState extends State<Vessel> {
+class _VesselScreenState extends State<VesselScreen> {
   final DataTableSource _data = MyData();
 
   TextEditingController callsignController = TextEditingController();

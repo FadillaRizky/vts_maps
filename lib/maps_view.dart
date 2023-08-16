@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
 import 'dart:math';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:searchfield/searchfield.dart';
@@ -58,6 +59,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final SnappingSheetController snappingSheetController =
       new SnappingSheetController();
   TextEditingController SearchVessel = TextEditingController();
+  /// Controller vessel list
+  TextEditingController callsignController = TextEditingController();
+  TextEditingController flagController = TextEditingController();
+  TextEditingController classController = TextEditingController();
+  TextEditingController builderController = TextEditingController();
+  TextEditingController yearbuiltController = TextEditingController();
+  TextEditingController sizeVesselController = TextEditingController();
   late final MapController mapController;
 
   final DataTableSource _dummydata = MyData();
@@ -345,6 +353,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return polygons;
   }
+/// function vessel list
   Future<void> fetchDataVessel() async {
     setState(() {
       _isLoading = true;
@@ -358,7 +367,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       final dataList = jsonData['data'] as List<dynamic>;
 
       final List<DataModel> newData =
-      dataList.map((item) => DataModel.fromJson(item)).toList();
+          dataList.map((item) => DataModel.fromJson(item)).toList();
 
       setState(() {
         _data.addAll(newData);
@@ -372,6 +381,91 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  submitVessel() async {
+    // if (callSignController.text.isEmpty) {
+    //   EasyLoading.showError("Call Sign Masih Kosong...");
+    //   return;
+    // }
+    // if (flagController.text.isEmpty) {
+    //   EasyLoading.showError("Bendera Masih Kosong...");
+    //   return;
+    // }
+    // if (classController.text.isEmpty) {
+    //   EasyLoading.showError("Kelas Masih Kosong...");
+    //   return;
+    // }
+    // if (builderController.text.isEmpty) {
+    //   EasyLoading.showError("Builder Masih Kosong...");
+    //   return;
+    // }
+    // if (yearBuiltController.text.isEmpty) {
+    //   EasyLoading.showError("Tahun Pembuatan Masih Kosong...");
+    //   return;
+    // }
+    print("test");
+    // var data = {
+    //   "call_sign": callsignController.text,
+    //   "flag": flagController.text,
+    //   "class": classController.text,
+    //   "builder": builderController.text,
+    //   "year_built": yearbuiltController.text,
+    // };
+    var data = {
+      "call_sign": "234324",
+      "flag": "Asd",
+      "class": "asdasd",
+      "builder": "dsfsfsd",
+      "year_built": "2432",
+    };
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "Loading..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    print("----");
+    await Api.createVessel(data).then((value) {
+      // print("----");
+      print(value.message);
+      if (value.message != "Data berhasil masuk database") {
+        EasyLoading.showError("Gagal Menambahkan Kapal");
+      }
+      if (value.message == "Data berhasil masuk database") {
+        EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
+        callsignController.clear();
+        flagController.clear();
+        classController.clear();
+        builderController.clear();
+        yearbuiltController.clear();
+        Navigator.pop(context);
+        Navigator.pop(context);
+      }
+      if (value.message == "Validator Fails") {
+        EasyLoading.showError("Call Sign sudah terdaftar");
+        Navigator.pop(context);
+      }
+      return;
+    });
+  }
 
   // void calculateCenter() {
   //   for(var kmlOverlayPolygon in kmlOverlayPolygons){
@@ -404,7 +498,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updatePoint(null, context);
     });
-    
   }
 
   void _animatedMapMove(LatLng destLocation, double destZoom) {
@@ -465,130 +558,235 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-                  PopupMenuButton(
-                    icon: Icon(Icons.menu),
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'btnAddVessel',
-                        child: Text('Vessel List'),
-                      ),
-                    ],
-                    onSelected: (item) {
-                      switch (item) {
-                        case "btnAddVessel":
-                          showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) {
-                                var height = MediaQuery.of(context).size.height;
-                                var width = MediaQuery.of(context).size.width;
-
-                                return Dialog(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(5))),
-                                    child: Container(
-                                        width: width / 2,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              color: Colors.black12,
-                                              padding: EdgeInsets.all(5),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text("Vessel List",style: GoogleFonts.openSans(
-                                                    fontSize: 20
-                                                  ),),
-                                                  IconButton(
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    icon: Icon(Icons.close),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.all(5),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                MainAxisAlignment
-                                                    .end,
-                                                children: [
-                                                  InkWell(
-                                                    onTap: () {},
-                                                    child: Container(
-                                                      decoration:
-                                                      BoxDecoration(
-                                                        borderRadius:
-                                                        BorderRadius
-                                                            .circular(
-                                                            10),
-                                                        color: Color(
-                                                            0xFF399D44),
-                                                      ),
-                                                      padding:
-                                                      EdgeInsets
-                                                          .all(5),
-                                                      alignment:
-                                                      Alignment
-                                                          .center,
-                                                      height: 40,
-                                                      child: Icon(
-                                                          Icons.add),
-                                                    ),
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                            Container(
-                                              height: 300,
-                                              child: ListView(
-                                                  scrollDirection:
-                                                      Axis.vertical,
-                                                  children: [
-                                                    _isLoading
-                                                    ? CircularProgressIndicator()
-                                                    : PaginatedDataTable(
-                                                      columns: [
-                                                        DataColumn(
-                                                            label: Text(
-                                                                'Call Sign')),
-                                                        DataColumn(
-                                                            label: Text(
-                                                                'Flag')),
-                                                        DataColumn(
-                                                            label: Text(
-                                                                'Kelas')),
-                                                        DataColumn(
-                                                            label: Text(
-                                                                'Builder')),
-                                                        DataColumn(
-                                                            label: Text(
-                                                                'Year Built')),
-                                                      ],
-                                                      arrowHeadColor:
-                                                          Colors.black,
-                                                      columnSpacing: 100,
-                                                      horizontalMargin: 10,
-                                                      rowsPerPage: 10,
-                                                      showCheckboxColumn: false,
-                                                      source: _DataSource(data: _data),
-                                                    ),
-                                                  ]),
-                                            )
-                                          ],
-                                        )));
-                              });
-                      }
-                    },
+              PopupMenuButton(
+                icon: Icon(Icons.menu),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'btnAddVessel',
+                    child: Text('Vessel List'),
                   ),
+                ],
+                onSelected: (item) {
+                  switch (item) {
+                    case "btnAddVessel":
+                      showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Dialog(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(5))),
+                                child: Container(
+                                    width: width / 2,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          color: Colors.black12,
+                                          padding: EdgeInsets.all(8),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                "Vessel List",
+                                                style: GoogleFonts.openSans(
+                                                    fontSize: 20),
+                                              ),
+                                              IconButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                icon: Icon(Icons.close),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.all(5),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              InkWell(
+                                                onTap: () {
+                                                  showDialog(
+                                                      context: context,
+                                                      barrierDismissible: false,
+                                                      builder: (BuildContext
+                                                          context) {
+                                                        var height =
+                                                            MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .height;
+                                                        var width =
+                                                            MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .width;
+
+                                                        return Dialog(
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius: BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            5))),
+                                                            child: Container(
+                                                                width: width /
+                                                                    3,
+                                                                child: Column(
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .min,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Container(
+                                                                        color: Colors.black12,
+                                                                        padding: EdgeInsets.all(8),
+                                                                        child: Row(
+                                                                          mainAxisAlignment:
+                                                                          MainAxisAlignment.spaceBetween,
+                                                                          children: [
+                                                                            Text(
+                                                                              "Add Vessel",
+                                                                              style: GoogleFonts.openSans(
+                                                                                  fontSize: 15),
+                                                                            ),
+                                                                            IconButton(
+                                                                              onPressed: () {
+                                                                                Navigator.pop(context);
+                                                                              },
+                                                                              icon: Icon(Icons.close),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                      Padding(
+                                                                        padding: EdgeInsets.all(8),
+                                                                        child: Column(
+                                                                          children: [
+                                                                            VesselTextField(controller: callsignController, hint: 'Call Sign',),
+                                                                            VesselTextField(controller: flagController, hint: 'Bendera',),
+                                                                            VesselTextField(controller: classController,  hint: 'Kelas',),
+                                                                            VesselTextField(controller: builderController, hint: 'Builder',),
+                                                                            VesselTextField(controller: yearbuiltController, hint: 'Tahun Pembuatan',),
+                                                                            VesselTextField(controller: sizeVesselController,  hint: 'Ukuran Kapal',),
+                                                                            Row(
+                                                                              mainAxisAlignment: MainAxisAlignment.end,
+                                                                              children: [
+                                                                                InkWell(
+                                                                                  onTap: (){
+                                                                                    Navigator.pop(context);
+                                                                                  },
+                                                                                  child: Container(
+                                                                                    decoration: BoxDecoration(
+                                                                                      borderRadius:
+                                                                                      BorderRadius.circular(
+                                                                                          10),
+                                                                                      color: Color(
+                                                                                          0xFFFF0000),
+                                                                                    ),
+                                                                                    padding: EdgeInsets.all(5),
+                                                                                    alignment: Alignment.center,
+                                                                                    height: 30,
+                                                                                    child: Text("Batal"),
+                                                                                  ),
+                                                                                ),
+                                                                                SizedBox(width: 5,),
+                                                                                InkWell(
+                                                                                  onTap: (){
+                                                                                    submitVessel();
+                                                                                  },
+                                                                                  child: Container(
+                                                                                    decoration: BoxDecoration(
+                                                                                      borderRadius:
+                                                                                      BorderRadius.circular(
+                                                                                          10),
+                                                                                      color: Color(0xFF399D44),
+                                                                                    ),
+                                                                                    padding: EdgeInsets.all(5),
+                                                                                    alignment: Alignment.center,
+                                                                                    height: 30,
+                                                                                    child: Text("Simpan"),
+                                                                                  ),
+                                                                                )
+                                                                              ],                                                                            )
+                                                                          ],
+                                                                        ),
+                                                                      ),
+
+
+                                                                    ],),),);
+                                                      });
+                                                },
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                    color: Color(0xFF399D44),
+                                                  ),
+                                                  padding: EdgeInsets.all(5),
+                                                  alignment: Alignment.center,
+                                                  height: 40,
+                                                  child: Icon(Icons.add),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          height: 300,
+                                          child: ListView(
+                                              scrollDirection: Axis.vertical,
+                                              children: [
+                                                _isLoading
+                                                    ? Center(child: CircularProgressIndicator())
+                                                    : PaginatedDataTable(
+                                                        columns: [
+                                                          DataColumn(
+                                                              label: Text(
+                                                                  'Call Sign')),
+                                                          DataColumn(
+                                                              label:
+                                                                  Text('Flag')),
+                                                          DataColumn(
+                                                              label: Text(
+                                                                  'Kelas')),
+                                                          DataColumn(
+                                                              label: Text(
+                                                                  'Builder')),
+                                                          DataColumn(
+                                                              label: Text(
+                                                                  'Year Built')),
+                                                        ],
+                                                        arrowHeadColor:
+                                                            Colors.black,
+                                                        columnSpacing: 100,
+                                                        horizontalMargin: 10,
+                                                        rowsPerPage: 10,
+                                                        showCheckboxColumn:
+                                                            false,
+                                                        source: _DataSource(
+                                                            data: _data),
+                                                      ),
+                                              ]),
+                                        )
+                                      ],
+                                    )));
+                          });
+                  }
+                },
+              ),
               Container(),
               // Container(
               //   child: ElevatedButton(
@@ -1197,6 +1395,45 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
+class VesselTextField extends StatelessWidget {
+  const VesselTextField({
+    super.key,
+    required this.controller, required this.hint,
+  });
+
+  final TextEditingController controller;
+  final String hint;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          height: 30,
+          child: TextFormField(
+            controller: controller,
+            keyboardType: TextInputType.text,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
+              hintText: hint,
+              hintStyle: TextStyle(fontSize: 15),
+              border: OutlineInputBorder(
+                borderSide:
+                BorderSide(width: 0, style: BorderStyle.none),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              filled: true,
+              fillColor: Colors.black12,
+            ),
+          ),
+        ),
+        SizedBox(height: 5,)
+      ],
+    );
+  }
+}
+
 class _DataSource extends DataTableSource {
   final List<DataModel> data;
 
@@ -1228,4 +1465,3 @@ class _DataSource extends DataTableSource {
   @override
   int get selectedRowCount => 0;
 }
-
