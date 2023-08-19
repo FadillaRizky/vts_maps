@@ -4,8 +4,11 @@ class DataModel {
   final String kelas;
   final String builder;
   final String year_built;
+  final String ip;
+  final String port;
+  final String size;
 
-  DataModel({required this.call_sign, required this.flag, required this.kelas, required this.builder, required this.year_built,
+  DataModel({required this.call_sign, required this.flag, required this.kelas, required this.builder, required this.year_built,required this.ip,required this.port,required this.size,
   });
 
   factory DataModel.fromJson(Map<String, dynamic> json) {
@@ -15,6 +18,9 @@ class DataModel {
       kelas: json['kelas'],
       builder: json['builder'],
       year_built: json['year_built'],
+      ip: json['ip'],
+      port: json['port'],
+      size: json['size'],
     );
   }
 }

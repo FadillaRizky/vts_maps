@@ -46,6 +46,9 @@ dependencies:
   flutter_easyloading: ^3.0.5
   shared_preferences: ^2.2.0
   archive: ^3.3.7
+  font_awesome_flutter: 10.5.0
+  dropdown_search: ^5.0.6
+
 
 
 dev_dependencies:

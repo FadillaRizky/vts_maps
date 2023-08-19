@@ -8,6 +8,7 @@ import 'package:vts_maps/api/GetAllVessel.dart';
 import 'package:vts_maps/api/SubmitVesselResponse.dart';
 
 import '../utils/shared_pref.dart';
+import 'DeleteVesselResponse.dart';
 import 'GetAllVesselCoor.dart';
 
 const BASE_URL = "https://client-project.enricko.site/api";
@@ -61,6 +62,7 @@ class Api{
         Uri.parse(url),
         body: data,
         headers: {
+          // 'Content-type': 'application/json',
           'Authorization': 'Bearer $token',
         },
       );
@@ -72,11 +74,22 @@ class Api{
         return SubmitVesselResponse.fromJson(jsonDecode(response.body));
       }
       else {
-        throw "Gagal submit vessel:\n${response.body}";
+        throw "Gagal create vessel:\n${response.body}";
       }
     }catch(e){
       print("error nya $e");
       rethrow;
     }
+  }
+  static Future<DeleteVesselResponse> deleteVessel(String callSign) async {
+    var url = "$BASE_URL/delete_kapal/$callSign";
+    var response = await http.delete(
+      Uri.parse(url),
+    );
+    if (response.statusCode == 200) {
+      return DeleteVesselResponse.fromJson(jsonDecode(response.body));
+    }
+    throw "Gagal delete vessel:\n${response.body}";
+
   }
 }

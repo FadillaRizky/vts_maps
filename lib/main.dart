@@ -32,7 +32,9 @@ class MyApp extends StatelessWidget {
         dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
       ),
       builder: EasyLoading.init(),
-      home: HomePage(),
+      home:
+      Login(),
+      // HomePage(),
     );
   }
 }

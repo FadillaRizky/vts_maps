@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:archive/archive.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Constants {
   ///text style
-  static TextStyle title1 = TextStyle(
-      fontSize: 25, color: Color(0xFF0E286C), fontWeight: FontWeight.bold);
+  static TextStyle title1 = GoogleFonts.inter(
+      fontSize: 35, color: Colors.white, fontWeight: FontWeight.w700);
   static TextStyle button1 =
-      TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold);
+      GoogleFonts.inter(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold);
 
   static double getPointX(BuildContext context) {
     return 40;
