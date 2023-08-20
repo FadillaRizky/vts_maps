@@ -1,35 +1,6 @@
 
-class LoginResponse {
+class AuthCheckResponse {
   String? message;
-  String? token;
-  User? user;
-
-  LoginResponse({this.message, this.token, this.user});
-
-  LoginResponse.fromJson(Map<String, dynamic> json) {
-    if(json["message"] is String) {
-      message = json["message"];
-    }
-    if(json["token"] is String) {
-      token = json["token"];
-    }
-    if(json["user"] is Map) {
-      user = json["user"] == null ? null : User.fromJson(json["user"]);
-    }
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["message"] = message;
-    _data["token"] = token;
-    if(user != null) {
-      _data["user"] = user?.toJson();
-    }
-    return _data;
-  }
-}
-
-class User {
   int? id;
   String? name;
   String? email;
@@ -38,9 +9,12 @@ class User {
   String? createdAt;
   String? updatedAt;
 
-  User({this.id, this.name, this.email, this.emailVerifiedAt, this.level, this.createdAt, this.updatedAt});
+  AuthCheckResponse({this.message,this.id, this.name, this.email, this.emailVerifiedAt, this.level, this.createdAt, this.updatedAt});
 
-  User.fromJson(Map<String, dynamic> json) {
+  AuthCheckResponse.fromJson(Map<String, dynamic> json) {
+    if(json["message"] is String) {
+      message = json["message"];
+    }
     if(json["id"] is int) {
       id = json["id"];
     }
@@ -64,6 +38,7 @@ class User {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["message"] = message;
     _data["id"] = id;
     _data["name"] = name;
     _data["email"] = email;

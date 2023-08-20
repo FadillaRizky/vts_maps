@@ -1,155 +1,108 @@
-/// message : "Data Kapal Ditemukan"
-/// status : 200
-/// perpage : 10
-/// page : 1
-/// total : 3
-/// data : [{"call_sign":"YDBU2","flag":"Indonesia","kelas":"BKI","builder":"Batam","year_built":"2016","created_at":null,"updated_at":null},{"call_sign":"YDBU3","flag":"Indonesia","kelas":"BKI","builder":"Batam","year_built":"2017","created_at":"2023-07-28T22:30:10.000000Z","updated_at":"2023-07-28T22:30:10.000000Z"},{"call_sign":"YDBU4","flag":"Indonesia","kelas":"BKI","builder":"Batam","year_built":"2017","created_at":"2023-07-28T22:30:59.000000Z","updated_at":"2023-07-28T22:30:59.000000Z"}]
 
 class GetAllVessel {
-  GetAllVessel({
-      String? message, 
-      num? status, 
-      num? perpage, 
-      num? page, 
-      num? total, 
-      List<Data>? data,}){
-    _message = message;
-    _status = status;
-    _perpage = perpage;
-    _page = page;
-    _total = total;
-    _data = data;
-}
+  String? message;
+  int? status;
+  int? perpage;
+  int? page;
+  int? total;
+  List<Data>? data;
 
-  GetAllVessel.fromJson(dynamic json) {
-    _message = json['message'];
-    _status = json['status'];
-    _perpage = json['perpage'];
-    _page = json['page'];
-    _total = json['total'];
-    if (json['data'] != null) {
-      _data = [];
-      json['data'].forEach((v) {
-        _data?.add(Data.fromJson(v));
-      });
+  GetAllVessel({this.message, this.status, this.perpage, this.page, this.total, this.data});
+
+  GetAllVessel.fromJson(Map<String, dynamic> json) {
+    if(json["message"] is String) {
+      message = json["message"];
+    }
+    if(json["status"] is int) {
+      status = json["status"];
+    }
+    if(json["perpage"] is int) {
+      perpage = json["perpage"];
+    }
+    if(json["page"] is int) {
+      page = json["page"];
+    }
+    if(json["total"] is int) {
+      total = json["total"];
+    }
+    if(json["data"] is List) {
+      data = json["data"] == null ? null : (json["data"] as List).map((e) => Data.fromJson(e)).toList();
     }
   }
-  String? _message;
-  num? _status;
-  num? _perpage;
-  num? _page;
-  num? _total;
-  List<Data>? _data;
-GetAllVessel copyWith({  String? message,
-  num? status,
-  num? perpage,
-  num? page,
-  num? total,
-  List<Data>? data,
-}) => GetAllVessel(  message: message ?? _message,
-  status: status ?? _status,
-  perpage: perpage ?? _perpage,
-  page: page ?? _page,
-  total: total ?? _total,
-  data: data ?? _data,
-);
-  String? get message => _message;
-  num? get status => _status;
-  num? get perpage => _perpage;
-  num? get page => _page;
-  num? get total => _total;
-  List<Data>? get data => _data;
 
   Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{};
-    map['message'] = _message;
-    map['status'] = _status;
-    map['perpage'] = _perpage;
-    map['page'] = _page;
-    map['total'] = _total;
-    if (_data != null) {
-      map['data'] = _data?.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["message"] = message;
+    _data["status"] = status;
+    _data["perpage"] = perpage;
+    _data["page"] = page;
+    _data["total"] = total;
+    if(data != null) {
+      _data["data"] = data?.map((e) => e.toJson()).toList();
     }
-    return map;
+    return _data;
   }
-
 }
-
-/// call_sign : "YDBU2"
-/// flag : "Indonesia"
-/// kelas : "BKI"
-/// builder : "Batam"
-/// year_built : "2016"
-/// created_at : null
-/// updated_at : null
 
 class Data {
-  Data({
-      String? callSign, 
-      String? flag, 
-      String? kelas, 
-      String? builder, 
-      String? yearBuilt, 
-      dynamic createdAt, 
-      dynamic updatedAt,}){
-    _callSign = callSign;
-    _flag = flag;
-    _kelas = kelas;
-    _builder = builder;
-    _yearBuilt = yearBuilt;
-    _createdAt = createdAt;
-    _updatedAt = updatedAt;
-}
+  String? callSign;
+  String? flag;
+  String? kelas;
+  String? builder;
+  String? size;
+  String? ip;
+  String? port;
+  String? yearBuilt;
+  String? createdAt;
+  String? updatedAt;
 
-  Data.fromJson(dynamic json) {
-    _callSign = json['call_sign'];
-    _flag = json['flag'];
-    _kelas = json['kelas'];
-    _builder = json['builder'];
-    _yearBuilt = json['year_built'];
-    _createdAt = json['created_at'];
-    _updatedAt = json['updated_at'];
+  Data({this.callSign, this.flag, this.kelas, this.builder, this.size, this.ip, this.port, this.yearBuilt, this.createdAt, this.updatedAt});
+
+  Data.fromJson(Map<String, dynamic> json) {
+    if(json["call_sign"] is String) {
+      callSign = json["call_sign"];
+    }
+    if(json["flag"] is String) {
+      flag = json["flag"];
+    }
+    if(json["kelas"] is String) {
+      kelas = json["kelas"];
+    }
+    if(json["builder"] is String) {
+      builder = json["builder"];
+    }
+    if(json["size"] is String) {
+      size = json["size"];
+    }
+    if(json["ip"] is String) {
+      ip = json["ip"];
+    }
+    if(json["port"] is String) {
+      port = json["port"];
+    }
+    if(json["year_built"] is String) {
+      yearBuilt = json["year_built"];
+    }
+    if(json["created_at"] is String) {
+      createdAt = json["created_at"];
+    }
+    if(json["updated_at"] is String) {
+      updatedAt = json["updated_at"];
+    }
   }
-  String? _callSign;
-  String? _flag;
-  String? _kelas;
-  String? _builder;
-  String? _yearBuilt;
-  dynamic _createdAt;
-  dynamic _updatedAt;
-Data copyWith({  String? callSign,
-  String? flag,
-  String? kelas,
-  String? builder,
-  String? yearBuilt,
-  dynamic createdAt,
-  dynamic updatedAt,
-}) => Data(  callSign: callSign ?? _callSign,
-  flag: flag ?? _flag,
-  kelas: kelas ?? _kelas,
-  builder: builder ?? _builder,
-  yearBuilt: yearBuilt ?? _yearBuilt,
-  createdAt: createdAt ?? _createdAt,
-  updatedAt: updatedAt ?? _updatedAt,
-);
-  String? get callSign => _callSign;
-  String? get flag => _flag;
-  String? get kelas => _kelas;
-  String? get builder => _builder;
-  String? get yearBuilt => _yearBuilt;
-  dynamic get createdAt => _createdAt;
-  dynamic get updatedAt => _updatedAt;
 
   Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{};
-    map['call_sign'] = _callSign;
-    map['flag'] = _flag;
-    map['kelas'] = _kelas;
-    map['builder'] = _builder;
-    map['year_built'] = _yearBuilt;
-    map['created_at'] = _createdAt;
-    map['updated_at'] = _updatedAt;
-    return map;
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["call_sign"] = callSign;
+    _data["flag"] = flag;
+    _data["kelas"] = kelas;
+    _data["builder"] = builder;
+    _data["size"] = size;
+    _data["ip"] = ip;
+    _data["port"] = port;
+    _data["year_built"] = yearBuilt;
+    _data["created_at"] = createdAt;
+    _data["updated_at"] = updatedAt;
+    return _data;
   }
-
 }

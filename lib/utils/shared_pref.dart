@@ -20,7 +20,7 @@ class LoginPref {
     return status;
   }
 
-  static Future <DataUser> getPref() async{
+  static Future<DataUser> getPref() async{
     SharedPreferences pref = await SharedPreferences.getInstance();
     DataUser dataUser = DataUser();
     dataUser.token = pref.getString("token");

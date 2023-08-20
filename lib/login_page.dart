@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vts_maps/auth/Authentication.dart';
 import 'package:vts_maps/dashboard.dart';
 import 'package:vts_maps/maps_view.dart';
 import 'package:vts_maps/utils/constants.dart';
@@ -69,22 +70,20 @@ class _LoginState extends State<Login> {
       },
     );
     try {
-      var url = "https://client-project.enricko.site/api/login";
-      var response = await http
-          .post(Uri.parse(url), body: data)
-          .timeout(Duration(seconds: 3));
-      var result = LoginResponse.fromJson(jsonDecode(response.body));
-      if (result.message == "Login Success") {
-        print(result.token);
-        LoginPref.saveToSharedPref(result.token!);
-        EasyLoading.showSuccess("Login Berhasil");
-        Navigator.pop(context);
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (ctx) => HomePage()));
-      } else if (result.message != "Login Success") {
-        EasyLoading.showError("Login Gagal..");
-        Navigator.pop(context);
-      }
+      Auth.Login(data).then((value) {
+        LoginPref.saveToSharedPref(value.token!);
+        if (value.message == "Login Success") {
+          print(value.token);
+          LoginPref.saveToSharedPref(value.token!);
+          EasyLoading.showSuccess("Login Berhasil");
+          Navigator.pop(context);
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (ctx) => HomePage()));
+        } else if (value.message != "Login Success") {
+          EasyLoading.showError("Login Gagal..");
+          Navigator.pop(context);
+        }
+      });
     } on TimeoutException catch (_) {
       EasyLoading.showError("Sinyal Buruk..");
       Navigator.pop(context);
@@ -97,7 +96,10 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("AVTS - Automated Vessel Tracking System",style: GoogleFonts.montserrat(fontSize: 15,color: Colors.white),),
+        title: Text(
+          "AVTS - Automated Vessel Tracking System",
+          style: GoogleFonts.montserrat(fontSize: 15, color: Colors.white),
+        ),
         backgroundColor: Color(0xFF0E286C),
         iconTheme: IconThemeData(
           color: Colors.white, // Change this color to the desired color
@@ -135,15 +137,13 @@ class _LoginState extends State<Login> {
       body: Row(
         children: [
           Expanded(
-            child: Stack(
-              children:[
-                Image.asset(
-                  "assets/background-login.jpg",
-                  fit: BoxFit.cover,
-                  height: double.infinity,
-                ),
-              ]
-            ),
+            child: Stack(children: [
+              Image.asset(
+                "assets/background-login.jpg",
+                fit: BoxFit.cover,
+                height: double.infinity,
+              ),
+            ]),
           ),
           Container(
             color: Color(0xFF2B3B9A),
@@ -162,6 +162,7 @@ class _LoginState extends State<Login> {
                     child: TextFormField(
                       keyboardType: TextInputType.text,
                       controller: emailController,
+                      textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
                         contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
                         hintText: "Email",
@@ -184,6 +185,7 @@ class _LoginState extends State<Login> {
                     child: TextFormField(
                       obscureText: invisible,
                       keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.next,
                       controller: passwordController,
                       decoration: InputDecoration(
                         contentPadding: EdgeInsets.fromLTRB(3, 3, 3, 3),

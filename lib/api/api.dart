@@ -14,8 +14,8 @@ import 'GetAllVesselCoor.dart';
 const BASE_URL = "https://client-project.enricko.site/api";
 class Api{
 
-  static Future<GetAllVessel> getAllVessel() async {
-    var url = "$BASE_URL/kapal?perpage=100";
+  static Future<GetAllVessel> getAllVessel({int page = 1,int perpage = 10}) async {
+    var url = "$BASE_URL/kapal?page=$page&perpage=$perpage";
     var response = await http.get(
       Uri.parse(url),
     );

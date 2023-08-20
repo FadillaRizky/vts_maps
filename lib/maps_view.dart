@@ -1,46 +1,35 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:math' as math;
 import 'dart:math';
-import 'package:dropdown_search/dropdown_search.dart';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
+
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_map/plugin_api.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:snapping_sheet/snapping_sheet.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:xml/xml.dart' as xml;
+import 'package:xml/xml.dart';
+
 import 'package:vts_maps/system/scale_bar.dart';
 import 'package:vts_maps/utils/constants.dart';
 import 'package:vts_maps/utils/snipping_sheet.dart';
 import 'package:vts_maps/vessel_list.dart';
-import 'package:vts_maps/vessel_models.dart';
-import 'package:xml/xml.dart' as xml;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map/plugin_api.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:xml/xml.dart';
-
+import 'system/zoom_button.dart';
 import 'api/GetAllVesselCoor.dart' as LatestVesselCoor;
 import 'api/GetAllLatLangCoor.dart' as LatLangCoor;
 import 'api/GetAllVessel.dart' as Vessel;
 import 'api/api.dart';
-import 'system/zoom_button.dart';
 
-import 'dart:async';
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_map/flutter_map.dart';
-
-// import 'package:latlong2/latlong.dart';
-import 'package:xml/xml.dart';
-import 'package:archive/archive.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -70,7 +59,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   TextEditingController yearbuiltController = TextEditingController();
   TextEditingController ipController = TextEditingController();
   TextEditingController portController = TextEditingController();
-  String? vesselSize ;
+  String? vesselSize;
   late final MapController mapController;
 
   final DataTableSource _dummydata = MyData();
@@ -88,9 +77,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   LatLng? latLng;
 
+  int vesselTotal = 0;
+
   int _currentPage = 1;
   int _pageSize = 10;
-  List<DataModel> _data = [];
+  List<Vessel.Data> _dataVesselTable = [];
   bool _isLoading = false;
 
   // Animated Map Variable
@@ -161,6 +152,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       if (value.total! > 0) {
         setState(() {
           vesselResult.addAll(value.data!);
+          vesselTotal = value.total!;
         });
       }
     });
@@ -364,27 +356,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       _isLoading = true;
     });
-    final response = await http.get(Uri.parse(
-        "https://client-project.enricko.site/api/kapal?page=$_currentPage&perpage=$_pageSize"));
+    Api.getAllVessel(page: _currentPage, perpage: _pageSize).then((value) {
+      if (value.total! == 0) {
+        setState(() {
+          _dataVesselTable = [];
+        });
+      }
+      if (value.total! > 0) {
+        setState(() {
+          _dataVesselTable.addAll(value.data!);
+          vesselTotal = value.total!;
+          _isLoading = false;
+        });
+      }
+    });
+    // final response = await http.get(Uri.parse(
+    //     "https://client-project.enricko.site/api/kapal?page=$_currentPage&perpage=$_pageSize"));
 
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      inspect(jsonData);
-      final dataList = jsonData['data'] as List<dynamic>;
+    // if (response.statusCode == 200) {
+    //   final jsonData = json.decode(response.body);
+    //   inspect(jsonData);
+    //   final dataList = jsonData['data'] as List<dynamic>;
 
-      final List<DataModel> newData =
-          dataList.map((item) => DataModel.fromJson(item)).toList();
+    //   final List<DataModel> newData =
+    //       dataList.map((item) => DataModel.fromJson(item)).toList();
 
-      setState(() {
-        _data.addAll(newData);
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
-      throw Exception('Failed to fetch data');
-    }
+    //   setState(() {
+    //     _data.addAll(newData);
+    //     _isLoading = false;
+    //   });
+    // } else {
+    //   setState(() {
+    //     _isLoading = false;
+    //   });
+    //   throw Exception('Failed to fetch data');
+    // }
   }
 
   submitVessel() async {
@@ -420,14 +426,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       EasyLoading.showError("Kolom Ukuran Kapal Masih Kosong...");
       return;
     }
-    print(callsignController.text);
-    print(flagController.text);
-    print(classController.text);
-    print(builderController.text);
-    print(yearbuiltController.text);
-    print(ipController.text);
-    print(portController.text);
-    print(vesselSize);
+    // print(callsignController.text);
+    // print(flagController.text);
+    // print(classController.text);
+    // print(builderController.text);
+    // print(yearbuiltController.text);
+    // print(ipController.text);
+    // print(portController.text);
+    // print(vesselSize);
     var data = {
       "call_sign": callsignController.text,
       "flag": flagController.text,
@@ -473,9 +479,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
       },
     );
-    print("----");
     await Api.createVessel(data).then((value) {
-      // print("----");
       print(value.message);
       if (value.message != "Data berhasil masuk database") {
         EasyLoading.showError("Gagal Menambahkan Kapal");
@@ -490,7 +494,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ipController.clear();
         portController.clear();
         vesselSize == null;
-        _data.clear();
+        _dataVesselTable.clear();
         fetchDataVessel();
 
         Navigator.pop(context);
@@ -526,7 +530,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    // loadKmlData();
+    loadKMZData();
     fetchDataVessel();
     initVessel();
     initCoorVessel();
@@ -767,21 +771,37 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                             'Port',
                                                                       ),
                                                                       SizedBox(
-                                                                        height: 30,
-                                                                        width: double.infinity,
-                                                                        child: DropdownSearch<String>(
-                                                                          dropdownBuilder: (context, selectedItem) => Text(
-                                                                            selectedItem ?? "Ukuran Kapal",style: TextStyle(fontSize: 15,color: Colors.black54),
+                                                                        height:
+                                                                            30,
+                                                                        width: double
+                                                                            .infinity,
+                                                                        child: DropdownSearch<
+                                                                            String>(
+                                                                          dropdownBuilder: (context, selectedItem) =>
+                                                                              Text(
+                                                                            selectedItem ??
+                                                                                "Ukuran Kapal",
+                                                                            style:
+                                                                                TextStyle(fontSize: 15, color: Colors.black54),
                                                                           ),
-                                                                          popupProps: PopupPropsMultiSelection.dialog(
-                                                                            fit: FlexFit.loose,
+                                                                          popupProps:
+                                                                              PopupPropsMultiSelection.dialog(
+                                                                            fit:
+                                                                                FlexFit.loose,
                                                                             itemBuilder: (context, item, isSelected) =>
                                                                                 ListTile(
-                                                                                  title: Text(item,style: TextStyle(fontSize: 15,),),
+                                                                              title: Text(
+                                                                                item,
+                                                                                style: TextStyle(
+                                                                                  fontSize: 15,
                                                                                 ),
+                                                                              ),
+                                                                            ),
                                                                           ),
-                                                                          dropdownDecoratorProps: DropDownDecoratorProps(
-                                                                            dropdownSearchDecoration: InputDecoration(
+                                                                          dropdownDecoratorProps:
+                                                                              DropDownDecoratorProps(
+                                                                            dropdownSearchDecoration:
+                                                                                InputDecoration(
                                                                               border: OutlineInputBorder(
                                                                                 borderSide: BorderSide.none,
                                                                                 borderRadius: BorderRadius.circular(10),
@@ -797,12 +817,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                             "large",
                                                                             "extra large",
                                                                           ],
-                                                                          onChanged: (value) {
-                                                                            vesselSize = value;
+                                                                          onChanged:
+                                                                              (value) {
+                                                                            vesselSize =
+                                                                                value;
                                                                           },
                                                                         ),
                                                                       ),
-                                                                      SizedBox(height: 5,),
+                                                                      SizedBox(
+                                                                        height:
+                                                                            5,
+                                                                      ),
                                                                       Row(
                                                                         mainAxisAlignment:
                                                                             MainAxisAlignment.end,
@@ -919,18 +944,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                         rowsPerPage: 10,
                                                         showCheckboxColumn:
                                                             false,
-                                                        // onPageChanged:
-                                                        //     (pageIndex) {
-                                                        //   setState(() {
-                                                        //     _currentPage++;
-                                                        //     _data.clear();
-                                                        //     print("get ulang");
-                                                        //     fetchDataVessel();
-                                                        //   });
-                                                        // },
+                                                        onPageChanged:
+                                                            (pageIndex) {
+                                                          setState(() {
+                                                            _currentPage++;
+                                                            _dataVesselTable.clear();
+                                                            print("get ulang $pageIndex");
+                                                            fetchDataVessel();
+                                                          });
+                                                        },
                                                         source: _DataSource(
-                                                          data: _data,
+                                                          data: _dataVesselTable,
                                                           ctx: context,
+                                                          vesselTotal: vesselTotal,
                                                         ),
                                                       ),
                                               ]),
@@ -1590,13 +1616,15 @@ class VesselTextField extends StatelessWidget {
 }
 
 class _DataSource extends DataTableSource {
-  final List<DataModel> data;
+  final List<Vessel.Data> data;
   final BuildContext ctx;
+  final int vesselTotal;
 
-  _DataSource({required this.data, required this.ctx});
+  _DataSource({required this.data, required this.ctx,required this.vesselTotal});
 
   @override
   DataRow? getRow(int index) {
+    print(data.length);
     if (index >= data.length) {
       return null;
     }
@@ -1604,21 +1632,21 @@ class _DataSource extends DataTableSource {
     final item = data[index];
 
     return DataRow(cells: [
-      DataCell(Text(item.call_sign)),
-      DataCell(Text(item.flag)),
-      DataCell(Text(item.kelas)),
-      DataCell(Text(item.builder)),
-      DataCell(Text(item.year_built)),
-      DataCell(Text(item.ip)),
-      DataCell(Text(item.port)),
-      DataCell(Text(item.size)),
+      DataCell(Text(item.callSign!)),
+      DataCell(Text(item.flag!)),
+      DataCell(Text(item.kelas!)),
+      DataCell(Text(item.builder!)),
+      DataCell(Text(item.yearBuilt!)),
+      DataCell(Text(item.ip!)),
+      DataCell(Text(item.port!)),
+      DataCell(Text(item.size!)),
       DataCell(IconButton(
         icon: Icon(
           Icons.delete,
           color: Colors.red,
         ),
         onPressed: () {
-          Api.deleteVessel(item.call_sign).then((value) {
+          Api.deleteVessel(item.callSign!).then((value) {
             if (value.status == 200) {
               EasyLoading.showSuccess("Kapal Terhapus..");
               Navigator.pop(ctx);
@@ -1635,7 +1663,7 @@ class _DataSource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => data.length;
+  int get rowCount => vesselTotal;
 
   @override
   int get selectedRowCount => 0;

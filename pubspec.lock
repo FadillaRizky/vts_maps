@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  auto_size_text:
+    dependency: transitive
+    description:
+      name: auto_size_text
+      sha256: "3f5261cd3fb5f2a9ab4e2fc3fba84fd9fcaac8821f20a1d4e71f557521b22599"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -73,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  data_table_2:
+    dependency: "direct main"
+    description:
+      name: data_table_2
+      sha256: "3898c424db33437ba2eb8e6bd2e7db3635a19efc0daadfaee427e1949f399b0f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.5.6"
   dropdown_search:
     dependency: "direct main"
     description:
@@ -257,6 +273,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  number_paginator:
+    dependency: "direct main"
+    description:
+      name: number_paginator
+      sha256: dc35ce7397ee03cc393343da78a73f0840e7e5331b756ee8d4b3a2194f75d27e
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.2"
+  pagination_flutter:
+    dependency: "direct main"
+    description:
+      name: pagination_flutter
+      sha256: "98422b16402f9f407bf4e1ac04e3e933f2440d07aa73d960556118ae832ebe19"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.8"
   path:
     dependency: transitive
     description:
