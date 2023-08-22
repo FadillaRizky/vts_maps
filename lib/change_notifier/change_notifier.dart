@@ -11,10 +11,21 @@ import 'package:vts_maps/api/GetAllVessel.dart' as Vessel;
 import 'package:vts_maps/api/api.dart';
 import 'package:vts_maps/model/kml_model.dart';
 import 'package:vts_maps/utils/constants.dart';
+import 'package:vts_maps/utils/shared_pref.dart';
 import 'package:xml/xml.dart';
 import 'package:xml/xml.dart' as xml;
 
 class Notifier extends ChangeNotifier {
+
+  // === AUTH ===
+  String _token = "";
+  String get token => _token;
+
+  void setAuth(String token){
+    LoginPref.saveToSharedPref(token);
+    _token = token;
+    notifyListeners();
+  }
 
   // === API ===
   List<Vessel.Data> _vesselResult = [];

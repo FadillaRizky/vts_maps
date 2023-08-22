@@ -12,6 +12,7 @@ import 'package:vts_maps/utils/shared_pref.dart';
 import 'login_page.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     ChangeNotifierProvider(
       create: (context) => Notifier(),

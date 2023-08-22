@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:vts_maps/auth/Authentication.dart';
+import 'package:vts_maps/change_notifier/change_notifier.dart';
 import 'package:vts_maps/dashboard.dart';
 import 'package:vts_maps/maps_view.dart';
 import 'package:vts_maps/utils/constants.dart';
@@ -73,8 +75,8 @@ class _LoginState extends State<Login> {
       Auth.Login(data).then((value) {
         LoginPref.saveToSharedPref(value.token!);
         if (value.message == "Login Success") {
-          print(value.token);
-          LoginPref.saveToSharedPref(value.token!);
+          final notifier = Provider.of<Notifier>(context, listen: false);
+          notifier.setAuth(value.token!);
           EasyLoading.showSuccess("Login Berhasil");
           Navigator.pop(context);
           Navigator.pushReplacement(
@@ -94,228 +96,140 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "AVTS - Automated Vessel Tracking System",
-          style: GoogleFonts.montserrat(fontSize: 15, color: Colors.white),
-        ),
-        backgroundColor: Color(0xFF0E286C),
-        iconTheme: IconThemeData(
-          color: Colors.white, // Change this color to the desired color
-        ),
-      ),
-      // drawer: Drawer(
-      //   child: Padding(
-      //     padding: const EdgeInsets.all(15),
-      //     child: Column(
-      //       children: [
-      //         Text(
-      //           "Menu",
-      //           style: Constants.title1,
-      //         ),
-      //         SizedBox(
-      //           height: 10,
-      //         ),
-      //         ListTile(
-      //           leading: Text("Show Map"),
-      //           trailing: Image.asset(
-      //             "assets/maps-icon.png",
-      //             width: 30,
-      //           ),
-      //           onTap: () {
-      //             Navigator.push(context,
-      //                 MaterialPageRoute(builder: (context) => HomePage()));
-      //           },
-      //         ),
-      //         ListTile(leading: Text("menu2")),
-      //         ListTile(leading: Text("menu3")),
-      //       ],
-      //     ),
-      //   ),
-      // ),
-      body: Row(
-        children: [
-          Expanded(
-            child: Stack(children: [
-              Image.asset(
-                "assets/background-login.jpg",
-                fit: BoxFit.cover,
-                height: double.infinity,
-              ),
-            ]),
-          ),
-          Container(
-            color: Color(0xFF2B3B9A),
-            width: 500,
-            height: double.infinity,
-            child: Padding(
-              padding: EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 50,
-                  ),
-                  Text("Login", style: Constants.title1),
-                  Spacer(),
-                  Container(
-                    child: TextFormField(
-                      keyboardType: TextInputType.text,
-                      controller: emailController,
-                      textInputAction: TextInputAction.next,
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
-                        hintText: "Email",
-                        prefixIcon: Icon(Icons.email_outlined),
-                        // hintStyle: Constants.hintStyle,
-                        border: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(width: 0, style: BorderStyle.none),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  Container(
-                    child: TextFormField(
-                      obscureText: invisible,
-                      keyboardType: TextInputType.text,
-                      textInputAction: TextInputAction.next,
-                      controller: passwordController,
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.fromLTRB(3, 3, 3, 3),
-                        hintText: "Password",
-                        // prefixIconConstraints: BoxConstraints.loose(Size.square(30)),
-                        prefixIcon: Icon(Icons.lock),
-                        // hintStyle: Constants.hintStyle,
-                        border: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(width: 0, style: BorderStyle.none),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        suffixIcon: IconButton(
-                          icon: Icon((invisible == true)
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off),
-                          onPressed: () {
-                            setState(() {
-                              invisible = !invisible;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  Container(
-                    width: double.infinity,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [
-                        Color.fromARGB(225, 0, 111, 186),
-                        Color.fromARGB(225, 58, 171, 249)
-                      ]),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                      ),
-                      onPressed: () {
-                        login();
-                      },
-                      child: Text(
-                        "Login",
-                        style: Constants.button1,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 80,
-                  )
-                ],
-              ),
+    return Consumer<Notifier>(
+      builder: (context, value, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              "AVTS - Automated Vessel Tracking System",
+              style: GoogleFonts.montserrat(fontSize: 15, color: Colors.white),
+            ),
+            backgroundColor: Color(0xFF0E286C),
+            iconTheme: IconThemeData(
+              color: Colors.white, // Change this color to the desired color
             ),
           ),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        height: 50,
-        color: Color(0xFF0E286C),
-      ),
-      // Stack(
-      //   children: [
-      //     Image.asset(
-      //       "assets/background-login.jpg",
-      //       fit: BoxFit.cover,
-      //       width: double.infinity,
-      //     ),
-      //     Row(
-      //       mainAxisAlignment: MainAxisAlignment.end,
-      //       children: [
-      //         Padding(
-      //           padding: EdgeInsets.fromLTRB(0, 50, 50, 50),
-      //           child: SizedBox(
-      //             width: 500,
-      //             child: Card(
-      //               color: Colors.transparent,
-      //               child: Padding(
-      //                 padding: EdgeInsets.all(10),
-      //                 child: Column(
-      //                   children: [
-      //                     Text(
-      //                       "Login",
-      //                       style: TextStyle(
-      //                           fontSize: 25,
-      //                           fontWeight: FontWeight.bold,
-      //                           color: Colors.white),
-      //                     ),
-      //                     Container(
-      //                       child: TextFormField(
-      //                         obscureText: invisible,
-      //                         keyboardType: TextInputType.text,
-      //                         controller: passwordController,
-      //                         decoration: InputDecoration(
-      //                           contentPadding:
-      //                               EdgeInsets.fromLTRB(20, 3, 1, 3),
-      //                           hintText: "Password",
-      //                           // hintStyle: Constants.hintStyle,
-      //                           border: OutlineInputBorder(
-      //                             borderSide: BorderSide(
-      //                                 width: 0, style: BorderStyle.none),
-      //                             borderRadius: BorderRadius.circular(10),
-      //                           ),
-      //                           filled: true,
-      //                           fillColor: Colors.white,
-      //                           suffixIcon: IconButton(
-      //                             icon: Icon((invisible == true)
-      //                                 ? Icons.visibility_outlined
-      //                                 : Icons.visibility_off),
-      //                             onPressed: () {},
-      //                           ),
-      //                         ),
-      //                       ),
-      //                     )
-      //                   ],
-      //                 ),
-      //               ),
-      //             ),
-      //           ),
-      //         ),
-      //       ],
-      //     )
-      //   ],
-      // ),
+          body: Row(
+            children: [
+              Expanded(
+                child: Stack(children: [
+                  Image.asset(
+                    "assets/background-login.jpg",
+                    fit: BoxFit.cover,
+                    height: double.infinity,
+                  ),
+                ]),
+              ),
+              Container(
+                color: Color(0xFF2B3B9A),
+                width: 500,
+                height: double.infinity,
+                child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 50,
+                      ),
+                      Text("Login", style: Constants.title1),
+                      Spacer(),
+                      Container(
+                        child: TextFormField(
+                          keyboardType: TextInputType.text,
+                          controller: emailController,
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
+                            hintText: "Email",
+                            prefixIcon: Icon(Icons.email_outlined),
+                            // hintStyle: Constants.hintStyle,
+                            border: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(width: 0, style: BorderStyle.none),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      Container(
+                        child: TextFormField(
+                          obscureText: invisible,
+                          keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.next,
+                          controller: passwordController,
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.fromLTRB(3, 3, 3, 3),
+                            hintText: "Password",
+                            // prefixIconConstraints: BoxConstraints.loose(Size.square(30)),
+                            prefixIcon: Icon(Icons.lock),
+                            // hintStyle: Constants.hintStyle,
+                            border: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(width: 0, style: BorderStyle.none),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            suffixIcon: IconButton(
+                              icon: Icon((invisible == true)
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off),
+                              onPressed: () {
+                                setState(() {
+                                  invisible = !invisible;
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      Container(
+                        width: double.infinity,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(colors: [
+                            Color.fromARGB(225, 0, 111, 186),
+                            Color.fromARGB(225, 58, 171, 249)
+                          ]),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                          ),
+                          onPressed: () {
+                            login();
+                          },
+                          child: Text(
+                            "Login",
+                            style: Constants.button1,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 80,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          bottomNavigationBar: Container(
+            height: 50,
+            color: Color(0xFF0E286C),
+          ),
+        );
+      },
     );
   }
 }
