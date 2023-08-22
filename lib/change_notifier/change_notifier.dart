@@ -60,11 +60,11 @@ class Notifier extends ChangeNotifier {
   int _totalVessel = 0;
   int get totalVessel => _totalVessel;
 
-  Future<void> incrementPage(pageIndex)async {
+  void incrementPage(pageIndex){
     _currentPage = pageIndex;
     notifyListeners();
   }
-   Future<void> fetchDataVessel(int _pageSize) async {
+  void fetchDataVessel(int _pageSize) {
     _isLoading = true;
     Api.getAllVessel(page: _currentPage, perpage: _pageSize).then((value) {
       _dataVesselTable.clear();

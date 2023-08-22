@@ -13,6 +13,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pagination_flutter/pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:snapping_sheet/snapping_sheet.dart';
@@ -237,7 +238,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
-
   // void calculateCenter() {
   //   for(var kmlOverlayPolygon in kmlOverlayPolygons){
   //     double totalLat = 0.0;
@@ -255,7 +255,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   //     // return LatLng(totalLat / coordinates.length, totalLng / coordinates.length);
   //   }
   // }
-  Future<void> runNotifier()async{
+  Future<void> runNotifier() async {
     final notifier = await Provider.of<Notifier>(context, listen: false);
     notifier.initVessel();
     notifier.initCoorVessel();
@@ -429,8 +429,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               padding: EdgeInsets.all(5),
                                               child: Row(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment.end,
+                                                    MainAxisAlignment.spaceBetween,
                                                 children: [
+                                                  Text(
+                                                    "Page ${value.currentPage} of ${(value.totalVessel / 10).ceil()}"
+                                                  ),
                                                   InkWell(
                                                     onTap: () {
                                                       showDialog(
@@ -674,11 +677,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             ),
                                             Container(
                                               height: 400,
-                                              child: ListView(
-                                                  scrollDirection:
-                                                      Axis.vertical,
-                                                  children: [
-                                                    value.isLoading
+                                              child: SingleChildScrollView(
+                                                child: SingleChildScrollView(
+                                                  scrollDirection: Axis.horizontal,
+                                                    child: value.isLoading
                                                         ? Center(
                                                             child:
                                                                 CircularProgressIndicator())
@@ -712,99 +714,112 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                     label: Text(
                                                                         "Action")),
                                                               ],
-                                                            rows: value.vesselResult.map((data) {
+                                                            rows: value
+                                                                .dataVesselTable
+                                                                .map((data) {
                                                               return DataRow(
                                                                   cells: [
-                                                                    DataCell(Text(data.callSign!)),
-                                                                    DataCell(Text(data.flag!)),
-                                                                    DataCell(Text(data.kelas!)),
-                                                                    DataCell(Text(data.builder!)),
-                                                                    DataCell(Text(data.yearBuilt!)),
-                                                                    DataCell(Text(data.ip!)),
-                                                                    DataCell(Text(data.port!)),
-                                                                    DataCell(Text(data.size!)),
+                                                                    DataCell(Text(
+                                                                        data.callSign!)),
+                                                                    DataCell(Text(
+                                                                        data.flag!)),
+                                                                    DataCell(Text(
+                                                                        data.kelas!)),
+                                                                    DataCell(Text(
+                                                                        data.builder!)),
+                                                                    DataCell(Text(
+                                                                        data.yearBuilt!)),
+                                                                    DataCell(Text(
+                                                                        data.ip!)),
+                                                                    DataCell(Text(
+                                                                        data.port!)),
+                                                                    DataCell(Text(
+                                                                        data.size!)),
                                                                     DataCell(
                                                                         IconButton(
-                                                                          icon: Icon(
-                                                                            Icons.delete,
-                                                                            color: Colors.red,
-                                                                          ),
-                                                                          onPressed: () {
-                                                                            Api.deleteVessel(data.callSign!).then((value) {
-                                                                              if (value.status == 200) {
-                                                                                EasyLoading.showSuccess("Kapal Terhapus..");
-                                                                                Navigator.pop(context);
-                                                                              } else {
-                                                                                EasyLoading.showError("Gagal Menghapus Kapal..");
-                                                                              }
-                                                                            });
-                                                                          },
-                                                                        )
-                                                                    ),
-
+                                                                      icon: Icon(
+                                                                        Icons
+                                                                            .delete,
+                                                                        color: Colors
+                                                                            .red,
+                                                                      ),
+                                                                      onPressed:
+                                                                          () {
+                                                                        Api.deleteVessel(data
+                                                                                .callSign!)
+                                                                            .then(
+                                                                                (value) {
+                                                                          if (value.status ==
+                                                                              200) {
+                                                                            EasyLoading.showSuccess(
+                                                                                "Kapal Terhapus..");
+                                                                            Navigator.pop(
+                                                                                context);
+                                                                          } else {
+                                                                            EasyLoading.showError(
+                                                                                "Gagal Menghapus Kapal..");
+                                                                          }
+                                                                        });
+                                                                      },
+                                                                    )),
                                                                   ]);
-                                                            }).toList())
-                                                    // PaginatedDataTable(
-                                                    //         columns: [
-                                                    //           DataColumn(
-                                                    //               label: Text(
-                                                    //                   'Call Sign')),
-                                                    //           DataColumn(
-                                                    //               label:
-                                                    //                   Text('Flag')),
-                                                    //           DataColumn(
-                                                    //               label: Text(
-                                                    //                   'Kelas')),
-                                                    //           DataColumn(
-                                                    //               label: Text(
-                                                    //                   'Builder')),
-                                                    //           DataColumn(
-                                                    //               label: Text(
-                                                    //                   'Year Built')),
-                                                    //           DataColumn(
-                                                    //               label:
-                                                    //                   Text('IP')),
-                                                    //           DataColumn(
-                                                    //               label:
-                                                    //                   Text('Port')),
-                                                    //           DataColumn(
-                                                    //               label:
-                                                    //                   Text('Size')),
-                                                    //           DataColumn(
-                                                    //               label: Text(
-                                                    //                   'Action')),
-                                                    //         ],
-                                                    //         // dragStartBehavior: DragStartBehavior.down,
-                                                    //         arrowHeadColor:
-                                                    //             Colors.black,
-                                                    //         columnSpacing: 100,
-                                                    //         horizontalMargin: 10,
-                                                    //         rowsPerPage: 10,
-                                                    //         showCheckboxColumn:
-                                                    //             false,
-                                                    //         onPageChanged:
-                                                    //             (pageIndex) {
-                                                    //           readNotifier.incrementPage((pageIndex / 10) + 1);
-                                                    //           print(value.currentPage);
-                                                    //           readNotifier.fetchDataVessel(10);
-                                                    //
-                                                    //           // setState(() {
-                                                    //           //   _currentPage++;
-                                                    //           //   _dataVesselTable.clear();
-                                                    //           //   print("get ulang $pageIndex");
-                                                    //           //   fetchDataVessel();
-                                                    //           // });
-                                                    //         },
-                                                    //         source: _DataSource(
-                                                    //           data:
-                                                    //               value.dataVesselTable,
-                                                    //           context: context,
-                                                    //           vesselTotal:
-                                                    //               value.totalVessel,
-                                                    //         ),
-                                                    //       ),
-                                                  ]),
-                                            )
+                                                            }).toList())),
+                                              ),
+                                            ),
+                                            Pagination(
+                                              numOfPages:
+                                                  (value.totalVessel / 10)
+                                                      .ceil(),
+                                              selectedPage: value.currentPage,
+                                              pagesVisible: 7,
+                                              onPageChanged: (page) {
+                                                readNotifier
+                                                    .incrementPage(page);
+                                                readNotifier
+                                                    .fetchDataVessel(10);
+                                              },
+                                              nextIcon: const Icon(
+                                                Icons.arrow_forward_ios,
+                                                color: Colors.blue,
+                                                size: 14,
+                                              ),
+                                              previousIcon: const Icon(
+                                                Icons.arrow_back_ios,
+                                                color: Colors.blue,
+                                                size: 14,
+                                              ),
+                                              activeTextStyle: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                              activeBtnStyle: ButtonStyle(
+                                                backgroundColor:
+                                                    MaterialStateProperty.all(
+                                                        Colors.blue),
+                                                shape:
+                                                    MaterialStateProperty.all(
+                                                  RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            38),
+                                                  ),
+                                                ),
+                                              ),
+                                              inactiveBtnStyle: ButtonStyle(
+                                                shape:
+                                                    MaterialStateProperty.all(
+                                                        RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(38),
+                                                )),
+                                              ),
+                                              inactiveTextStyle:
+                                                  const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
                                           ],
                                         )));
                               });
@@ -1353,62 +1368,61 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
       },
     );
-  
   }
 }
 
-class _DataSource extends DataTableSource {
-  final List<Vessel.Data> data;
-  final BuildContext ctx;
-  final int vesselTotal;
+// class _DataSource extends DataTableSource {
+//   final List<Vessel.Data> data;
+//   final BuildContext ctx;
+//   final int vesselTotal;
 
-  _DataSource(
-      {required this.data, required this.context, required this.vesselTotal});
+//   _DataSource(
+//       {required this.data, required this.context, required this.vesselTotal});
 
 
-  @override
-  DataRow? getRow(int index) {
-    if (index >= data.length) {
-      return null;
-    }
+//   @override
+//   DataRow? getRow(int index) {
+//     if (index >= data.length) {
+//       return null;
+//     }
 
-    final item = data[index];
+//     final item = data[index];
 
-    return DataRow(cells: [
-      DataCell(Text(item.callSign!)),
-      DataCell(Text(item.flag!)),
-      DataCell(Text(item.kelas!)),
-      DataCell(Text(item.builder!)),
-      DataCell(Text(item.yearBuilt!)),
-      DataCell(Text(item.ip!)),
-      DataCell(Text(item.port!)),
-      DataCell(Text(item.size!)),
-      DataCell(
-          IconButton(
-        icon: Icon(
-          Icons.delete,
-          color: Colors.red,
-        ),
-        onPressed: () {
-          Api.deleteVessel(item.callSign!).then((value) {
-            if (value.status == 200) {
-              EasyLoading.showSuccess("Kapal Terhapus..");
-              Navigator.pop(ctx);
-            } else {
-              EasyLoading.showError("Gagal Menghapus Kapal..");
-            }
-          });
-        },
-      ))
-    ]);
-  }
+//     return DataRow(cells: [
+//       DataCell(Text(item.callSign!)),
+//       DataCell(Text(item.flag!)),
+//       DataCell(Text(item.kelas!)),
+//       DataCell(Text(item.builder!)),
+//       DataCell(Text(item.yearBuilt!)),
+//       DataCell(Text(item.ip!)),
+//       DataCell(Text(item.port!)),
+//       DataCell(Text(item.size!)),
+//       DataCell(
+//           IconButton(
+//         icon: Icon(
+//           Icons.delete,
+//           color: Colors.red,
+//         ),
+//         onPressed: () {
+//           Api.deleteVessel(item.callSign!).then((value) {
+//             if (value.status == 200) {
+//               EasyLoading.showSuccess("Kapal Terhapus..");
+//               Navigator.pop(ctx);
+//             } else {
+//               EasyLoading.showError("Gagal Menghapus Kapal..");
+//             }
+//           });
+//         },
+//       ))
+//     ]);
+//   }
 
-  @override
-  bool get isRowCountApproximate => false;
+//   @override
+//   bool get isRowCountApproximate => false;
 
-  @override
-  int get rowCount => vesselTotal;
+//   @override
+//   int get rowCount => vesselTotal;
 
-  @override
-  int get selectedRowCount => 0;
-}
+//   @override
+//   int get selectedRowCount => 0;
+// }
