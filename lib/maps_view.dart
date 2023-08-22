@@ -212,14 +212,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
       if (value.message == "Data berhasil masuk database") {
         EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
-        // callsignController.clear();
-        // flagController.clear();
-        // classController.clear();
-        // builderController.clear();
-        // yearbuiltController.clear();
-        // ipController.clear();
-        // portController.clear();
-        // vesselSize == null;
+        callsignController.clear();
+        flagController.clear();
+        classController.clear();
+        builderController.clear();
+        yearbuiltController.clear();
+        ipController.clear();
+        portController.clear();
+        vesselSize == null;
         // _dataVesselTable.clear();
         final notifier = Provider.of<Notifier>(context, listen: false);
         notifier.fetchDataVessel(_currentPage,_pageSize);
@@ -716,15 +716,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             rowsPerPage: 10,
                                                             showCheckboxColumn:
                                                                 false,
-                                                            // onPageChanged:
-                                                            //     (pageIndex) {
-                                                            //   setState(() {
-                                                            //     _currentPage++;
-                                                            //     _dataVesselTable.clear();
-                                                            //     print("get ulang $pageIndex");
-                                                            //     fetchDataVessel();
-                                                            //   });
-                                                            // },
+                                                            onPageChanged:
+                                                                (pageIndex) {
+                                                              print(pageIndex);
+                                                              // readNotifier.incrementPage(pageIndex);
+                                                              // print(value.currentPage);
+                                                              // readNotifier.nextPageVessel();
+
+                                                              // setState(() {
+                                                              //   _currentPage++;
+                                                              //   _dataVesselTable.clear();
+                                                              //   print("get ulang $pageIndex");
+                                                              //   fetchDataVessel();
+                                                              // });
+                                                            },
                                                             source: _DataSource(
                                                               data:
                                                                   value.dataVesselTable,

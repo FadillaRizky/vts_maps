@@ -30,6 +30,9 @@ class Notifier extends ChangeNotifier {
   // === API ===
   List<Vessel.Data> _vesselResult = [];
   List<Vessel.Data> get vesselResult => _vesselResult;
+
+  // bool _loading = false;
+  // bool get loading => _loading ;
   
   void initVessel() {
     Api.getAllVessel().then((value) {
@@ -44,6 +47,28 @@ class Notifier extends ChangeNotifier {
     });
     notifyListeners();
   }
+
+  int _currentPage = 1;
+  int get currentPage => _currentPage;
+
+  void incrementPage(pageIndex){
+    _currentPage = pageIndex;
+    notifyListeners();
+  }
+  void nextPageVessel() {
+    Api.getAllVessel(page: _currentPage,perpage: 10 ).then((value) {
+      _vesselResult.clear();
+      if (value.total! == 0) {
+        _vesselResult = [];
+      }
+      if (value.total! > 0) {
+        _vesselResult.addAll(value.data!);
+      }
+    });
+    notifyListeners();
+  }
+
+
   List<LatestVesselCoor.Data> _coorResult = [];
   List<LatestVesselCoor.Data> get coorResult => _coorResult;
 
@@ -89,6 +114,7 @@ class Notifier extends ChangeNotifier {
       _dataVesselTable.clear();
       if (value.total! == 0) {
         _dataVesselTable = [];
+        _isLoading = false;
       }
       if (value.total! > 0) {
         _dataVesselTable.addAll(value.data!);
