@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:math';
 
@@ -115,7 +116,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
-  double vesselSizes(String size){
+  double vesselSizes(String size) {
     switch (size) {
       case "small":
         return 35.0;
@@ -236,6 +237,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
+
   // void calculateCenter() {
   //   for(var kmlOverlayPolygon in kmlOverlayPolygons){
   //     double totalLat = 0.0;
@@ -332,14 +334,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Consumer<Notifier>(
-      builder:(context, value, child) {
+      builder: (context, value, child) {
         var readNotifier = context.read<Notifier>();
-        
+
         Vessel.Data vesselDescription(String vessel) {
-          var dataVessel = value.vesselResult.where((e) => e.callSign!.contains(vessel)).first;
+          var dataVessel = value.vesselResult
+              .where((e) => e.callSign!.contains(vessel))
+              .first;
           return dataVessel;
         }
-   
+
         LatestVesselCoor.Data vesselLatestCoor(String vessel) {
           LatestVesselCoor.Data latestCoor =
               value.coorResult.where((e) => e.callSign!.contains(vessel)).first;
@@ -349,7 +353,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         searchVessel(String callSign) {
           LatestVesselCoor.Data vessel = vesselLatestCoor(callSign);
           readNotifier.initLatLangCoor(call_sign: vessel.callSign);
-          
+
           readNotifier.clickVessel(vessel.callSign!);
           _animatedMapMove(
               LatLng(
@@ -358,7 +362,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               13);
         }
-        
+
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Color(0xFF0E286C),
@@ -390,8 +394,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                                 return Dialog(
                                     shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.all(Radius.circular(5))),
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(5))),
                                     child: Container(
                                         width: width / 1.5,
                                         child: Column(
@@ -404,7 +408,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               padding: EdgeInsets.all(8),
                                               child: Row(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment.spaceBetween,
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
                                                 children: [
                                                   Text(
                                                     "Vessel List",
@@ -430,7 +435,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                     onTap: () {
                                                       showDialog(
                                                           context: context,
-                                                          barrierDismissible: false,
+                                                          barrierDismissible:
+                                                              false,
                                                           builder: (BuildContext
                                                               context) {
                                                             var height =
@@ -446,12 +452,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                                                             return Dialog(
                                                               shape: RoundedRectangleBorder(
-                                                                  borderRadius: BorderRadius
-                                                                      .all(Radius
-                                                                          .circular(
+                                                                  borderRadius:
+                                                                      BorderRadius.all(
+                                                                          Radius.circular(
                                                                               5))),
                                                               child: Container(
-                                                                width: width / 3,
+                                                                width:
+                                                                    width / 3,
                                                                 child: Column(
                                                                   mainAxisSize:
                                                                       MainAxisSize
@@ -464,108 +471,106 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                       color: Colors
                                                                           .black12,
                                                                       padding:
-                                                                          EdgeInsets
-                                                                              .all(
-                                                                                  8),
-                                                                      child: Row(
+                                                                          EdgeInsets.all(
+                                                                              8),
+                                                                      child:
+                                                                          Row(
                                                                         mainAxisAlignment:
-                                                                            MainAxisAlignment
-                                                                                .spaceBetween,
+                                                                            MainAxisAlignment.spaceBetween,
                                                                         children: [
                                                                           Text(
                                                                             "Add Vessel",
-                                                                            style: GoogleFonts.openSans(
-                                                                                fontSize:
-                                                                                    15),
+                                                                            style:
+                                                                                GoogleFonts.openSans(fontSize: 15),
                                                                           ),
                                                                           IconButton(
                                                                             onPressed:
                                                                                 () {
-                                                                              Navigator.pop(
-                                                                                  context);
+                                                                              Navigator.pop(context);
                                                                             },
-                                                                            icon: Icon(
-                                                                                Icons.close),
+                                                                            icon:
+                                                                                Icon(Icons.close),
                                                                           ),
                                                                         ],
                                                                       ),
                                                                     ),
                                                                     Padding(
                                                                       padding:
-                                                                          EdgeInsets
-                                                                              .all(
-                                                                                  8),
-                                                                      child: Column(
+                                                                          EdgeInsets.all(
+                                                                              8),
+                                                                      child:
+                                                                          Column(
                                                                         children: [
                                                                           VesselTextField(
                                                                             controller:
                                                                                 callsignController,
                                                                             hint:
                                                                                 'Call Sign',
-                                                                                type: TextInputType.text,
+                                                                            type:
+                                                                                TextInputType.text,
                                                                           ),
                                                                           VesselTextField(
                                                                             controller:
                                                                                 flagController,
                                                                             hint:
                                                                                 'Bendera',
-                                                                                type: TextInputType.text,
+                                                                            type:
+                                                                                TextInputType.text,
                                                                           ),
                                                                           VesselTextField(
                                                                             controller:
                                                                                 classController,
                                                                             hint:
                                                                                 'Kelas',
-                                                                                type: TextInputType.text,
+                                                                            type:
+                                                                                TextInputType.text,
                                                                           ),
                                                                           VesselTextField(
                                                                             controller:
                                                                                 builderController,
                                                                             hint:
                                                                                 'Builder',
-                                                                                type: TextInputType.text,
+                                                                            type:
+                                                                                TextInputType.text,
                                                                           ),
                                                                           VesselTextField(
                                                                             controller:
                                                                                 yearbuiltController,
                                                                             hint:
                                                                                 'Tahun Pembuatan',
-                                                                                type: TextInputType.number,
+                                                                            type:
+                                                                                TextInputType.number,
                                                                           ),
                                                                           VesselTextField(
                                                                             controller:
                                                                                 ipController,
                                                                             hint:
                                                                                 'IP',
-                                                                                type: TextInputType.text,
+                                                                            type:
+                                                                                TextInputType.text,
                                                                           ),
                                                                           VesselTextField(
                                                                             controller:
                                                                                 portController,
                                                                             hint:
                                                                                 'Port',
-                                                                                type: TextInputType.number,
+                                                                            type:
+                                                                                TextInputType.number,
                                                                           ),
                                                                           SizedBox(
                                                                             height:
                                                                                 30,
-                                                                            width: double
-                                                                                .infinity,
-                                                                            child: DropdownSearch<
-                                                                                String>(
-                                                                              dropdownBuilder: (context, selectedItem) =>
-                                                                                  Text(
-                                                                                selectedItem ??
-                                                                                    "Ukuran Kapal",
-                                                                                style:
-                                                                                    TextStyle(fontSize: 15, color: Colors.black54),
+                                                                            width:
+                                                                                double.infinity,
+                                                                            child:
+                                                                                DropdownSearch<String>(
+                                                                              dropdownBuilder: (context, selectedItem) => Text(
+                                                                                selectedItem ?? "Ukuran Kapal",
+                                                                                style: TextStyle(fontSize: 15, color: Colors.black54),
                                                                               ),
-                                                                              popupProps:
-                                                                                  PopupPropsMultiSelection.dialog(
-                                                                                fit:
-                                                                                    FlexFit.loose,
-                                                                                itemBuilder: (context, item, isSelected) =>
-                                                                                    ListTile(
+                                                                              popupProps: PopupPropsMultiSelection.dialog(
+                                                                                fit: FlexFit.loose,
+                                                                                itemBuilder: (context, item, isSelected) => ListTile(
                                                                                   title: Text(
                                                                                     item,
                                                                                     style: TextStyle(
@@ -574,10 +579,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                   ),
                                                                                 ),
                                                                               ),
-                                                                              dropdownDecoratorProps:
-                                                                                  DropDownDecoratorProps(
-                                                                                dropdownSearchDecoration:
-                                                                                    InputDecoration(
+                                                                              dropdownDecoratorProps: DropDownDecoratorProps(
+                                                                                dropdownSearchDecoration: InputDecoration(
                                                                                   border: OutlineInputBorder(
                                                                                     borderSide: BorderSide.none,
                                                                                     borderRadius: BorderRadius.circular(10),
@@ -593,10 +596,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                 "large",
                                                                                 "extra large",
                                                                               ],
-                                                                              onChanged:
-                                                                                  (value) {
-                                                                                vesselSize =
-                                                                                    value;
+                                                                              onChanged: (value) {
+                                                                                vesselSize = value;
                                                                               },
                                                                             ),
                                                                           ),
@@ -609,12 +610,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                 MainAxisAlignment.end,
                                                                             children: [
                                                                               InkWell(
-                                                                                onTap:
-                                                                                    () {
+                                                                                onTap: () {
                                                                                   Navigator.pop(context);
                                                                                 },
-                                                                                child:
-                                                                                    Container(
+                                                                                child: Container(
                                                                                   decoration: BoxDecoration(
                                                                                     borderRadius: BorderRadius.circular(10),
                                                                                     color: Color(0xFFFF0000),
@@ -626,16 +625,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                 ),
                                                                               ),
                                                                               SizedBox(
-                                                                                width:
-                                                                                    5,
+                                                                                width: 5,
                                                                               ),
                                                                               InkWell(
-                                                                                onTap:
-                                                                                    () {
+                                                                                onTap: () {
                                                                                   submitVessel();
                                                                                 },
-                                                                                child:
-                                                                                    Container(
+                                                                                child: Container(
                                                                                   decoration: BoxDecoration(
                                                                                     borderRadius: BorderRadius.circular(10),
                                                                                     color: Color(0xFF399D44),
@@ -660,12 +656,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                     child: Container(
                                                       decoration: BoxDecoration(
                                                         borderRadius:
-                                                            BorderRadius.circular(
-                                                                10),
-                                                        color: Color(0xFF399D44),
+                                                            BorderRadius
+                                                                .circular(10),
+                                                        color:
+                                                            Color(0xFF399D44),
                                                       ),
-                                                      padding: EdgeInsets.all(5),
-                                                      alignment: Alignment.center,
+                                                      padding:
+                                                          EdgeInsets.all(5),
+                                                      alignment:
+                                                          Alignment.center,
                                                       height: 40,
                                                       child: Icon(Icons.add),
                                                     ),
@@ -676,71 +675,134 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             Container(
                                               height: 400,
                                               child: ListView(
-                                                  scrollDirection: Axis.vertical,
+                                                  scrollDirection:
+                                                      Axis.vertical,
                                                   children: [
                                                     value.isLoading
                                                         ? Center(
                                                             child:
                                                                 CircularProgressIndicator())
-                                                        : PaginatedDataTable(
+                                                        : DataTable(
                                                             columns: [
-                                                              DataColumn(
-                                                                  label: Text(
-                                                                      'Call Sign')),
-                                                              DataColumn(
-                                                                  label:
-                                                                      Text('Flag')),
-                                                              DataColumn(
-                                                                  label: Text(
-                                                                      'Kelas')),
-                                                              DataColumn(
-                                                                  label: Text(
-                                                                      'Builder')),
-                                                              DataColumn(
-                                                                  label: Text(
-                                                                      'Year Built')),
-                                                              DataColumn(
-                                                                  label:
-                                                                      Text('IP')),
-                                                              DataColumn(
-                                                                  label:
-                                                                      Text('Port')),
-                                                              DataColumn(
-                                                                  label:
-                                                                      Text('Size')),
-                                                              DataColumn(
-                                                                  label: Text(
-                                                                      'Action')),
-                                                            ],
-                                                            // dragStartBehavior: DragStartBehavior.down,
-                                                            arrowHeadColor:
-                                                                Colors.black,
-                                                            columnSpacing: 100,
-                                                            horizontalMargin: 10,
-                                                            rowsPerPage: 10,
-                                                            showCheckboxColumn:
-                                                                false,
-                                                            onPageChanged:
-                                                                (pageIndex) {
-                                                              readNotifier.incrementPage((pageIndex / 10) + 1);
-                                                              print(value.currentPage);
-                                                              readNotifier.fetchDataVessel(10);
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        "CallSign")),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        "Flag")),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        "Kelas")),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        "Builder")),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        "Year Built")),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        "IP")),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        "Port")),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        "Size")),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        "Action")),
+                                                              ],
+                                                            rows: value.vesselResult.map((data) {
+                                                              return DataRow(
+                                                                  cells: [
+                                                                    DataCell(Text(data.callSign!)),
+                                                                    DataCell(Text(data.flag!)),
+                                                                    DataCell(Text(data.kelas!)),
+                                                                    DataCell(Text(data.builder!)),
+                                                                    DataCell(Text(data.yearBuilt!)),
+                                                                    DataCell(Text(data.ip!)),
+                                                                    DataCell(Text(data.port!)),
+                                                                    DataCell(Text(data.size!)),
+                                                                    DataCell(
+                                                                        IconButton(
+                                                                          icon: Icon(
+                                                                            Icons.delete,
+                                                                            color: Colors.red,
+                                                                          ),
+                                                                          onPressed: () {
+                                                                            Api.deleteVessel(data.callSign!).then((value) {
+                                                                              if (value.status == 200) {
+                                                                                EasyLoading.showSuccess("Kapal Terhapus..");
+                                                                                Navigator.pop(context);
+                                                                              } else {
+                                                                                EasyLoading.showError("Gagal Menghapus Kapal..");
+                                                                              }
+                                                                            });
+                                                                          },
+                                                                        )
+                                                                    ),
 
-                                                              // setState(() {
-                                                              //   _currentPage++;
-                                                              //   _dataVesselTable.clear();
-                                                              //   print("get ulang $pageIndex");
-                                                              //   fetchDataVessel();
-                                                              // });
-                                                            },
-                                                            source: _DataSource(
-                                                              data:
-                                                                  value.dataVesselTable,
-                                                              ctx: context,
-                                                              vesselTotal:
-                                                                  value.totalVessel,
-                                                            ),
-                                                          ),
+                                                                  ]);
+                                                            }).toList())
+                                                    // PaginatedDataTable(
+                                                    //         columns: [
+                                                    //           DataColumn(
+                                                    //               label: Text(
+                                                    //                   'Call Sign')),
+                                                    //           DataColumn(
+                                                    //               label:
+                                                    //                   Text('Flag')),
+                                                    //           DataColumn(
+                                                    //               label: Text(
+                                                    //                   'Kelas')),
+                                                    //           DataColumn(
+                                                    //               label: Text(
+                                                    //                   'Builder')),
+                                                    //           DataColumn(
+                                                    //               label: Text(
+                                                    //                   'Year Built')),
+                                                    //           DataColumn(
+                                                    //               label:
+                                                    //                   Text('IP')),
+                                                    //           DataColumn(
+                                                    //               label:
+                                                    //                   Text('Port')),
+                                                    //           DataColumn(
+                                                    //               label:
+                                                    //                   Text('Size')),
+                                                    //           DataColumn(
+                                                    //               label: Text(
+                                                    //                   'Action')),
+                                                    //         ],
+                                                    //         // dragStartBehavior: DragStartBehavior.down,
+                                                    //         arrowHeadColor:
+                                                    //             Colors.black,
+                                                    //         columnSpacing: 100,
+                                                    //         horizontalMargin: 10,
+                                                    //         rowsPerPage: 10,
+                                                    //         showCheckboxColumn:
+                                                    //             false,
+                                                    //         onPageChanged:
+                                                    //             (pageIndex) {
+                                                    //           readNotifier.incrementPage((pageIndex / 10) + 1);
+                                                    //           print(value.currentPage);
+                                                    //           readNotifier.fetchDataVessel(10);
+                                                    //
+                                                    //           // setState(() {
+                                                    //           //   _currentPage++;
+                                                    //           //   _dataVesselTable.clear();
+                                                    //           //   print("get ulang $pageIndex");
+                                                    //           //   fetchDataVessel();
+                                                    //           // });
+                                                    //         },
+                                                    //         source: _DataSource(
+                                                    //           data:
+                                                    //               value.dataVesselTable,
+                                                    //           context: context,
+                                                    //           vesselTotal:
+                                                    //               value.totalVessel,
+                                                    //         ),
+                                                    //       ),
                                                   ]),
                                             )
                                           ],
@@ -812,13 +874,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             border: OutlineInputBorder(
                               borderSide: BorderSide(
                                   width: 3,
-                                  color: const Color.fromARGB(255, 230, 230, 230)),
+                                  color:
+                                      const Color.fromARGB(255, 230, 230, 230)),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide(
                                   width: 3,
-                                  color: const Color.fromARGB(255, 230, 230, 230)),
+                                  color:
+                                      const Color.fromARGB(255, 230, 230, 230)),
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
@@ -923,15 +987,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               snappingPositions: [
                                 SnappingPosition.factor(
                                   snappingCurve: Curves.elasticOut,
-                                  snappingDuration: Duration(milliseconds: 1750),
-                                  positionFactor:
-                                      (301.74 / MediaQuery.of(context).size.height),
+                                  snappingDuration:
+                                      Duration(milliseconds: 1750),
+                                  positionFactor: (301.74 /
+                                      MediaQuery.of(context).size.height),
                                 ),
                                 SnappingPosition.factor(
                                   positionFactor: 0.0,
                                   snappingCurve: Curves.easeOutExpo,
                                   snappingDuration: Duration(seconds: 1),
-                                  grabbingContentOffset: GrabbingContentOffset.top,
+                                  grabbingContentOffset:
+                                      GrabbingContentOffset.top,
                                 ),
                                 // SnappingPosition.factor(
                                 //   grabbingContentOffset:
@@ -955,11 +1021,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                       children: [
                                         GestureDetector(
                                           onTap: () {
-                                            snappingSheetController.snapToPosition(
+                                            snappingSheetController
+                                                .snapToPosition(
                                               SnappingPosition.factor(
                                                   positionFactor: -0.5),
                                             );
-                                            Timer(Duration(milliseconds: 300), () {
+                                            Timer(Duration(milliseconds: 300),
+                                                () {
                                               readNotifier.clickVessel("");
                                             });
                                           },
@@ -974,7 +1042,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               child: Center(
                                                 child: Text(
                                                   "X",
-                                                  style: TextStyle(fontSize: 20),
+                                                  style:
+                                                      TextStyle(fontSize: 20),
                                                 ),
                                               ),
                                             ),
@@ -1035,10 +1104,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                 children: [
                                                   Expanded(
                                                     child: Container(
-                                                      padding: EdgeInsets.all(10),
+                                                      padding:
+                                                          EdgeInsets.all(10),
                                                       decoration: BoxDecoration(
                                                           border: Border.all(
-                                                              color: Colors.grey,
+                                                              color:
+                                                                  Colors.grey,
                                                               width: 1)),
                                                       child: Column(
                                                         crossAxisAlignment:
@@ -1051,9 +1122,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                               fontSize: 14,
                                                               color: const Color
                                                                       .fromARGB(
-                                                                  255, 61, 61, 61),
+                                                                  255,
+                                                                  61,
+                                                                  61,
+                                                                  61),
                                                               fontWeight:
-                                                                  FontWeight.w700,
+                                                                  FontWeight
+                                                                      .w700,
                                                             ),
                                                           ),
                                                           Text(
@@ -1061,10 +1136,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             style: TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
-                                                                  FontWeight.w600,
+                                                                  FontWeight
+                                                                      .w600,
                                                               color: const Color
                                                                       .fromARGB(
-                                                                  255, 61, 61, 61),
+                                                                  255,
+                                                                  61,
+                                                                  61,
+                                                                  61),
                                                             ),
                                                           ),
                                                         ],
@@ -1073,10 +1152,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                   ),
                                                   Expanded(
                                                     child: Container(
-                                                      padding: EdgeInsets.all(10),
+                                                      padding:
+                                                          EdgeInsets.all(10),
                                                       decoration: BoxDecoration(
                                                           border: Border.all(
-                                                              color: Colors.grey,
+                                                              color:
+                                                                  Colors.grey,
                                                               width: 1)),
                                                       child: Column(
                                                         crossAxisAlignment:
@@ -1089,9 +1170,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                               fontSize: 14,
                                                               color: const Color
                                                                       .fromARGB(
-                                                                  255, 61, 61, 61),
+                                                                  255,
+                                                                  61,
+                                                                  61,
+                                                                  61),
                                                               fontWeight:
-                                                                  FontWeight.w700,
+                                                                  FontWeight
+                                                                      .w700,
                                                             ),
                                                           ),
                                                           Text(
@@ -1099,10 +1184,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             style: TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
-                                                                  FontWeight.w600,
+                                                                  FontWeight
+                                                                      .w600,
                                                               color: const Color
                                                                       .fromARGB(
-                                                                  255, 61, 61, 61),
+                                                                  255,
+                                                                  61,
+                                                                  61,
+                                                                  61),
                                                             ),
                                                           ),
                                                         ],
@@ -1127,21 +1216,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       TileLayer(
                         urlTemplate:
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+                        userAgentPackageName:
+                            'dev.fleaflet.flutter_map.example',
                       ),
                       if (value.kmlOverlayPolygons.isNotEmpty)
-                        for (final kmlOverlayPolygon in value.kmlOverlayPolygons)
+                        for (final kmlOverlayPolygon
+                            in value.kmlOverlayPolygons)
                           PolylineLayer(
                             polylines: kmlOverlayPolygon.map((kmlPolygon) {
                               return Polyline(
                                 strokeWidth: 3,
                                 points: kmlPolygon.points,
-                                color:
-                                    Color(int.parse(kmlPolygon.color, radix: 16)),
+                                color: Color(
+                                    int.parse(kmlPolygon.color, radix: 16)),
                               );
                             }).toList(),
                           ),
-                      
+
                       PolylineLayer(
                         polylines: [
                           Polyline(
@@ -1183,7 +1274,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       //       CircleMarker(
                       //         point: LatLng(x.latitude!, x.longitude!),
                       //         radius: 3,
-                      //         borderStrokeWidth: 5, 
+                      //         borderStrokeWidth: 5,
                       //         color: Colors.white,
                       //         borderColor: Colors.white,
                       //       ),
@@ -1204,8 +1295,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ),
                           for (var i in value.coorResult)
                             Marker(
-                              width: vesselSizes(vesselDescription(i.callSign!).size.toString()),
-                              height: vesselSizes(vesselDescription(i.callSign!).size.toString()),
+                              width: vesselSizes(vesselDescription(i.callSign!)
+                                  .size
+                                  .toString()),
+                              height: vesselSizes(vesselDescription(i.callSign!)
+                                  .size
+                                  .toString()),
                               point: LatLng(
                                   predictLatLong(
                                           i.coorGga!.latitude!.toDouble(),
@@ -1268,7 +1363,8 @@ class _DataSource extends DataTableSource {
   final int vesselTotal;
 
   _DataSource(
-      {required this.data, required this.ctx, required this.vesselTotal});
+      {required this.data, required this.context, required this.vesselTotal});
+
 
   @override
   DataRow? getRow(int index) {
@@ -1287,7 +1383,8 @@ class _DataSource extends DataTableSource {
       DataCell(Text(item.ip!)),
       DataCell(Text(item.port!)),
       DataCell(Text(item.size!)),
-      DataCell(IconButton(
+      DataCell(
+          IconButton(
         icon: Icon(
           Icons.delete,
           color: Colors.red,
