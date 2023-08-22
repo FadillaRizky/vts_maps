@@ -13,9 +13,12 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:snapping_sheet/snapping_sheet.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:vts_maps/change_notifier/change_notifier.dart';
+import 'package:vts_maps/utils/text_field.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:xml/xml.dart';
 
@@ -29,7 +32,6 @@ import 'api/GetAllVesselCoor.dart' as LatestVesselCoor;
 import 'api/GetAllLatLangCoor.dart' as LatLangCoor;
 import 'api/GetAllVessel.dart' as Vessel;
 import 'api/api.dart';
-
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -105,11 +107,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // };
 
   initCoorVessel() {
-    result.clear();
     setState(() {
       predictMovementVessel = 0;
     });
     Api.getAllVesselLatestCoor().then((value) {
+      result.clear();
       if (value.total! == 0) {
         setState(() {
           result = [];
@@ -121,29 +123,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         });
       }
     });
-    Timer.periodic(Duration(minutes: 5), (timer) {
-      setState(() {
-        predictMovementVessel = 0;
-      });
-      Api.getAllVesselLatestCoor().then((value) {
-        result.clear();
-        if (value.total! == 0) {
-          setState(() {
-            result = [];
-          });
-        }
-        if (value.total! > 0) {
-          setState(() {
-            result.addAll(value.data!);
-          });
-        }
-      });
-    });
   }
 
   void initVessel() {
-    vesselResult.clear();
     Api.getAllVessel().then((value) {
+    vesselResult.clear();
       if (value.total! == 0) {
         setState(() {
           vesselResult = [];
@@ -158,9 +142,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
-  void initLatLangCoor() {
-    latLangResult.clear();
-    Api.getAllLatLangCoor().then((value) {
+  void initLatLangCoor({String? call_sign}) {
+    Api.getAllLatLangCoor(call_sign: call_sign).then((value) {
+      latLangResult.clear();
       if (value.total! == 0) {
         setState(() {
           latLangResult = [];
@@ -169,6 +153,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       if (value.total! > 0) {
         setState(() {
           latLangResult.addAll(value.data!);
+          print(latLangResult.where((e) => e.callSign == call_sign).length);
         });
       }
     });
@@ -186,39 +171,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return degrees * (pi / 180.0);
   }
 
-  // Speed per minutes
-  double predictLat(
-      double latitude, double speed, double course, int movementTime) {
-    double courseRad = degreesToRadians(course);
-    double speedMps = speed / 60.0;
-    double distanceM = speedMps * movementTime;
-    double deltaLatitude = distanceM * math.cos(courseRad) / 111111.1;
-    double newLatitude = latitude + deltaLatitude;
-    return newLatitude;
-  }
-
-  double predictLong(double latitude, double longitude, double speed,
+  LatLng predictLatLong(double latitude, double longitude, double speed,
       double course, int movementTime) {
     // Convert course from degrees to radians
     double courseRad = degreesToRadians(course);
-
     // Convert speed from meters per minute to meters per second
     double speedMps = speed / 60.0;
-
     // Calculate the distance traveled in meters
     double distanceM = speedMps * movementTime;
-
     // Calculate the change in latitude and longitude
     double deltaLatitude = distanceM * math.cos(courseRad) / 111111.1;
     double deltaLongitude = distanceM *
         math.sin(courseRad) /
         (111111.1 * math.cos(degreesToRadians(latitude)));
-
     // Calculate the new latitude and longitude
     double newLatitude = latitude + deltaLatitude;
     double newLongitude = longitude + deltaLongitude;
-
-    return newLongitude;
+    return LatLng(newLatitude, newLongitude);
   }
 
   void updatePoint(MapEvent? event, BuildContext context) {
@@ -228,29 +197,46 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
-  Vessel.Data vesselDescription(String vessel) {
-    var dataVessel = vesselResult.where((e) => e.callSign == vessel).first;
-    return dataVessel;
+  // Vessel.Data vesselDescription(String vessel) {
+  //   var dataVessel =
+  //       vesselResult.where((e) => e.callSign!.contains(vessel)).first;
+  //   return dataVessel;
+  // }
+
+  // LatestVesselCoor.Data vesselLatestCoor(String vessel) {
+  //   LatestVesselCoor.Data latestCoor =
+  //       result.where((e) => e.callSign!.contains(vessel)).first;
+  //   return latestCoor;
+  // }
+
+  double vesselSizes(String size){
+    switch (size) {
+      case "small":
+        return 35.0;
+      case "medium":
+        return 50.0;
+      case "large":
+        return 65.0;
+      case "extra_large":
+        return 70.0;
+      default:
+        return 35.0;
+    }
   }
 
-  LatestVesselCoor.Data vesselLatestCoor(String vessel) {
-    LatestVesselCoor.Data latestCoor =
-        result.where((e) => e.callSign == vessel).first;
-    return latestCoor;
-  }
-
-  searchVessel(String callSign) {
-    var vessel = vesselLatestCoor(callSign);
-    setState(() {
-      onClickVessel = vessel.callSign!;
-    });
-    _animatedMapMove(
-        LatLng(
-          vessel.coorGga!.latitude!.toDouble(),
-          vessel.coorGga!.longitude!.toDouble(),
-        ),
-        13);
-  }
+  // searchVessel(String callSign) {
+  //   LatestVesselCoor.Data vessel = vesselLatestCoor(callSign);
+  //   initLatLangCoor(call_sign: vessel.callSign);
+  //   setState(() {
+  //     onClickVessel = vessel.callSign!;
+  //   });
+  //   _animatedMapMove(
+  //       LatLng(
+  //         vessel.coorGga!.latitude!.toDouble(),
+  //         vessel.coorGga!.longitude!.toDouble(),
+  //       ),
+  //       13);
+  // }
 
   // void loadKmlData() async {
   //   final String kmlData = await loadKmlFromFile('assets/kml/format_pipa.kml');
@@ -356,7 +342,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       _isLoading = true;
     });
-    Api.getAllVessel(page: _currentPage, perpage: _pageSize).then((value) {
+    Api.getAllVessel(page: _currentPage, perpage: 1000).then((value) {
       if (value.total! == 0) {
         setState(() {
           _dataVesselTable = [];
@@ -496,6 +482,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         vesselSize == null;
         _dataVesselTable.clear();
         fetchDataVessel();
+        initVessel();
 
         Navigator.pop(context);
         Navigator.pop(context);
@@ -532,9 +519,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
     loadKMZData();
     fetchDataVessel();
-    initVessel();
-    initCoorVessel();
-    initLatLangCoor();
+      // initVessel();
+      // initCoorVessel();
+      // initLatLangCoor();
+    final notifier = Provider.of<Notifier>(context, listen: false);
+    notifier.initVessel();
+    notifier.initCoorVessel();
+    notifier.initLatLangCoor();
+    Timer.periodic(const Duration(milliseconds: 1000), (timer) {
+      notifier.initKalmanFilter();
+    });
+    Timer.periodic(const Duration(minutes: 5), (timer) {
+      notifier.resetKalmanFilter();
+      notifier.initVessel();
+      notifier.initCoorVessel();
+      notifier.initLatLangCoor();
+    });
+
     initKalmanFilter();
     mapController = MapController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -590,1027 +591,928 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0xFF0E286C),
-        iconTheme: IconThemeData(
-          color: Colors.white, // Change this color to the desired color
-        ),
-        title: Container(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              PopupMenuButton(
-                position: PopupMenuPosition.under,
-                icon: Icon(Icons.menu),
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'btnAddVessel',
-                    child: Text('Vessel List'),
+    return Consumer<Notifier>(
+      builder:(context, value, child) {
+        var readNotifier = context.read<Notifier>();
+        
+        Vessel.Data vesselDescription(String vessel) {
+          var dataVessel = value.vesselResult.where((e) => e.callSign!.contains(vessel)).first;
+          return dataVessel;
+        }
+   
+        LatestVesselCoor.Data vesselLatestCoor(String vessel) {
+          LatestVesselCoor.Data latestCoor =
+              value.coorResult.where((e) => e.callSign!.contains(vessel)).first;
+          return latestCoor;
+        }
+
+        searchVessel(String callSign) {
+          LatestVesselCoor.Data vessel = vesselLatestCoor(callSign);
+          readNotifier.initLatLangCoor(call_sign: vessel.callSign);
+          
+          readNotifier.clickVessel(vessel.callSign!);
+          _animatedMapMove(
+              LatLng(
+                vessel.coorGga!.latitude!.toDouble(),
+                vessel.coorGga!.longitude!.toDouble(),
+              ),
+              13);
+        }
+        
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Color(0xFF0E286C),
+            iconTheme: IconThemeData(
+              color: Colors.white, // Change this color to the desired color
+            ),
+            title: Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  PopupMenuButton(
+                    position: PopupMenuPosition.under,
+                    icon: Icon(Icons.menu),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'btnAddVessel',
+                        child: Text('Vessel List'),
+                      ),
+                    ],
+                    onSelected: (item) {
+                      switch (item) {
+                        case "btnAddVessel":
+                          showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                var height = MediaQuery.of(context).size.height;
+                                var width = MediaQuery.of(context).size.width;
+
+                                return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.all(Radius.circular(5))),
+                                    child: Container(
+                                        width: width / 1.5,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              color: Colors.black12,
+                                              padding: EdgeInsets.all(8),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    "Vessel List",
+                                                    style: GoogleFonts.openSans(
+                                                        fontSize: 20),
+                                                  ),
+                                                  IconButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    icon: Icon(Icons.close),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.all(5),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  InkWell(
+                                                    onTap: () {
+                                                      showDialog(
+                                                          context: context,
+                                                          barrierDismissible: false,
+                                                          builder: (BuildContext
+                                                              context) {
+                                                            var height =
+                                                                MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .height;
+                                                            var width =
+                                                                MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width;
+
+                                                            return Dialog(
+                                                              shape: RoundedRectangleBorder(
+                                                                  borderRadius: BorderRadius
+                                                                      .all(Radius
+                                                                          .circular(
+                                                                              5))),
+                                                              child: Container(
+                                                                width: width / 3,
+                                                                child: Column(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .min,
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Container(
+                                                                      color: Colors
+                                                                          .black12,
+                                                                      padding:
+                                                                          EdgeInsets
+                                                                              .all(
+                                                                                  8),
+                                                                      child: Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment
+                                                                                .spaceBetween,
+                                                                        children: [
+                                                                          Text(
+                                                                            "Add Vessel",
+                                                                            style: GoogleFonts.openSans(
+                                                                                fontSize:
+                                                                                    15),
+                                                                          ),
+                                                                          IconButton(
+                                                                            onPressed:
+                                                                                () {
+                                                                              Navigator.pop(
+                                                                                  context);
+                                                                            },
+                                                                            icon: Icon(
+                                                                                Icons.close),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                    Padding(
+                                                                      padding:
+                                                                          EdgeInsets
+                                                                              .all(
+                                                                                  8),
+                                                                      child: Column(
+                                                                        children: [
+                                                                          VesselTextField(
+                                                                            controller:
+                                                                                callsignController,
+                                                                            hint:
+                                                                                'Call Sign',
+                                                                                type: TextInputType.text,
+                                                                          ),
+                                                                          VesselTextField(
+                                                                            controller:
+                                                                                flagController,
+                                                                            hint:
+                                                                                'Bendera',
+                                                                                type: TextInputType.text,
+                                                                          ),
+                                                                          VesselTextField(
+                                                                            controller:
+                                                                                classController,
+                                                                            hint:
+                                                                                'Kelas',
+                                                                                type: TextInputType.text,
+                                                                          ),
+                                                                          VesselTextField(
+                                                                            controller:
+                                                                                builderController,
+                                                                            hint:
+                                                                                'Builder',
+                                                                                type: TextInputType.text,
+                                                                          ),
+                                                                          VesselTextField(
+                                                                            controller:
+                                                                                yearbuiltController,
+                                                                            hint:
+                                                                                'Tahun Pembuatan',
+                                                                                type: TextInputType.number,
+                                                                          ),
+                                                                          VesselTextField(
+                                                                            controller:
+                                                                                ipController,
+                                                                            hint:
+                                                                                'IP',
+                                                                                type: TextInputType.text,
+                                                                          ),
+                                                                          VesselTextField(
+                                                                            controller:
+                                                                                portController,
+                                                                            hint:
+                                                                                'Port',
+                                                                                type: TextInputType.number,
+                                                                          ),
+                                                                          SizedBox(
+                                                                            height:
+                                                                                30,
+                                                                            width: double
+                                                                                .infinity,
+                                                                            child: DropdownSearch<
+                                                                                String>(
+                                                                              dropdownBuilder: (context, selectedItem) =>
+                                                                                  Text(
+                                                                                selectedItem ??
+                                                                                    "Ukuran Kapal",
+                                                                                style:
+                                                                                    TextStyle(fontSize: 15, color: Colors.black54),
+                                                                              ),
+                                                                              popupProps:
+                                                                                  PopupPropsMultiSelection.dialog(
+                                                                                fit:
+                                                                                    FlexFit.loose,
+                                                                                itemBuilder: (context, item, isSelected) =>
+                                                                                    ListTile(
+                                                                                  title: Text(
+                                                                                    item,
+                                                                                    style: TextStyle(
+                                                                                      fontSize: 15,
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                              dropdownDecoratorProps:
+                                                                                  DropDownDecoratorProps(
+                                                                                dropdownSearchDecoration:
+                                                                                    InputDecoration(
+                                                                                  border: OutlineInputBorder(
+                                                                                    borderSide: BorderSide.none,
+                                                                                    borderRadius: BorderRadius.circular(10),
+                                                                                  ),
+                                                                                  contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
+                                                                                  filled: true,
+                                                                                  fillColor: Colors.black12,
+                                                                                ),
+                                                                              ),
+                                                                              items: [
+                                                                                "small",
+                                                                                "medium",
+                                                                                "large",
+                                                                                "extra large",
+                                                                              ],
+                                                                              onChanged:
+                                                                                  (value) {
+                                                                                vesselSize =
+                                                                                    value;
+                                                                              },
+                                                                            ),
+                                                                          ),
+                                                                          SizedBox(
+                                                                            height:
+                                                                                5,
+                                                                          ),
+                                                                          Row(
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.end,
+                                                                            children: [
+                                                                              InkWell(
+                                                                                onTap:
+                                                                                    () {
+                                                                                  Navigator.pop(context);
+                                                                                },
+                                                                                child:
+                                                                                    Container(
+                                                                                  decoration: BoxDecoration(
+                                                                                    borderRadius: BorderRadius.circular(10),
+                                                                                    color: Color(0xFFFF0000),
+                                                                                  ),
+                                                                                  padding: EdgeInsets.all(5),
+                                                                                  alignment: Alignment.center,
+                                                                                  height: 30,
+                                                                                  child: Text("Batal"),
+                                                                                ),
+                                                                              ),
+                                                                              SizedBox(
+                                                                                width:
+                                                                                    5,
+                                                                              ),
+                                                                              InkWell(
+                                                                                onTap:
+                                                                                    () {
+                                                                                  submitVessel();
+                                                                                },
+                                                                                child:
+                                                                                    Container(
+                                                                                  decoration: BoxDecoration(
+                                                                                    borderRadius: BorderRadius.circular(10),
+                                                                                    color: Color(0xFF399D44),
+                                                                                  ),
+                                                                                  padding: EdgeInsets.all(5),
+                                                                                  alignment: Alignment.center,
+                                                                                  height: 30,
+                                                                                  child: Text("Simpan"),
+                                                                                ),
+                                                                              )
+                                                                            ],
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            );
+                                                          });
+                                                    },
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                10),
+                                                        color: Color(0xFF399D44),
+                                                      ),
+                                                      padding: EdgeInsets.all(5),
+                                                      alignment: Alignment.center,
+                                                      height: 40,
+                                                      child: Icon(Icons.add),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                            Container(
+                                              height: 400,
+                                              child: ListView(
+                                                  scrollDirection: Axis.vertical,
+                                                  children: [
+                                                    _isLoading
+                                                        ? Center(
+                                                            child:
+                                                                CircularProgressIndicator())
+                                                        : PaginatedDataTable(
+                                                            columns: [
+                                                              DataColumn(
+                                                                  label: Text(
+                                                                      'Call Sign')),
+                                                              DataColumn(
+                                                                  label:
+                                                                      Text('Flag')),
+                                                              DataColumn(
+                                                                  label: Text(
+                                                                      'Kelas')),
+                                                              DataColumn(
+                                                                  label: Text(
+                                                                      'Builder')),
+                                                              DataColumn(
+                                                                  label: Text(
+                                                                      'Year Built')),
+                                                              DataColumn(
+                                                                  label:
+                                                                      Text('IP')),
+                                                              DataColumn(
+                                                                  label:
+                                                                      Text('Port')),
+                                                              DataColumn(
+                                                                  label:
+                                                                      Text('Size')),
+                                                              DataColumn(
+                                                                  label: Text(
+                                                                      'Action')),
+                                                            ],
+                                                            // dragStartBehavior: DragStartBehavior.down,
+                                                            arrowHeadColor:
+                                                                Colors.black,
+                                                            columnSpacing: 100,
+                                                            horizontalMargin: 10,
+                                                            rowsPerPage: 10,
+                                                            showCheckboxColumn:
+                                                                false,
+                                                            // onPageChanged:
+                                                            //     (pageIndex) {
+                                                            //   setState(() {
+                                                            //     _currentPage++;
+                                                            //     _dataVesselTable.clear();
+                                                            //     print("get ulang $pageIndex");
+                                                            //     fetchDataVessel();
+                                                            //   });
+                                                            // },
+                                                            source: _DataSource(
+                                                              data:
+                                                                  _dataVesselTable,
+                                                              ctx: context,
+                                                              vesselTotal:
+                                                                  10,
+                                                            ),
+                                                          ),
+                                                  ]),
+                                            )
+                                          ],
+                                        )));
+                              });
+                      }
+                    },
+                  ),
+                  // Container(
+                  //   child: ElevatedButton(
+                  //     style: ElevatedButton.styleFrom(
+                  //         backgroundColor: Colors.blue),
+                  //     onPressed: () {
+                  //       _animatedMapMove(
+                  //           LatLng(
+                  //             -1.2437,
+                  //             104.79504,
+                  //           ),
+                  //           13);
+                  //     },
+                  //     child: Text(
+                  //       "To Overlay DWG",
+                  //       style: TextStyle(color: Colors.white),
+                  //     ),
+                  //   ),
+                  // ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 300,
+                        child: SearchField<Vessel.Data>(
+                          controller: SearchVessel,
+                          suggestions: value.vesselResult
+                              .map(
+                                (e) => SearchFieldListItem<Vessel.Data>(
+                                  e.callSign!,
+                                  item: e,
+                                  // Use child to show Custom Widgets in the suggestions
+                                  // defaults to Text widget
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(e.callSign!),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .where((e) => e.searchKey
+                                  .toLowerCase()
+                                  .contains(SearchVessel.text.toLowerCase()))
+                              .toList(),
+                          searchInputDecoration: InputDecoration(
+                            hintText: "Pilih Call Sign Kapal",
+                            labelText: "Pilih Call Sign Kapal",
+                            hintStyle: TextStyle(color: Colors.black),
+                            labelStyle: TextStyle(color: Colors.black),
+                            prefixIcon: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Icon(Icons.search),
+                            ),
+                            filled: true,
+                            fillColor: Color.fromARGB(255, 230, 230, 230),
+                            prefixIconColor: Colors.black,
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  width: 3,
+                                  color: const Color.fromARGB(255, 230, 230, 230)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  width: 3,
+                                  color: const Color.fromARGB(255, 230, 230, 230)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          searchVessel(SearchVessel.text);
+                        },
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.grey,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(Icons.search),
+                        ),
+                      )
+                    ],
                   ),
                 ],
-                onSelected: (item) {
-                  switch (item) {
-                    case "btnAddVessel":
-                      showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (BuildContext context) {
-                            var height = MediaQuery.of(context).size.height;
-                            var width = MediaQuery.of(context).size.width;
-
-                            return Dialog(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(5))),
-                                child: Container(
-                                    width: width / 1.5,
+              ),
+            ),
+          ),
+          // drawer: Drawer(
+          //   child: Padding(
+          //     padding: const EdgeInsets.all(15),
+          //     child: Column(
+          //       children: [
+          //         Text(
+          //           "Menu",
+          //           style: Constants.title1,
+          //         ),
+          //         SizedBox(
+          //           height: 10,
+          //         ),
+          //         ListTile(
+          //           leading: Icon(Icons.menu),
+          //           trailing: Text(
+          //             "Vessel",
+          //             style: TextStyle(
+          //               fontSize: 16,
+          //             ),
+          //           ),
+          //           onTap: () {
+          //             // Navigator.push(context,
+          //             //     MaterialPageRoute(builder: (context) => HomePage()));
+          //           },
+          //         ),
+          //         ListTile(leading: Text("menu2")),
+          //         ListTile(leading: Text("menu3")),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+          body: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              children: [
+                Flexible(
+                  child: FlutterMap(
+                    mapController: mapController,
+                    options: MapOptions(
+                      onMapEvent: (event) {
+                        updatePoint(null, context);
+                      },
+                      maxZoom: 18,
+                      initialZoom: 10,
+                      initialCenter: const LatLng(-1.089955, 117.360343),
+                    ),
+                    nonRotatedChildren: [
+                      FlutterMapZoomButtons(
+                        minZoom: 4,
+                        maxZoom: 19,
+                        mini: true,
+                        padding: 10,
+                        alignment: Alignment.bottomRight,
+                      ),
+                      ScaleLayerWidget(
+                        options: ScaleLayerPluginOption(
+                          lineColor: Colors.blue,
+                          lineWidth: 2,
+                          textStyle:
+                              const TextStyle(color: Colors.blue, fontSize: 12),
+                          padding: const EdgeInsets.all(10),
+                        ),
+                      ),
+                      if (value.onClickVessel != "")
+                        Center(
+                          child: Container(
+                            constraints: BoxConstraints(
+                              maxWidth: 600,
+                            ),
+                            child: SnappingSheet(
+                              controller: snappingSheetController,
+                              // child: Background(),
+                              lockOverflowDrag: true,
+                              snappingPositions: [
+                                SnappingPosition.factor(
+                                  snappingCurve: Curves.elasticOut,
+                                  snappingDuration: Duration(milliseconds: 1750),
+                                  positionFactor:
+                                      (301.74 / MediaQuery.of(context).size.height),
+                                ),
+                                SnappingPosition.factor(
+                                  positionFactor: 0.0,
+                                  snappingCurve: Curves.easeOutExpo,
+                                  snappingDuration: Duration(seconds: 1),
+                                  grabbingContentOffset: GrabbingContentOffset.top,
+                                ),
+                                // SnappingPosition.factor(
+                                //   grabbingContentOffset:
+                                //       GrabbingContentOffset.bottom,
+                                //   snappingCurve: Curves.easeInExpo,
+                                //   snappingDuration: Duration(seconds: 1),
+                                //   positionFactor: 0.9,
+                                // ),
+                              ],
+                              grabbing: GrabbingWidget(),
+                              grabbingHeight: 75,
+                              sheetAbove: null,
+                              sheetBelow: SnappingSheetContent(
+                                draggable: true,
+                                // childScrollController: listViewController,
+                                child: SingleChildScrollView(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  child: Container(
+                                    color: Colors.white,
                                     child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
                                       children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            snappingSheetController.snapToPosition(
+                                              SnappingPosition.factor(
+                                                  positionFactor: -0.5),
+                                            );
+                                            Timer(Duration(milliseconds: 300), () {
+                                              readNotifier.clickVessel("");
+                                            });
+                                          },
+                                          child: Container(
+                                            alignment: Alignment.topRight,
+                                            child: Container(
+                                              width: 45,
+                                              height: 45,
+                                              decoration: BoxDecoration(
+                                                  color: Colors.black12),
+                                              padding: EdgeInsets.all(4),
+                                              child: Center(
+                                                child: Text(
+                                                  "X",
+                                                  style: TextStyle(fontSize: 20),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                         Container(
-                                          color: Colors.black12,
-                                          padding: EdgeInsets.all(8),
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 15, vertical: 10),
                                           child: Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Text(
-                                                "Vessel List",
-                                                style: GoogleFonts.openSans(
-                                                    fontSize: 20),
-                                              ),
-                                              IconButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                icon: Icon(Icons.close),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.all(5),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              InkWell(
-                                                onTap: () {
-                                                  showDialog(
-                                                      context: context,
-                                                      barrierDismissible: false,
-                                                      builder: (BuildContext
-                                                          context) {
-                                                        var height =
-                                                            MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .height;
-                                                        var width =
-                                                            MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .width;
-
-                                                        return Dialog(
-                                                          shape: RoundedRectangleBorder(
-                                                              borderRadius: BorderRadius
-                                                                  .all(Radius
-                                                                      .circular(
-                                                                          5))),
-                                                          child: Container(
-                                                            width: width / 3,
-                                                            child: Column(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Container(
-                                                                  color: Colors
-                                                                      .black12,
-                                                                  padding:
-                                                                      EdgeInsets
-                                                                          .all(
-                                                                              8),
-                                                                  child: Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .spaceBetween,
-                                                                    children: [
-                                                                      Text(
-                                                                        "Add Vessel",
-                                                                        style: GoogleFonts.openSans(
-                                                                            fontSize:
-                                                                                15),
-                                                                      ),
-                                                                      IconButton(
-                                                                        onPressed:
-                                                                            () {
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        },
-                                                                        icon: Icon(
-                                                                            Icons.close),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                                Padding(
-                                                                  padding:
-                                                                      EdgeInsets
-                                                                          .all(
-                                                                              8),
-                                                                  child: Column(
-                                                                    children: [
-                                                                      VesselTextField(
-                                                                        controller:
-                                                                            callsignController,
-                                                                        hint:
-                                                                            'Call Sign',
-                                                                      ),
-                                                                      VesselTextField(
-                                                                        controller:
-                                                                            flagController,
-                                                                        hint:
-                                                                            'Bendera',
-                                                                      ),
-                                                                      VesselTextField(
-                                                                        controller:
-                                                                            classController,
-                                                                        hint:
-                                                                            'Kelas',
-                                                                      ),
-                                                                      VesselTextField(
-                                                                        controller:
-                                                                            builderController,
-                                                                        hint:
-                                                                            'Builder',
-                                                                      ),
-                                                                      VesselTextField(
-                                                                        controller:
-                                                                            yearbuiltController,
-                                                                        hint:
-                                                                            'Tahun Pembuatan',
-                                                                      ),
-                                                                      VesselTextField(
-                                                                        controller:
-                                                                            ipController,
-                                                                        hint:
-                                                                            'IP',
-                                                                      ),
-                                                                      VesselTextField(
-                                                                        controller:
-                                                                            portController,
-                                                                        hint:
-                                                                            'Port',
-                                                                      ),
-                                                                      SizedBox(
-                                                                        height:
-                                                                            30,
-                                                                        width: double
-                                                                            .infinity,
-                                                                        child: DropdownSearch<
-                                                                            String>(
-                                                                          dropdownBuilder: (context, selectedItem) =>
-                                                                              Text(
-                                                                            selectedItem ??
-                                                                                "Ukuran Kapal",
-                                                                            style:
-                                                                                TextStyle(fontSize: 15, color: Colors.black54),
-                                                                          ),
-                                                                          popupProps:
-                                                                              PopupPropsMultiSelection.dialog(
-                                                                            fit:
-                                                                                FlexFit.loose,
-                                                                            itemBuilder: (context, item, isSelected) =>
-                                                                                ListTile(
-                                                                              title: Text(
-                                                                                item,
-                                                                                style: TextStyle(
-                                                                                  fontSize: 15,
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          dropdownDecoratorProps:
-                                                                              DropDownDecoratorProps(
-                                                                            dropdownSearchDecoration:
-                                                                                InputDecoration(
-                                                                              border: OutlineInputBorder(
-                                                                                borderSide: BorderSide.none,
-                                                                                borderRadius: BorderRadius.circular(10),
-                                                                              ),
-                                                                              contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
-                                                                              filled: true,
-                                                                              fillColor: Colors.black12,
-                                                                            ),
-                                                                          ),
-                                                                          items: [
-                                                                            "small",
-                                                                            "medium",
-                                                                            "large",
-                                                                            "extra large",
-                                                                          ],
-                                                                          onChanged:
-                                                                              (value) {
-                                                                            vesselSize =
-                                                                                value;
-                                                                          },
-                                                                        ),
-                                                                      ),
-                                                                      SizedBox(
-                                                                        height:
-                                                                            5,
-                                                                      ),
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.end,
-                                                                        children: [
-                                                                          InkWell(
-                                                                            onTap:
-                                                                                () {
-                                                                              Navigator.pop(context);
-                                                                            },
-                                                                            child:
-                                                                                Container(
-                                                                              decoration: BoxDecoration(
-                                                                                borderRadius: BorderRadius.circular(10),
-                                                                                color: Color(0xFFFF0000),
-                                                                              ),
-                                                                              padding: EdgeInsets.all(5),
-                                                                              alignment: Alignment.center,
-                                                                              height: 30,
-                                                                              child: Text("Batal"),
-                                                                            ),
-                                                                          ),
-                                                                          SizedBox(
-                                                                            width:
-                                                                                5,
-                                                                          ),
-                                                                          InkWell(
-                                                                            onTap:
-                                                                                () {
-                                                                              submitVessel();
-                                                                            },
-                                                                            child:
-                                                                                Container(
-                                                                              decoration: BoxDecoration(
-                                                                                borderRadius: BorderRadius.circular(10),
-                                                                                color: Color(0xFF399D44),
-                                                                              ),
-                                                                              padding: EdgeInsets.all(5),
-                                                                              alignment: Alignment.center,
-                                                                              height: 30,
-                                                                              child: Text("Simpan"),
-                                                                            ),
-                                                                          )
-                                                                        ],
-                                                                      )
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        );
-                                                      });
-                                                },
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
-                                                    color: Color(0xFF399D44),
-                                                  ),
-                                                  padding: EdgeInsets.all(5),
-                                                  alignment: Alignment.center,
-                                                  height: 40,
-                                                  child: Icon(Icons.add),
+                                              Container(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "${value.runtimeType}",
+                                                      style: TextStyle(
+                                                          fontSize: 20,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    Text(
+                                                      "${vesselDescription(value.onClickVessel).flag!}",
+                                                      style: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w400),
+                                                    ),
+                                                  ],
                                                 ),
-                                              )
+                                              ),
+                                              Image.asset(
+                                                "assets/model_kapal.jpg",
+                                                width: 100,
+                                              ),
                                             ],
                                           ),
                                         ),
                                         Container(
-                                          height: 400,
-                                          child: ListView(
-                                              scrollDirection: Axis.vertical,
-                                              children: [
-                                                _isLoading
-                                                    ? Center(
-                                                        child:
-                                                            CircularProgressIndicator())
-                                                    : PaginatedDataTable(
-                                                        columns: [
-                                                          DataColumn(
-                                                              label: Text(
-                                                                  'Call Sign')),
-                                                          DataColumn(
-                                                              label:
-                                                                  Text('Flag')),
-                                                          DataColumn(
-                                                              label: Text(
-                                                                  'Kelas')),
-                                                          DataColumn(
-                                                              label: Text(
-                                                                  'Builder')),
-                                                          DataColumn(
-                                                              label: Text(
-                                                                  'Year Built')),
-                                                          DataColumn(
-                                                              label:
-                                                                  Text('IP')),
-                                                          DataColumn(
-                                                              label:
-                                                                  Text('Port')),
-                                                          DataColumn(
-                                                              label:
-                                                                  Text('Size')),
-                                                          DataColumn(
-                                                              label: Text(
-                                                                  'Action')),
-                                                        ],
-                                                        // dragStartBehavior: DragStartBehavior.down,
-                                                        arrowHeadColor:
-                                                            Colors.black,
-                                                        columnSpacing: 100,
-                                                        horizontalMargin: 10,
-                                                        rowsPerPage: 10,
-                                                        showCheckboxColumn:
-                                                            false,
-                                                        onPageChanged:
-                                                            (pageIndex) {
-                                                          setState(() {
-                                                            _currentPage++;
-                                                            _dataVesselTable.clear();
-                                                            print("get ulang $pageIndex");
-                                                            fetchDataVessel();
-                                                          });
-                                                        },
-                                                        source: _DataSource(
-                                                          data: _dataVesselTable,
-                                                          ctx: context,
-                                                          vesselTotal: vesselTotal,
-                                                        ),
-                                                      ),
-                                              ]),
-                                        )
-                                      ],
-                                    )));
-                          });
-                  }
-                },
-              ),
-              // Container(
-              //   child: ElevatedButton(
-              //     style: ElevatedButton.styleFrom(
-              //         backgroundColor: Colors.blue),
-              //     onPressed: () {
-              //       _animatedMapMove(
-              //           LatLng(
-              //             -1.2437,
-              //             104.79504,
-              //           ),
-              //           13);
-              //     },
-              //     child: Text(
-              //       "To Overlay DWG",
-              //       style: TextStyle(color: Colors.white),
-              //     ),
-              //   ),
-              // ),
-              Row(
-                children: [
-                  Container(
-                    width: 300,
-                    child: SearchField<Vessel.Data>(
-                      controller: SearchVessel,
-                      suggestions: vesselResult
-                          .map(
-                            (e) => SearchFieldListItem<Vessel.Data>(
-                              e.callSign!,
-                              item: e,
-                              // Use child to show Custom Widgets in the suggestions
-                              // defaults to Text widget
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    Text(e.callSign!),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          )
-                          .where((e) => e.searchKey
-                              .toLowerCase()
-                              .contains(SearchVessel.text.toLowerCase()))
-                          .toList(),
-                      searchInputDecoration: InputDecoration(
-                        hintText: "Pilih Call Sign Kapal",
-                        labelText: "Pilih Call Sign Kapal",
-                        hintStyle: TextStyle(color: Colors.black),
-                        labelStyle: TextStyle(color: Colors.black),
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Icon(Icons.search),
-                        ),
-                        filled: true,
-                        fillColor: Color.fromARGB(255, 230, 230, 230),
-                        prefixIconColor: Colors.black,
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                              width: 3,
-                              color: const Color.fromARGB(255, 230, 230, 230)),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                              width: 3,
-                              color: const Color.fromARGB(255, 230, 230, 230)),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  InkWell(
-                    onTap: () {
-                      searchVessel(SearchVessel.text);
-                    },
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Icon(Icons.search),
-                    ),
-                  )
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      // drawer: Drawer(
-      //   child: Padding(
-      //     padding: const EdgeInsets.all(15),
-      //     child: Column(
-      //       children: [
-      //         Text(
-      //           "Menu",
-      //           style: Constants.title1,
-      //         ),
-      //         SizedBox(
-      //           height: 10,
-      //         ),
-      //         ListTile(
-      //           leading: Icon(Icons.menu),
-      //           trailing: Text(
-      //             "Vessel",
-      //             style: TextStyle(
-      //               fontSize: 16,
-      //             ),
-      //           ),
-      //           onTap: () {
-      //             // Navigator.push(context,
-      //             //     MaterialPageRoute(builder: (context) => HomePage()));
-      //           },
-      //         ),
-      //         ListTile(leading: Text("menu2")),
-      //         ListTile(leading: Text("menu3")),
-      //       ],
-      //     ),
-      //   ),
-      // ),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          children: [
-            Flexible(
-              child: FlutterMap(
-                mapController: mapController,
-                options: MapOptions(
-                  onMapEvent: (event) {
-                    updatePoint(null, context);
-                  },
-                  maxZoom: 18,
-                  initialZoom: 10,
-                  initialCenter: const LatLng(-1.089955, 117.360343),
-                ),
-                nonRotatedChildren: [
-                  FlutterMapZoomButtons(
-                    minZoom: 4,
-                    maxZoom: 19,
-                    mini: true,
-                    padding: 10,
-                    alignment: Alignment.bottomRight,
-                  ),
-                  ScaleLayerWidget(
-                    options: ScaleLayerPluginOption(
-                      lineColor: Colors.blue,
-                      lineWidth: 2,
-                      textStyle:
-                          const TextStyle(color: Colors.blue, fontSize: 12),
-                      padding: const EdgeInsets.all(10),
-                    ),
-                  ),
-                  if (onClickVessel != "")
-                    Center(
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: 600,
-                        ),
-                        child: SnappingSheet(
-                          controller: snappingSheetController,
-                          // child: Background(),
-                          lockOverflowDrag: true,
-                          snappingPositions: [
-                            SnappingPosition.factor(
-                              snappingCurve: Curves.elasticOut,
-                              snappingDuration: Duration(milliseconds: 1750),
-                              positionFactor:
-                                  (301.74 / MediaQuery.of(context).size.height),
-                            ),
-                            SnappingPosition.factor(
-                              positionFactor: 0.0,
-                              snappingCurve: Curves.easeOutExpo,
-                              snappingDuration: Duration(seconds: 1),
-                              grabbingContentOffset: GrabbingContentOffset.top,
-                            ),
-                            // SnappingPosition.factor(
-                            //   grabbingContentOffset:
-                            //       GrabbingContentOffset.bottom,
-                            //   snappingCurve: Curves.easeInExpo,
-                            //   snappingDuration: Duration(seconds: 1),
-                            //   positionFactor: 0.9,
-                            // ),
-                          ],
-                          grabbing: GrabbingWidget(),
-                          grabbingHeight: 75,
-                          sheetAbove: null,
-                          sheetBelow: SnappingSheetContent(
-                            draggable: true,
-                            // childScrollController: listViewController,
-                            child: SingleChildScrollView(
-                              physics: NeverScrollableScrollPhysics(),
-                              child: Container(
-                                color: Colors.white,
-                                child: Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        snappingSheetController.snapToPosition(
-                                          SnappingPosition.factor(
-                                              positionFactor: -0.5),
-                                        );
-                                        Timer(Duration(milliseconds: 300), () {
-                                          setState(() {
-                                            onClickVessel = "";
-                                          });
-                                        });
-                                      },
-                                      child: Container(
-                                        alignment: Alignment.topRight,
-                                        child: Container(
-                                          width: 45,
-                                          height: 45,
-                                          decoration: BoxDecoration(
-                                              color: Colors.black12),
-                                          padding: EdgeInsets.all(4),
-                                          child: Center(
-                                            child: Text(
-                                              "X",
-                                              style: TextStyle(fontSize: 20),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.symmetric(
-                                          horizontal: 15, vertical: 10),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Container(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "${onClickVessel}",
-                                                  style: TextStyle(
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  "${vesselDescription(onClickVessel).flag!}",
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w400),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Image.asset(
-                                            "assets/model_kapal.jpg",
-                                            width: 100,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.symmetric(
-                                          horizontal: 15, vertical: 10),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Position Information"
-                                                .toUpperCase(),
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                          Row(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 15, vertical: 10),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              Expanded(
-                                                child: Container(
-                                                  padding: EdgeInsets.all(10),
-                                                  decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.grey,
-                                                          width: 1)),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        'Latitude',
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          color: const Color
-                                                                  .fromARGB(
-                                                              255, 61, 61, 61),
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "${predictLat(vesselLatestCoor(onClickVessel).coorGga!.latitude!.toDouble(), 100, vesselLatestCoor(onClickVessel).coorHdt!.headingDegree!.toDouble(), predictMovementVessel).toStringAsFixed(5)}",
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: const Color
-                                                                  .fromARGB(
-                                                              255, 61, 61, 61),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                              Text(
+                                                "Position Information"
+                                                    .toUpperCase(),
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w700,
                                                 ),
                                               ),
-                                              Expanded(
-                                                child: Container(
-                                                  padding: EdgeInsets.all(10),
-                                                  decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.grey,
-                                                          width: 1)),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        'Longitude',
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          color: const Color
-                                                                  .fromARGB(
-                                                              255, 61, 61, 61),
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                        ),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Container(
+                                                      padding: EdgeInsets.all(10),
+                                                      decoration: BoxDecoration(
+                                                          border: Border.all(
+                                                              color: Colors.grey,
+                                                              width: 1)),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            'Latitude',
+                                                            style: TextStyle(
+                                                              fontSize: 14,
+                                                              color: const Color
+                                                                      .fromARGB(
+                                                                  255, 61, 61, 61),
+                                                              fontWeight:
+                                                                  FontWeight.w700,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            "${predictLatLong(vesselLatestCoor(value.onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(value.onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(value.onClickVessel).coorHdt!.headingDegree ?? vesselLatestCoor(value.onClickVessel).defaultHeading!, predictMovementVessel).latitude.toStringAsFixed(5)}}",
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight.w600,
+                                                              color: const Color
+                                                                      .fromARGB(
+                                                                  255, 61, 61, 61),
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
-                                                      Text(
-                                                        "${predictLong(vesselLatestCoor(onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(onClickVessel).coorHdt!.headingDegree!.toDouble(), predictMovementVessel).toStringAsFixed(5)}",
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: const Color
-                                                                  .fromARGB(
-                                                              255, 61, 61, 61),
-                                                        ),
-                                                      ),
-                                                    ],
+                                                    ),
                                                   ),
-                                                ),
+                                                  Expanded(
+                                                    child: Container(
+                                                      padding: EdgeInsets.all(10),
+                                                      decoration: BoxDecoration(
+                                                          border: Border.all(
+                                                              color: Colors.grey,
+                                                              width: 1)),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            'Longitude',
+                                                            style: TextStyle(
+                                                              fontSize: 14,
+                                                              color: const Color
+                                                                      .fromARGB(
+                                                                  255, 61, 61, 61),
+                                                              fontWeight:
+                                                                  FontWeight.w700,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            "${predictLatLong(vesselLatestCoor(value.onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(value.onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(value.onClickVessel).coorHdt!.headingDegree ?? vesselLatestCoor(value.onClickVessel).defaultHeading!, predictMovementVessel).longitude.toStringAsFixed(5)}",
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight.w600,
+                                                              color: const Color
+                                                                      .fromARGB(
+                                                                  255, 61, 61, 61),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
+                    ],
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                       ),
-                    ),
-                ],
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-                  ),
-                  if (kmlOverlayPolygons.isNotEmpty)
-                    for (final kmlOverlayPolygon in kmlOverlayPolygons)
+                      if (kmlOverlayPolygons.isNotEmpty)
+                        for (final kmlOverlayPolygon in kmlOverlayPolygons)
+                          PolylineLayer(
+                            polylines: kmlOverlayPolygon.map((kmlPolygon) {
+                              return Polyline(
+                                strokeWidth: 3,
+                                points: kmlPolygon.points,
+                                color:
+                                    Color(int.parse(kmlPolygon.color, radix: 16)),
+                              );
+                            }).toList(),
+                          ),
+                      
                       PolylineLayer(
-                        polylines: kmlOverlayPolygon.map((kmlPolygon) {
-                          return Polyline(
-                            strokeWidth: 3,
-                            points: kmlPolygon.points,
-                            color:
-                                Color(int.parse(kmlPolygon.color, radix: 16)),
-                          );
-                        }).toList(),
+                        polylines: [
+                          Polyline(
+                            strokeWidth: 5,
+                            points: [
+                              for (var x in value.latLangResult.reversed)
+                                if (x.callSign == value.onClickVessel)
+                                  LatLng(x.latitude!, x.longitude!),
+                              for (var i in value.coorResult)
+                                if (i.callSign == value.onClickVessel)
+                                  LatLng(
+                                      predictLatLong(
+                                              i.coorGga!.latitude!.toDouble(),
+                                              i.coorGga!.longitude!.toDouble(),
+                                              100,
+                                              i.coorHdt!.headingDegree ??
+                                                  i.defaultHeading!.toDouble(),
+                                              predictMovementVessel)
+                                          .latitude,
+                                      predictLatLong(
+                                              i.coorGga!.latitude!.toDouble(),
+                                              i.coorGga!.longitude!.toDouble(),
+                                              100,
+                                              i.coorHdt!.headingDegree ??
+                                                  i.defaultHeading!.toDouble(),
+                                              predictMovementVessel)
+                                          .longitude
+                                      // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
+                                      //   i.coorGga!.longitude!.toDouble()
+                                      ),
+                            ],
+                            color: Colors.blue,
+                          ),
+                        ],
                       ),
-                  PolylineLayer(
-                    polylines: [
-                      Polyline(
-                        strokeWidth: 5,
-                        points: [
-                          for (var x in latLangResult.reversed)
-                            if (x.callSign == onClickVessel)
-                              LatLng(x.latitude!, x.longitude!),
-                          for (var i in result)
-                            if (i.callSign == onClickVessel)
-                              LatLng(
-                                  predictLat(
-                                      i.coorGga!.latitude!.toDouble(),
-                                      100,
-                                      i.coorHdt!.headingDegree!.toDouble(),
-                                      predictMovementVessel),
-                                  predictLong(
-                                      i.coorGga!.latitude!.toDouble(),
-                                      i.coorGga!.longitude!.toDouble(),
-                                      100,
-                                      i.coorHdt!.headingDegree!.toDouble(),
-                                      predictMovementVessel)
+                      // CircleLayer(
+                      //   circles: [
+                      //     for (var x in latLangResult.reversed.where((e) => e.callSign == onClickVessel))
+                      //       CircleMarker(
+                      //         point: LatLng(x.latitude!, x.longitude!),
+                      //         radius: 3,
+                      //         borderStrokeWidth: 5, 
+                      //         color: Colors.white,
+                      //         borderColor: Colors.white,
+                      //       ),
+                      //   ],
+                      // ),
+                      MarkerLayer(
+                        markers: [
+                          if (latLng != null)
+                            Marker(
+                              width: pointSize,
+                              height: pointSize,
+                              point: latLng!,
+                              builder: (ctx) => Image.asset(
+                                "assets/compass2.png",
+                                width: 250,
+                                height: 250,
+                              ),
+                            ),
+                          for (var i in value.coorResult)
+                            Marker(
+                              width: vesselSizes(vesselDescription(i.callSign!).size.toString()),
+                              height: vesselSizes(vesselDescription(i.callSign!).size.toString()),
+                              point: LatLng(
+                                  predictLatLong(
+                                          i.coorGga!.latitude!.toDouble(),
+                                          i.coorGga!.longitude!.toDouble(),
+                                          100,
+                                          i.coorHdt!.headingDegree ??
+                                              i.defaultHeading!.toDouble(),
+                                          predictMovementVessel)
+                                      .latitude,
+                                  predictLatLong(
+                                          i.coorGga!.latitude!.toDouble(),
+                                          i.coorGga!.longitude!.toDouble(),
+                                          100,
+                                          i.coorHdt!.headingDegree ??
+                                              i.defaultHeading!.toDouble(),
+                                          predictMovementVessel)
+                                      .longitude
                                   // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
                                   //   i.coorGga!.longitude!.toDouble()
                                   ),
+                              rotateOrigin: Offset(10, -10),
+                              builder: (context) {
+                                var vessel = value.vesselResult.where((e) {
+                                  if (e.callSign == i.callSign!) {
+                                    return true;
+                                  }
+                                  return false;
+                                });
+                                return GestureDetector(
+                                  onTap: () {
+                                    searchVessel(i.callSign!);
+                                  },
+                                  child: Transform.rotate(
+                                    angle: degreesToRadians(
+                                        i.coorHdt!.headingDegree ??
+                                            i.defaultHeading!.toDouble()),
+                                    child: Image.asset("assets/ship.png"),
+                                  ),
+                                );
+                              },
+                            ),
                         ],
-                        color: Colors.blue,
                       ),
                     ],
                   ),
-                  MarkerLayer(
-                    markers: [
-                      if (latLng != null)
-                        Marker(
-                          width: pointSize,
-                          height: pointSize,
-                          point: latLng!,
-                          builder: (ctx) => Image.asset(
-                            "assets/compass2.png",
-                            width: 250,
-                            height: 250,
-                          ),
-                        ),
-                      for (var i in result)
-                        Marker(
-                          width: 50,
-                          height: 50,
-                          point: LatLng(
-                              predictLat(
-                                  i.coorGga!.latitude!.toDouble(),
-                                  100,
-                                  i.coorHdt!.headingDegree!.toDouble(),
-                                  predictMovementVessel),
-                              predictLong(
-                                  i.coorGga!.latitude!.toDouble(),
-                                  i.coorGga!.longitude!.toDouble(),
-                                  100,
-                                  i.coorHdt!.headingDegree!.toDouble(),
-                                  predictMovementVessel)
-                              // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
-                              //   i.coorGga!.longitude!.toDouble()
-                              ),
-                          rotateOrigin: Offset(10, -10),
-                          builder: (context) {
-                            var vessel = vesselResult.where((e) {
-                              if (e.callSign == i.callSign!) {
-                                return true;
-                              }
-                              return false;
-                            });
-                            // print(vessel.first.callSign);
-                            return GestureDetector(
-                              onTap: () {
-                                searchVessel(i.callSign!);
-                              },
-                              child: Transform.rotate(
-                                angle: degreesToRadians(
-                                    i.coorHdt!.headingDegree!.toDouble()),
-                                child: Image.asset("assets/ship.png"),
-                              ),
-                            );
-                          },
-                        ),
-                      // Marker(
-                      //     width: 50,
-                      //     height: 50,
-                      //     point: const LatLng(-7.9515680, 111.1283210),
-                      //     builder: (ctx) =>
-                      //         GestureDetector(
-                      //             onTap: () {
-                      //               showModalBottomSheet(
-                      //                   backgroundColor: Colors.transparent,
-                      //                   context: context,
-                      //                   builder: (BuildContext context) {
-                      //                     return Container(
-                      //                       width: double.infinity,
-                      //                       decoration: BoxDecoration(
-                      //                         color: Colors.white,
-                      //                         borderRadius: BorderRadius
-                      //                             .vertical(
-                      //                           top: Radius.circular(20.0),
-                      //                         ),
-                      //                       ),
-                      //                       padding: EdgeInsets.fromLTRB(
-                      //                           16, 0, 16, 5),
-                      //                       child: Column(
-                      //                         mainAxisSize: MainAxisSize.min,
-                      //                         children: [
-                      //                           Row(
-                      //                             children: [
-                      //                               Image.asset(
-                      //                                 "model_kapal.jpg",
-                      //                                 height: 100,
-                      //                                 width: 100,
-                      //                               ),
-                      //                               SizedBox(
-                      //                                 width: 20,
-                      //                               ),
-                      //                               Column(
-                      //                                 crossAxisAlignment:
-                      //                                 CrossAxisAlignment.start,
-                      //                                 children: [
-                      //                                   Text(
-                      //                                     'Kapal Pesiar 104-AKH',
-                      //                                     style: TextStyle(
-                      //                                         fontSize: 20),
-                      //                                   ),
-                      //                                   Text(
-                      //                                     'Rute : Semarang - Surabaya',
-                      //                                     style: TextStyle(
-                      //                                         fontSize: 20),
-                      //                                   )
-                      //                                 ],
-                      //                               ),
-                      //                             ],
-                      //                           ),
-                      //                         ],
-                      //                       ),
-                      //                     );
-                      //                   });
-                      //             },
-                      //             child: Image.asset("kapal.png"))),
-                      // Marker(
-                      //     width: 50,
-                      //     height: 50,
-                      //     point: const LatLng(-7.6515680, 111.1283210),
-                      //     builder: (ctx) =>
-                      //         GestureDetector(
-                      //             onTap: () {
-                      //               showModalBottomSheet(
-                      //                   backgroundColor: Colors.transparent,
-                      //                   context: context,
-                      //                   builder: (BuildContext context) {
-                      //                     return Container(
-                      //                       width: double.infinity,
-                      //                       decoration: BoxDecoration(
-                      //                         color: Colors.white,
-                      //                         borderRadius: BorderRadius
-                      //                             .vertical(
-                      //                           top: Radius.circular(20.0),
-                      //                         ),
-                      //                       ),
-                      //                       padding: EdgeInsets.fromLTRB(
-                      //                           16, 0, 16, 5),
-                      //                       child: Column(
-                      //                         mainAxisSize: MainAxisSize.min,
-                      //                         children: [
-                      //                           Row(
-                      //                             children: [
-                      //                               Image.asset(
-                      //                                 "model_kapal.jpg",
-                      //                                 height: 100,
-                      //                                 width: 100,
-                      //                               ),
-                      //                               SizedBox(
-                      //                                 width: 20,
-                      //                               ),
-                      //                               Column(
-                      //                                 crossAxisAlignment:
-                      //                                 CrossAxisAlignment.start,
-                      //                                 children: [
-                      //                                   Text(
-                      //                                     'Kapal Pesiar 109-KLS',
-                      //                                     style: TextStyle(
-                      //                                         fontSize: 20),
-                      //                                   ),
-                      //                                   Text(
-                      //                                     'Rute : PAPUA - SURABAYA',
-                      //                                     style: TextStyle(
-                      //                                         fontSize: 20),
-                      //                                   )
-                      //                                 ],
-                      //                               ),
-                      //                             ],
-                      //                           ),
-                      //                         ],
-                      //                       ),
-                      //                     );
-                      //                   });
-                      //             },
-                      //             child: Image.asset("kapal.png"))),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class VesselTextField extends StatelessWidget {
-  const VesselTextField({
-    super.key,
-    required this.controller,
-    required this.hint,
-  });
-
-  final TextEditingController controller;
-  final String hint;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          height: 30,
-          child: TextFormField(
-            controller: controller,
-            keyboardType: TextInputType.text,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
-              hintText: hint,
-              hintStyle: TextStyle(fontSize: 15),
-              border: OutlineInputBorder(
-                borderSide: BorderSide(width: 0, style: BorderStyle.none),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              filled: true,
-              fillColor: Colors.black12,
+                ),
+              ],
             ),
           ),
-        ),
-        SizedBox(
-          height: 5,
-        )
-      ],
+        );
+      },
     );
   }
 }
@@ -1620,7 +1522,8 @@ class _DataSource extends DataTableSource {
   final BuildContext ctx;
   final int vesselTotal;
 
-  _DataSource({required this.data, required this.ctx,required this.vesselTotal});
+  _DataSource(
+      {required this.data, required this.ctx, required this.vesselTotal});
 
   @override
   DataRow? getRow(int index) {
@@ -1663,7 +1566,7 @@ class _DataSource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => vesselTotal;
+  int get rowCount => data.length;
 
   @override
   int get selectedRowCount => 0;

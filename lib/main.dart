@@ -1,17 +1,23 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:vts_maps/auth/Authentication.dart';
+import 'package:vts_maps/change_notifier/change_notifier.dart';
 import 'package:vts_maps/maps_view.dart';
 import 'package:vts_maps/utils/shared_pref.dart';
 
 import 'login_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => Notifier(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -22,16 +28,18 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Widget? home;
+  Widget home = Login();
+  bool load = false;
 
   Future<void> authCheck() async {
-    Auth.AuthCheck().then((value) {
+    Auth.AuthCheck().then((value) async {
       if (value.message != null) {
         if (value.message!.contains("Unauthenticated") &&
-            LoginPref.checkPref() == true) {
+            await LoginPref.checkPref() == true) {
           LoginPref.removePref();
           EasyLoading.showError("Renew your login session", dismissOnTap: true);
         }
+        home = Login();
       } else {
         setState(() {
           EasyLoading.showSuccess("Selamat Datang Kembali ${value.name}");
@@ -50,7 +58,12 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     Future.delayed(const Duration(seconds: 3), () {
-      home = home;
+      setState(() {
+        load = true;
+      });
+      // if(home != Login()){
+      //   home = home;
+      // }
     });
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -70,7 +83,7 @@ class _MyAppState extends State<MyApp> {
         },
       ),
       builder: EasyLoading.init(),
-      home: home != null
+      home: load == true
           ? home
           : Scaffold(
               body: Center(

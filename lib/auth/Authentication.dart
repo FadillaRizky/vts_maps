@@ -7,12 +7,13 @@ import 'package:vts_maps/api/LoginResponse.dart';
 import '../utils/shared_pref.dart';
 import 'auth_check_response.dart';
 
-const BASE_URL = "https://client-project.enricko.site/api/";
+// const BASE_URL = "https://client-project.enricko.site/api/";
+const BASE_URL = "http://127.0.0.1:8000/api";
 
 class Auth {
   static Future<LoginResponse> Login(Map<String, String> data) async {
     try {
-      var url = BASE_URL + "login";
+      var url = "$BASE_URL/login";
       var response = await http.post(
         Uri.parse(url),
         body: data,
@@ -23,7 +24,7 @@ class Auth {
       if (response.statusCode == 400) {
         return LoginResponse.fromJson(jsonDecode(response.body));
       } else {
-        throw "Gagal create vessel:\n${response.body}";
+        throw "Gagal Login User:\n${response.body}";
       }
     } catch (e) {
       print("error nya $e");
@@ -33,7 +34,7 @@ class Auth {
 
   static Future<AuthCheckResponse> AuthCheck() async {
     try {
-      var url = BASE_URL + "user";
+      var url = "$BASE_URL/user";
       var dataPref = await LoginPref.getPref();
       print(dataPref.token);
       var response = await http.get(
@@ -50,7 +51,7 @@ class Auth {
         // 401 Unauthorized
         return AuthCheckResponse.fromJson(jsonDecode(response.body));
       }
-      throw "Gagal create vessel:\n${response.body}";
+      throw "Gagal Get User:\n${response.body}";
     } catch (e) {
       print("error nya $e");
       rethrow;

@@ -11,7 +11,8 @@ import '../utils/shared_pref.dart';
 import 'DeleteVesselResponse.dart';
 import 'GetAllVesselCoor.dart';
 
-const BASE_URL = "https://client-project.enricko.site/api";
+// const BASE_URL = "https://client-project.enricko.site/api";
+const BASE_URL = "http://127.0.0.1:8000/api";
 class Api{
 
   static Future<GetAllVessel> getAllVessel({int page = 1,int perpage = 10}) async {
@@ -27,8 +28,8 @@ class Api{
     throw "Gagal request all vessel:\n${response.body}";
   
   }
-  static Future<GetAllLatLangCoor> getAllLatLangCoor() async {
-    var url = "$BASE_URL/get_all_latlang_coor?page=1&perpage=100";
+  static Future<GetAllLatLangCoor> getAllLatLangCoor({String? call_sign}) async {
+    var url = "$BASE_URL/get_all_latlang_coor?call_sign=$call_sign&page=1&perpage=100";
     var response = await http.get(
       Uri.parse(url),
     );
@@ -55,7 +56,7 @@ class Api{
   }
   static Future<SubmitVesselResponse>createVessel(Map<String,String> data) async {
     try{
-      var url = "https://client-project.enricko.site/api/insert_kapal";
+      var url = "$BASE_URL/insert_kapal";
       var datatoken = await LoginPref.getPref();
       var token = datatoken.token!;
       var response = await http.post(
