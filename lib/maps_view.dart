@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:math';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -19,8 +18,6 @@ import 'package:snapping_sheet/snapping_sheet.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:vts_maps/change_notifier/change_notifier.dart';
 import 'package:vts_maps/utils/text_field.dart';
-import 'package:xml/xml.dart' as xml;
-import 'package:xml/xml.dart';
 
 import 'package:vts_maps/system/scale_bar.dart';
 import 'package:vts_maps/utils/constants.dart';
@@ -159,13 +156,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
-  void initKalmanFilter() {
-    Timer.periodic(Duration(milliseconds: 1000), ((timer) {
-      setState(() {
-        predictMovementVessel += 1;
-      });
-    }));
-  }
 
   double degreesToRadians(double degrees) {
     return degrees * (pi / 180.0);
@@ -197,18 +187,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
-  // Vessel.Data vesselDescription(String vessel) {
-  //   var dataVessel =
-  //       vesselResult.where((e) => e.callSign!.contains(vessel)).first;
-  //   return dataVessel;
-  // }
-
-  // LatestVesselCoor.Data vesselLatestCoor(String vessel) {
-  //   LatestVesselCoor.Data latestCoor =
-  //       result.where((e) => e.callSign!.contains(vessel)).first;
-  //   return latestCoor;
-  // }
-
   double vesselSizes(String size){
     switch (size) {
       case "small":
@@ -224,125 +202,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  // searchVessel(String callSign) {
-  //   LatestVesselCoor.Data vessel = vesselLatestCoor(callSign);
-  //   initLatLangCoor(call_sign: vessel.callSign);
-  //   setState(() {
-  //     onClickVessel = vessel.callSign!;
-  //   });
-  //   _animatedMapMove(
-  //       LatLng(
-  //         vessel.coorGga!.latitude!.toDouble(),
-  //         vessel.coorGga!.longitude!.toDouble(),
-  //       ),
-  //       13);
-  // }
-
-  // void loadKmlData() async {
-  //   final String kmlData = await loadKmlFromFile('assets/kml/format_pipa.kml');
-  //   setState(() {
-  //     kmlOverlayPolygons = parseKmlForOverlay(kmlData);
-  //   });
-  // }
-
-  Future<String> loadKmlFromFile(String filePath) async {
-    return await DefaultAssetBundle.of(context).loadString(filePath);
-  }
-
-  Future<void> loadKMZData() async {
-    // final file = "assets/kml/Pipa.kmz";
-    // final file = "assets/kml/format_pipa.kml";
-    List files = [
-      "assets/kml/Pipa.kmz",
-      "assets/kml/format_pipa.kml",
-    ];
-    for (var file in files) {
-      if (file.endsWith(".kmz")) {
-        final ByteData data = await rootBundle.load(file);
-        final List<int> bytes = data.buffer.asUint8List();
-        final kmlData = Constants.extractKMLDataFromKMZ(bytes);
-        if (kmlData != null) {
-          kmlOverlayPolygons.add(parseKmlForOverlay(kmzData: kmlData));
-          setState(() {});
-        }
-      } else if (file.endsWith(".kml")) {
-        final String kmlData = await loadKmlFromFile(file);
-        kmlOverlayPolygons.add(parseKmlForOverlay(kmlData: kmlData));
-        setState(() {});
-      }
-    }
-  }
-
-  List<KmlPolygon> parseKmlForOverlay({List<int>? kmzData, String? kmlData}) {
-    final List<KmlPolygon> polygons = [];
-    XmlDocument? doc;
-
-    if (kmzData != null) {
-      doc = XmlDocument.parse(utf8.decode(kmzData));
-    } else if (kmlData != null) {
-      doc = xml.XmlDocument.parse(kmlData);
-    }
-
-    final Iterable<xml.XmlElement> placemarks =
-        doc!.findAllElements('Placemark');
-    for (final placemark in placemarks) {
-      final xml.XmlElement? extendedDataElement =
-          placemark.getElement("ExtendedData");
-      final xml.XmlElement? schemaDataElement =
-          extendedDataElement!.getElement("SchemaData");
-      final Iterable<xml.XmlElement> simpleDataElement =
-          schemaDataElement!.findAllElements("SimpleData");
-      final subClass = simpleDataElement!
-          .where((element) => element.getAttribute("name") == "SubClasses")
-          .first
-          .innerText;
-      if (subClass == "AcDbEntity:AcDb2dPolyline" ||
-          subClass == "AcDbEntity:AcDbPolyline") {
-        final styleElement = placemark.findAllElements('Style').first;
-        final lineStyleElement = styleElement.findElements('LineStyle').first;
-        final colorLine =
-            lineStyleElement.findElements('color').first.innerText;
-
-        final xml.XmlElement? polygonElement =
-            placemark.getElement('LineString');
-        if (polygonElement != null) {
-          final List<LatLng> polygonPoints = [];
-
-          final xml.XmlElement? coordinatesElement =
-              polygonElement.getElement('coordinates');
-          if (coordinatesElement != null) {
-            final String coordinatesText = coordinatesElement.text;
-            final List<String> coordinateList = coordinatesText.split(' ');
-
-            for (final coordinate in coordinateList) {
-              final List<String> latLng = coordinate.split(',');
-              if (latLng.length >= 2) {
-                double? latitude = double.tryParse(latLng[1]);
-                double? longitude = double.tryParse(latLng[0]);
-                if (latitude != null && longitude != null) {
-                  polygonPoints.add(LatLng(latitude, longitude));
-                }
-              }
-            }
-          }
-
-          // print(placemark.getElement('styleUrl')!.text);
-          if (polygonPoints.isNotEmpty) {
-            polygons.add(KmlPolygon(points: polygonPoints, color: colorLine));
-          }
-        }
-      }
-    }
-
-    return polygons;
-  }
-
   /// function vessel list
   Future<void> fetchDataVessel() async {
     setState(() {
       _isLoading = true;
     });
-    Api.getAllVessel(page: _currentPage, perpage: 1000).then((value) {
+    Api.getAllVessel(page: _currentPage, perpage: _pageSize).then((value) {
       if (value.total! == 0) {
         setState(() {
           _dataVesselTable = [];
@@ -517,15 +382,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    loadKMZData();
-    fetchDataVessel();
-      // initVessel();
-      // initCoorVessel();
-      // initLatLangCoor();
+
     final notifier = Provider.of<Notifier>(context, listen: false);
     notifier.initVessel();
     notifier.initCoorVessel();
     notifier.initLatLangCoor();
+    notifier.loadKMZData(context);
+    notifier.fetchDataVessel(_currentPage,_pageSize);
     Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       notifier.initKalmanFilter();
     });
@@ -536,7 +399,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       notifier.initLatLangCoor();
     });
 
-    initKalmanFilter();
     mapController = MapController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updatePoint(null, context);
@@ -938,7 +800,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               child: ListView(
                                                   scrollDirection: Axis.vertical,
                                                   children: [
-                                                    _isLoading
+                                                    value.isLoading
                                                         ? Center(
                                                             child:
                                                                 CircularProgressIndicator())
@@ -991,7 +853,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             // },
                                                             source: _DataSource(
                                                               data:
-                                                                  _dataVesselTable,
+                                                                  value.dataVesselTable,
                                                               ctx: context,
                                                               vesselTotal:
                                                                   10,
@@ -1313,7 +1175,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             ),
                                                           ),
                                                           Text(
-                                                            "${predictLatLong(vesselLatestCoor(value.onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(value.onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(value.onClickVessel).coorHdt!.headingDegree ?? vesselLatestCoor(value.onClickVessel).defaultHeading!, predictMovementVessel).latitude.toStringAsFixed(5)}}",
+                                                            "${predictLatLong(vesselLatestCoor(value.onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(value.onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(value.onClickVessel).coorHdt!.headingDegree ?? vesselLatestCoor(value.onClickVessel).defaultHeading!, value.predictMovementVessel).latitude.toStringAsFixed(5)}}",
                                                             style: TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
@@ -1351,7 +1213,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             ),
                                                           ),
                                                           Text(
-                                                            "${predictLatLong(vesselLatestCoor(value.onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(value.onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(value.onClickVessel).coorHdt!.headingDegree ?? vesselLatestCoor(value.onClickVessel).defaultHeading!, predictMovementVessel).longitude.toStringAsFixed(5)}",
+                                                            "${predictLatLong(vesselLatestCoor(value.onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(value.onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(value.onClickVessel).coorHdt!.headingDegree ?? vesselLatestCoor(value.onClickVessel).defaultHeading!, value.predictMovementVessel).longitude.toStringAsFixed(5)}",
                                                             style: TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
@@ -1385,8 +1247,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                       ),
-                      if (kmlOverlayPolygons.isNotEmpty)
-                        for (final kmlOverlayPolygon in kmlOverlayPolygons)
+                      if (value.kmlOverlayPolygons.isNotEmpty)
+                        for (final kmlOverlayPolygon in value.kmlOverlayPolygons)
                           PolylineLayer(
                             polylines: kmlOverlayPolygon.map((kmlPolygon) {
                               return Polyline(
@@ -1415,7 +1277,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               100,
                                               i.coorHdt!.headingDegree ??
                                                   i.defaultHeading!.toDouble(),
-                                              predictMovementVessel)
+                                              value.predictMovementVessel)
                                           .latitude,
                                       predictLatLong(
                                               i.coorGga!.latitude!.toDouble(),
@@ -1423,7 +1285,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               100,
                                               i.coorHdt!.headingDegree ??
                                                   i.defaultHeading!.toDouble(),
-                                              predictMovementVessel)
+                                              value.predictMovementVessel)
                                           .longitude
                                       // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
                                       //   i.coorGga!.longitude!.toDouble()
@@ -1469,7 +1331,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           100,
                                           i.coorHdt!.headingDegree ??
                                               i.defaultHeading!.toDouble(),
-                                          predictMovementVessel)
+                                          value.predictMovementVessel)
                                       .latitude,
                                   predictLatLong(
                                           i.coorGga!.latitude!.toDouble(),
@@ -1477,7 +1339,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           100,
                                           i.coorHdt!.headingDegree ??
                                               i.defaultHeading!.toDouble(),
-                                          predictMovementVessel)
+                                          value.predictMovementVessel)
                                       .longitude
                                   // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
                                   //   i.coorGga!.longitude!.toDouble()

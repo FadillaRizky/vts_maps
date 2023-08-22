@@ -1,12 +1,22 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:latlong2/latlong.dart';
 
 import 'package:vts_maps/api/GetAllVesselCoor.dart' as LatestVesselCoor;
 import 'package:vts_maps/api/GetAllLatLangCoor.dart' as LatLangCoor;
 import 'package:vts_maps/api/GetAllVessel.dart' as Vessel;
 import 'package:vts_maps/api/api.dart';
+import 'package:vts_maps/model/kml_model.dart';
+import 'package:vts_maps/utils/constants.dart';
+import 'package:xml/xml.dart';
+import 'package:xml/xml.dart' as xml;
 
 class Notifier extends ChangeNotifier {
 
+  // === API ===
   List<Vessel.Data> _vesselResult = [];
   List<Vessel.Data> get vesselResult => _vesselResult;
   
@@ -56,6 +66,28 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
   
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+  
+  List<Vessel.Data> _dataVesselTable = [];
+  List<Vessel.Data> get dataVesselTable => _dataVesselTable;
+
+  Future<void> fetchDataVessel(int _currentPage, int _pageSize) async {
+    _isLoading = true;
+    Api.getAllVessel(page: _currentPage, perpage: _pageSize).then((value) {
+      if (value.total! == 0) {
+        _dataVesselTable = [];
+      }
+      if (value.total! > 0) {
+        _dataVesselTable.addAll(value.data!);
+        _isLoading = false;
+      }
+    });
+    notifyListeners();
+    
+  }
+
+  // === Vessel Function ===
   String _onClickVessel = "";
   String get onClickVessel => _onClickVessel;
 
@@ -63,13 +95,110 @@ class Notifier extends ChangeNotifier {
     _onClickVessel = call_sign;
     notifyListeners();
   }
+
   int _predictMovementVessel = 0;
   int get predictMovementVessel => _predictMovementVessel;
   void initKalmanFilter() {
     _predictMovementVessel++;
+    notifyListeners();
   }
   void resetKalmanFilter() {
     _predictMovementVessel = 0;
+    notifyListeners();
+  }
+
+  // === Overlay Function === 
+  
+  List<List<KmlPolygon>> _kmlOverlayPolygons = [];
+  List<List<KmlPolygon>> get kmlOverlayPolygons => _kmlOverlayPolygons;
+
+  Future<void> loadKMZData(BuildContext context) async {
+    List files = [
+      "assets/kml/Pipa.kmz",
+      "assets/kml/format_pipa.kml",
+    ];
+    for (var file in files) {
+      if (file.endsWith(".kmz")) {
+        final ByteData data = await rootBundle.load(file);
+        final List<int> bytes = data.buffer.asUint8List();
+        final kmlData = Constants.extractKMLDataFromKMZ(bytes);
+        if (kmlData != null) {
+          _kmlOverlayPolygons.add(parseKmlForOverlay(kmzData: kmlData));
+        }
+      } else if (file.endsWith(".kml")) {
+        final String kmlData = await loadKmlFromFile(file,context);
+        _kmlOverlayPolygons.add(parseKmlForOverlay(kmlData: kmlData));
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<String> loadKmlFromFile(String filePath,BuildContext context) async {
+    return await DefaultAssetBundle.of(context).loadString(filePath);
+  }
+
+  List<KmlPolygon> parseKmlForOverlay({List<int>? kmzData, String? kmlData}) {
+    final List<KmlPolygon> polygons = [];
+    XmlDocument? doc;
+
+    if (kmzData != null) {
+      doc = XmlDocument.parse(utf8.decode(kmzData));
+    } else if (kmlData != null) {
+      doc = XmlDocument.parse(kmlData);
+    }
+
+    final Iterable<xml.XmlElement> placemarks =
+        doc!.findAllElements('Placemark');
+    for (final placemark in placemarks) {
+      final xml.XmlElement? extendedDataElement =
+          placemark.getElement("ExtendedData");
+      final xml.XmlElement? schemaDataElement =
+          extendedDataElement!.getElement("SchemaData");
+      final Iterable<xml.XmlElement> simpleDataElement =
+          schemaDataElement!.findAllElements("SimpleData");
+      final subClass = simpleDataElement
+          .where((element) => element.getAttribute("name") == "SubClasses")
+          .first
+          .innerText;
+      if (subClass == "AcDbEntity:AcDb2dPolyline" ||
+          subClass == "AcDbEntity:AcDbPolyline") {
+        final styleElement = placemark.findAllElements('Style').first;
+        final lineStyleElement = styleElement.findElements('LineStyle').first;
+        final colorLine =
+            lineStyleElement.findElements('color').first.innerText;
+
+        final xml.XmlElement? polygonElement =
+            placemark.getElement('LineString');
+        if (polygonElement != null) {
+          final List<LatLng> polygonPoints = [];
+
+          final xml.XmlElement? coordinatesElement =
+              polygonElement.getElement('coordinates');
+          if (coordinatesElement != null) {
+            final String coordinatesText = coordinatesElement.text;
+            final List<String> coordinateList = coordinatesText.split(' ');
+
+            for (final coordinate in coordinateList) {
+              final List<String> latLng = coordinate.split(',');
+              if (latLng.length >= 2) {
+                double? latitude = double.tryParse(latLng[1]);
+                double? longitude = double.tryParse(latLng[0]);
+                if (latitude != null && longitude != null) {
+                  polygonPoints.add(LatLng(latitude, longitude));
+                }
+              }
+            }
+          }
+
+          // print(placemark.getElement('styleUrl')!.text);
+          if (polygonPoints.isNotEmpty) {
+            polygons.add(KmlPolygon(points: polygonPoints, color: colorLine));
+          }
+        }
+      }
+    }
+
+    return polygons;
   }
 
 }
