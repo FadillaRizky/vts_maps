@@ -253,11 +253,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   //     // return LatLng(totalLat / coordinates.length, totalLng / coordinates.length);
   //   }
   // }
-
-  @override
-  void initState() {
-    super.initState();
-    final notifier = Provider.of<Notifier>(context, listen: false);
+  Future<void> runNotifier()async{
+    final notifier = await Provider.of<Notifier>(context, listen: false);
     notifier.initVessel();
     notifier.initCoorVessel();
     notifier.initLatLangCoor();
@@ -272,6 +269,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       notifier.initCoorVessel();
       notifier.initLatLangCoor();
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    runNotifier();
 
     mapController = MapController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -732,7 +736,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             source: _DataSource(
                                                               data:
                                                                   value.dataVesselTable,
-                                                              context: context,
+                                                              ctx: context,
                                                               vesselTotal:
                                                                   value.totalVessel,
                                                             ),
@@ -1254,17 +1258,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
       },
     );
+  
   }
 }
 
 class _DataSource extends DataTableSource {
   final List<Vessel.Data> data;
-  final BuildContext context;
+  final BuildContext ctx;
   final int vesselTotal;
 
   _DataSource(
-      {required this.data, required this.context, required this.vesselTotal});
-
+      {required this.data, required this.ctx, required this.vesselTotal});
 
   @override
   DataRow? getRow(int index) {
@@ -1292,7 +1296,7 @@ class _DataSource extends DataTableSource {
           Api.deleteVessel(item.callSign!).then((value) {
             if (value.status == 200) {
               EasyLoading.showSuccess("Kapal Terhapus..");
-              Navigator.pop(context);
+              Navigator.pop(ctx);
             } else {
               EasyLoading.showError("Gagal Menghapus Kapal..");
             }
@@ -1310,5 +1314,4 @@ class _DataSource extends DataTableSource {
 
   @override
   int get selectedRowCount => 0;
-  
 }

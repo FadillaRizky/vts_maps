@@ -60,9 +60,8 @@ class Notifier extends ChangeNotifier {
   int _totalVessel = 0;
   int get totalVessel => _totalVessel;
 
-  void incrementPage(pageIndex){
+  Future<void> incrementPage(pageIndex)async {
     _currentPage = pageIndex;
-    print(pageIndex);
     notifyListeners();
   }
    Future<void> fetchDataVessel(int _pageSize) async {
@@ -78,32 +77,10 @@ class Notifier extends ChangeNotifier {
         _dataVesselTable.addAll(value.data!);
         _isLoading = false;
         _totalVessel = value.total!;
-        print("$_totalVessel $_currentPage print");
       }
     });
     notifyListeners();
   }
-  // void nextPageVessel() {
-  //   _isLoading = true;
-  //   Api.getAllVessel(page: _currentPage, perpage: 10).then((value) {
-  //   print(value.page);
-  //   print(value.data!.length);
-  //     _dataVesselTable.clear();
-  //     _totalVessel = 0;
-  //     if (value.total! == 0) {
-  //       _dataVesselTable = [];
-  //       _isLoading = false;
-  //       _totalVessel = value.total!;
-  //     }
-  //     if (value.total! > 0) {
-  //       _dataVesselTable.addAll(value.data!);
-  //       _isLoading = false;
-  //       _totalVessel = value.total!;
-  //     }
-  //   });
-  //   notifyListeners();
-  // }
-
 
   List<LatestVesselCoor.Data> _coorResult = [];
   List<LatestVesselCoor.Data> get coorResult => _coorResult;

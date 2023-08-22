@@ -77,6 +77,7 @@ class _LoginState extends State<Login> {
         if (value.message == "Login Success") {
           final notifier = Provider.of<Notifier>(context, listen: false);
           notifier.setAuth(value.token!);
+          LoginPref.saveToSharedPref(value.token!);
           EasyLoading.showSuccess("Login Berhasil");
           Navigator.pop(context);
           Navigator.pushReplacement(
