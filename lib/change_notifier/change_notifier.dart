@@ -51,18 +51,34 @@ class Notifier extends ChangeNotifier {
   int _currentPage = 1;
   int get currentPage => _currentPage;
 
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+  
+  List<Vessel.Data> _dataVesselTable = [];
+  List<Vessel.Data> get dataVesselTable => _dataVesselTable;
+
+  int _totalVessel = 0;
+  int get totalVessel => _totalVessel;
+
   void incrementPage(pageIndex){
     _currentPage = pageIndex;
     notifyListeners();
   }
   void nextPageVessel() {
-    Api.getAllVessel(page: _currentPage,perpage: 10 ).then((value) {
-      _vesselResult.clear();
+    _isLoading = true;
+    Api.getAllVessel(page: _currentPage, perpage: 10).then((value) {
+      _dataVesselTable.clear();
+      _totalVessel = 0;
+      _totalVessel = 0;
       if (value.total! == 0) {
-        _vesselResult = [];
+        _dataVesselTable = [];
+        _isLoading = false;
+        _totalVessel = value.total!;
       }
       if (value.total! > 0) {
-        _vesselResult.addAll(value.data!);
+        _dataVesselTable.addAll(value.data!);
+        _isLoading = false;
+        _totalVessel = value.total!;
       }
     });
     notifyListeners();
@@ -101,12 +117,6 @@ class Notifier extends ChangeNotifier {
     });
     notifyListeners();
   }
-  
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
-  
-  List<Vessel.Data> _dataVesselTable = [];
-  List<Vessel.Data> get dataVesselTable => _dataVesselTable;
 
   Future<void> fetchDataVessel(int _currentPage, int _pageSize) async {
     _isLoading = true;
@@ -115,10 +125,13 @@ class Notifier extends ChangeNotifier {
       if (value.total! == 0) {
         _dataVesselTable = [];
         _isLoading = false;
+        _totalVessel = value.total!;
       }
       if (value.total! > 0) {
         _dataVesselTable.addAll(value.data!);
         _isLoading = false;
+        _totalVessel = value.total!;
+        print("$_totalVessel print");
       }
     });
     notifyListeners();

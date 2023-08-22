@@ -735,7 +735,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                   value.dataVesselTable,
                                                               ctx: context,
                                                               vesselTotal:
-                                                                  10,
+                                                                  value.totalVessel,
                                                             ),
                                                           ),
                                                   ]),
@@ -1306,7 +1306,7 @@ class _DataSource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => data.length;
+  int get rowCount => vesselTotal;
 
   @override
   int get selectedRowCount => 0;
