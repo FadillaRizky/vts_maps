@@ -11,8 +11,8 @@ import '../utils/shared_pref.dart';
 import 'DeleteVesselResponse.dart';
 import 'GetAllVesselCoor.dart';
 
-// const BASE_URL = "https://client-project.enricko.site/api";
-const BASE_URL = "http://127.0.0.1:8000/api";
+const BASE_URL = "https://client-project.enricko.site/api";
+// const BASE_URL = "http://127.0.0.1:8000/api";
 class Api{
 
   static Future<GetAllVessel> getAllVessel({int page = 1,int perpage = 10}) async {
@@ -67,7 +67,6 @@ class Api{
           'Authorization': 'Bearer $token',
         },
       );
-      print(response.statusCode);
       if (response.statusCode == 200) {
         return SubmitVesselResponse.fromJson(jsonDecode(response.body));
       }

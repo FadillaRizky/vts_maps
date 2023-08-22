@@ -75,6 +75,7 @@ class Notifier extends ChangeNotifier {
   Future<void> fetchDataVessel(int _currentPage, int _pageSize) async {
     _isLoading = true;
     Api.getAllVessel(page: _currentPage, perpage: _pageSize).then((value) {
+      _dataVesselTable.clear();
       if (value.total! == 0) {
         _dataVesselTable = [];
       }

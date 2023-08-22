@@ -61,16 +61,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String? vesselSize;
   late final MapController mapController;
 
-  final DataTableSource _dummydata = MyData();
-
   // List API
   List<LatestVesselCoor.Data> result = [];
   List<Vessel.Data> vesselResult = [];
   List<LatLangCoor.Data> latLangResult = [];
 
   // Random Variable
-  int predictMovementVessel = 0;
-  String onClickVessel = "";
   final pointSize = 75.0;
   final pointY = 75.0;
 
@@ -81,7 +77,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _currentPage = 1;
   int _pageSize = 10;
   List<Vessel.Data> _dataVesselTable = [];
-  bool _isLoading = false;
 
   // Animated Map Variable
   static const _startedId = 'AnimatedMapController#MoveStarted';
@@ -89,73 +84,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   static const _finishedId = 'AnimatedMapController#MoveFinished';
 
   int? vesselIndex;
-
-  List<List<KmlPolygon>> kmlOverlayPolygons = [];
-
-  // Map<String, Color> HEX_MAP = {
-  //   '#yellowLine': Color(0xFFFFFF00),
-  //   '#purpleLine': Color(0xFF800080),
-  //   '#brownLine': Color(0xFFA52A2A),
-  //   '#pinkLine': Color(0xFFFFC0CB),
-  //   '#orangeLine': Color(0xFFFFA500),
-  //   '#greenLine': Color(0xFF00FF00),
-  //   '#redLine': Color(0xFFFF0000),
-  //   '#blueLine': Color(0xFF0000FF),
-  // };
-
-  initCoorVessel() {
-    setState(() {
-      predictMovementVessel = 0;
-    });
-    Api.getAllVesselLatestCoor().then((value) {
-      result.clear();
-      if (value.total! == 0) {
-        setState(() {
-          result = [];
-        });
-      }
-      if (value.total! > 0) {
-        setState(() {
-          result.addAll(value.data!);
-        });
-      }
-    });
-  }
-
-  void initVessel() {
-    Api.getAllVessel().then((value) {
-    vesselResult.clear();
-      if (value.total! == 0) {
-        setState(() {
-          vesselResult = [];
-        });
-      }
-      if (value.total! > 0) {
-        setState(() {
-          vesselResult.addAll(value.data!);
-          vesselTotal = value.total!;
-        });
-      }
-    });
-  }
-
-  void initLatLangCoor({String? call_sign}) {
-    Api.getAllLatLangCoor(call_sign: call_sign).then((value) {
-      latLangResult.clear();
-      if (value.total! == 0) {
-        setState(() {
-          latLangResult = [];
-        });
-      }
-      if (value.total! > 0) {
-        setState(() {
-          latLangResult.addAll(value.data!);
-          print(latLangResult.where((e) => e.callSign == call_sign).length);
-        });
-      }
-    });
-  }
-
 
   double degreesToRadians(double degrees) {
     return degrees * (pi / 180.0);
@@ -200,48 +128,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       default:
         return 35.0;
     }
-  }
-
-  /// function vessel list
-  Future<void> fetchDataVessel() async {
-    setState(() {
-      _isLoading = true;
-    });
-    Api.getAllVessel(page: _currentPage, perpage: _pageSize).then((value) {
-      if (value.total! == 0) {
-        setState(() {
-          _dataVesselTable = [];
-        });
-      }
-      if (value.total! > 0) {
-        setState(() {
-          _dataVesselTable.addAll(value.data!);
-          vesselTotal = value.total!;
-          _isLoading = false;
-        });
-      }
-    });
-    // final response = await http.get(Uri.parse(
-    //     "https://client-project.enricko.site/api/kapal?page=$_currentPage&perpage=$_pageSize"));
-
-    // if (response.statusCode == 200) {
-    //   final jsonData = json.decode(response.body);
-    //   inspect(jsonData);
-    //   final dataList = jsonData['data'] as List<dynamic>;
-
-    //   final List<DataModel> newData =
-    //       dataList.map((item) => DataModel.fromJson(item)).toList();
-
-    //   setState(() {
-    //     _data.addAll(newData);
-    //     _isLoading = false;
-    //   });
-    // } else {
-    //   setState(() {
-    //     _isLoading = false;
-    //   });
-    //   throw Exception('Failed to fetch data');
-    // }
   }
 
   submitVessel() async {
@@ -295,16 +181,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       "port": portController.text,
       "size": vesselSize!,
     };
-    // var data = {
-    //   "call_sign": "234324",
-    //   "flag": "Asd",
-    //   "class": "asdasd",
-    //   "builder": "dsfsfsd",
-    //   "year_built": "2432",
-    //   "ip": "2432",
-    //   "port": "2432",
-    //   "size": "2432",
-    // };
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -331,27 +207,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       },
     );
     await Api.createVessel(data).then((value) {
-      print(value.message);
       if (value.message != "Data berhasil masuk database") {
         EasyLoading.showError("Gagal Menambahkan Kapal");
       }
       if (value.message == "Data berhasil masuk database") {
         EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
-        callsignController.clear();
-        flagController.clear();
-        classController.clear();
-        builderController.clear();
-        yearbuiltController.clear();
-        ipController.clear();
-        portController.clear();
-        vesselSize == null;
-        _dataVesselTable.clear();
-        fetchDataVessel();
-        initVessel();
+        // callsignController.clear();
+        // flagController.clear();
+        // classController.clear();
+        // builderController.clear();
+        // yearbuiltController.clear();
+        // ipController.clear();
+        // portController.clear();
+        // vesselSize == null;
+        // _dataVesselTable.clear();
+        final notifier = Provider.of<Notifier>(context, listen: false);
+        notifier.fetchDataVessel(_currentPage,_pageSize);
+        notifier.initVessel();
 
         Navigator.pop(context);
         Navigator.pop(context);
-        setState(() {});
       }
       if (value.message == "Validator Fails") {
         EasyLoading.showError("Call Sign sudah terdaftar");
@@ -382,7 +257,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
     final notifier = Provider.of<Notifier>(context, listen: false);
     notifier.initVessel();
     notifier.initCoorVessel();
@@ -1389,7 +1263,6 @@ class _DataSource extends DataTableSource {
 
   @override
   DataRow? getRow(int index) {
-    print(data.length);
     if (index >= data.length) {
       return null;
     }
