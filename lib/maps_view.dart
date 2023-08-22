@@ -222,7 +222,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         vesselSize == null;
         // _dataVesselTable.clear();
         final notifier = Provider.of<Notifier>(context, listen: false);
-        notifier.fetchDataVessel(_currentPage,_pageSize);
+        notifier.fetchDataVessel(_pageSize);
         notifier.initVessel();
 
         Navigator.pop(context);
@@ -262,7 +262,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     notifier.initCoorVessel();
     notifier.initLatLangCoor();
     notifier.loadKMZData(context);
-    notifier.fetchDataVessel(_currentPage,_pageSize);
+    notifier.fetchDataVessel(_pageSize);
     Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       notifier.initKalmanFilter();
     });
@@ -718,10 +718,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                 false,
                                                             onPageChanged:
                                                                 (pageIndex) {
-                                                              print(pageIndex);
-                                                              // readNotifier.incrementPage(pageIndex);
-                                                              // print(value.currentPage);
-                                                              // readNotifier.nextPageVessel();
+                                                              readNotifier.incrementPage((pageIndex / 10) + 1);
+                                                              print(value.currentPage);
+                                                              readNotifier.fetchDataVessel(10);
 
                                                               // setState(() {
                                                               //   _currentPage++;
@@ -733,7 +732,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             source: _DataSource(
                                                               data:
                                                                   value.dataVesselTable,
-                                                              ctx: context,
+                                                              context: context,
                                                               vesselTotal:
                                                                   value.totalVessel,
                                                             ),
@@ -1260,11 +1259,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
 class _DataSource extends DataTableSource {
   final List<Vessel.Data> data;
-  final BuildContext ctx;
+  final BuildContext context;
   final int vesselTotal;
 
   _DataSource(
-      {required this.data, required this.ctx, required this.vesselTotal});
+      {required this.data, required this.context, required this.vesselTotal});
+
 
   @override
   DataRow? getRow(int index) {
@@ -1292,7 +1292,7 @@ class _DataSource extends DataTableSource {
           Api.deleteVessel(item.callSign!).then((value) {
             if (value.status == 200) {
               EasyLoading.showSuccess("Kapal Terhapus..");
-              Navigator.pop(ctx);
+              Navigator.pop(context);
             } else {
               EasyLoading.showError("Gagal Menghapus Kapal..");
             }
@@ -1310,4 +1310,5 @@ class _DataSource extends DataTableSource {
 
   @override
   int get selectedRowCount => 0;
+  
 }

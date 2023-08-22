@@ -62,14 +62,13 @@ class Notifier extends ChangeNotifier {
 
   void incrementPage(pageIndex){
     _currentPage = pageIndex;
+    print(pageIndex);
     notifyListeners();
   }
-  void nextPageVessel() {
+   Future<void> fetchDataVessel(int _pageSize) async {
     _isLoading = true;
-    Api.getAllVessel(page: _currentPage, perpage: 10).then((value) {
+    Api.getAllVessel(page: _currentPage, perpage: _pageSize).then((value) {
       _dataVesselTable.clear();
-      _totalVessel = 0;
-      _totalVessel = 0;
       if (value.total! == 0) {
         _dataVesselTable = [];
         _isLoading = false;
@@ -79,10 +78,31 @@ class Notifier extends ChangeNotifier {
         _dataVesselTable.addAll(value.data!);
         _isLoading = false;
         _totalVessel = value.total!;
+        print("$_totalVessel $_currentPage print");
       }
     });
     notifyListeners();
   }
+  // void nextPageVessel() {
+  //   _isLoading = true;
+  //   Api.getAllVessel(page: _currentPage, perpage: 10).then((value) {
+  //   print(value.page);
+  //   print(value.data!.length);
+  //     _dataVesselTable.clear();
+  //     _totalVessel = 0;
+  //     if (value.total! == 0) {
+  //       _dataVesselTable = [];
+  //       _isLoading = false;
+  //       _totalVessel = value.total!;
+  //     }
+  //     if (value.total! > 0) {
+  //       _dataVesselTable.addAll(value.data!);
+  //       _isLoading = false;
+  //       _totalVessel = value.total!;
+  //     }
+  //   });
+  //   notifyListeners();
+  // }
 
 
   List<LatestVesselCoor.Data> _coorResult = [];
@@ -116,26 +136,6 @@ class Notifier extends ChangeNotifier {
       }
     });
     notifyListeners();
-  }
-
-  Future<void> fetchDataVessel(int _currentPage, int _pageSize) async {
-    _isLoading = true;
-    Api.getAllVessel(page: _currentPage, perpage: _pageSize).then((value) {
-      _dataVesselTable.clear();
-      if (value.total! == 0) {
-        _dataVesselTable = [];
-        _isLoading = false;
-        _totalVessel = value.total!;
-      }
-      if (value.total! > 0) {
-        _dataVesselTable.addAll(value.data!);
-        _isLoading = false;
-        _totalVessel = value.total!;
-        print("$_totalVessel print");
-      }
-    });
-    notifyListeners();
-    
   }
 
   // === Vessel Function ===
