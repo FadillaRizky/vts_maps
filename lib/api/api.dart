@@ -30,8 +30,8 @@ class Api{
   
   }
 
-  static Future<GetKapalAndCoor> getKapalAndCoor({String call_sign = ""})async{
-    var url = "$BASE_URL/get_kapal_and_latest_coor?call_sign=$call_sign";
+  static Future<GetKapalAndCoor> getKapalAndCoor({String call_sign = "",int page = 1,int perpage = 10})async{
+    var url = "$BASE_URL/get_kapal_and_latest_coor?call_sign=$call_sign&page=$page&perpage=$perpage";
     var response = await http.get(
       Uri.parse(url),
     );

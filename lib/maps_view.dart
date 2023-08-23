@@ -30,6 +30,7 @@ import 'system/zoom_button.dart';
 import 'api/GetAllVesselCoor.dart' as LatestVesselCoor;
 import 'api/GetAllLatLangCoor.dart' as LatLangCoor;
 import 'api/GetAllVessel.dart' as Vessel;
+import 'api/GetKapalAndCoor.dart' as VesselCoor;
 import 'api/api.dart';
 
 class HomePage extends StatefulWidget {
@@ -132,104 +133,104 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  submitVessel() async {
-    if (callsignController.text.isEmpty) {
-      EasyLoading.showError("Kolom Call Sign Masih Kosong...");
-      return;
-    }
-    if (flagController.text.isEmpty) {
-      EasyLoading.showError("Kolom Bendera Masih Kosong...");
-      return;
-    }
-    if (classController.text.isEmpty) {
-      EasyLoading.showError("Kolom Kelas Masih Kosong...");
-      return;
-    }
-    if (builderController.text.isEmpty) {
-      EasyLoading.showError("Kolom Builder Masih Kosong...");
-      return;
-    }
-    if (yearbuiltController.text.isEmpty) {
-      EasyLoading.showError("Kolom Tahun Pembuatan Masih Kosong...");
-      return;
-    }
-    if (ipController.text.isEmpty) {
-      EasyLoading.showError("Kolom IP Pembuatan Masih Kosong...");
-      return;
-    }
-    if (portController.text.isEmpty) {
-      EasyLoading.showError("Kolom Port Masih Kosong...");
-      return;
-    }
-    if (vesselSize == null) {
-      EasyLoading.showError("Kolom Ukuran Kapal Masih Kosong...");
-      return;
-    }
+  // submitVessel() async {
+  //   if (callsignController.text.isEmpty) {
+  //     EasyLoading.showError("Kolom Call Sign Masih Kosong...");
+  //     return;
+  //   }
+  //   if (flagController.text.isEmpty) {
+  //     EasyLoading.showError("Kolom Bendera Masih Kosong...");
+  //     return;
+  //   }
+  //   if (classController.text.isEmpty) {
+  //     EasyLoading.showError("Kolom Kelas Masih Kosong...");
+  //     return;
+  //   }
+  //   if (builderController.text.isEmpty) {
+  //     EasyLoading.showError("Kolom Builder Masih Kosong...");
+  //     return;
+  //   }
+  //   if (yearbuiltController.text.isEmpty) {
+  //     EasyLoading.showError("Kolom Tahun Pembuatan Masih Kosong...");
+  //     return;
+  //   }
+  //   if (ipController.text.isEmpty) {
+  //     EasyLoading.showError("Kolom IP Pembuatan Masih Kosong...");
+  //     return;
+  //   }
+  //   if (portController.text.isEmpty) {
+  //     EasyLoading.showError("Kolom Port Masih Kosong...");
+  //     return;
+  //   }
+  //   if (vesselSize == null) {
+  //     EasyLoading.showError("Kolom Ukuran Kapal Masih Kosong...");
+  //     return;
+  //   }
 
-    var data = {
-      "call_sign": callsignController.text,
-      "flag": flagController.text,
-      "class": classController.text,
-      "builder": builderController.text,
-      "year_built": yearbuiltController.text,
-      "ip": ipController.text,
-      "port": portController.text,
-      "size": vesselSize!,
-    };
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(
-                color: Colors.white,
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Text(
-                "Loading..",
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-    await Api.createVessel(data).then((value) {
-      if (value.message != "Data berhasil masuk database") {
-        EasyLoading.showError("Gagal Menambahkan Kapal");
-      }
-      if (value.message == "Data berhasil masuk database") {
-        EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
-        callsignController.clear();
-        flagController.clear();
-        classController.clear();
-        builderController.clear();
-        yearbuiltController.clear();
-        ipController.clear();
-        portController.clear();
-        vesselSize == null;
-        // _dataVesselTable.clear();
-        final notifier = Provider.of<Notifier>(context, listen: false);
-        notifier.fetchDataVessel(_pageSize);
-        notifier.initVessel();
+  //   var data = {
+  //     "call_sign": callsignController.text,
+  //     "flag": flagController.text,
+  //     "class": classController.text,
+  //     "builder": builderController.text,
+  //     "year_built": yearbuiltController.text,
+  //     "ip": ipController.text,
+  //     "port": portController.text,
+  //     "size": vesselSize!,
+  //   };
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (BuildContext context) {
+  //       return Dialog(
+  //         backgroundColor: Colors.transparent,
+  //         elevation: 0,
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             CircularProgressIndicator(
+  //               color: Colors.white,
+  //             ),
+  //             SizedBox(
+  //               height: 20,
+  //             ),
+  //             Text(
+  //               "Loading..",
+  //               style: TextStyle(color: Colors.white, fontSize: 20),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  //   await Api.createVessel(data).then((value) {
+  //     if (value.message != "Data berhasil masuk database") {
+  //       EasyLoading.showError("Gagal Menambahkan Kapal");
+  //     }
+  //     if (value.message == "Data berhasil masuk database") {
+  //       EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
+  //       callsignController.clear();
+  //       flagController.clear();
+  //       classController.clear();
+  //       builderController.clear();
+  //       yearbuiltController.clear();
+  //       ipController.clear();
+  //       portController.clear();
+  //       vesselSize == null;
+  //       // _dataVesselTable.clear();
+  //       final notifier = Provider.of<Notifier>(context, listen: false);
+  //       notifier.fetchDataVessel(_pageSize);
+  //       notifier.initVessel();
 
-        Navigator.pop(context);
-        Navigator.pop(context);
-      }
-      if (value.message == "Validator Fails") {
-        EasyLoading.showError("Call Sign sudah terdaftar");
-        Navigator.pop(context);
-      }
-      return;
-    });
-  }
+  //       Navigator.pop(context);
+  //       Navigator.pop(context);
+  //     }
+  //     if (value.message == "Validator Fails") {
+  //       EasyLoading.showError("Call Sign sudah terdaftar");
+  //       Navigator.pop(context);
+  //     }
+  //     return;
+  //   });
+  // }
 
   // void calculateCenter() {
   //   for(var kmlOverlayPolygon in kmlOverlayPolygons){
@@ -250,15 +251,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // }
   Future<void> runNotifier() async {
     final notifier = await Provider.of<Notifier>(context, listen: false);
-    notifier.initVessel();
-    notifier.initCoorVessel();
+    notifier.initVesselCoor();
     notifier.initLatLangCoor();
     notifier.loadKMZData(context);
-    notifier.fetchDataVessel(_pageSize);
+    Timer.periodic(Duration(milliseconds: 1000), (timer) {
+      notifier.initKalmanFilter();
+    });
     Timer.periodic(const Duration(minutes: 5), (timer) {
+      notifier.initVesselCoor();
       notifier.resetKalmanFilter();
-      notifier.initVessel();
-      notifier.initCoorVessel();
       notifier.initLatLangCoor();
     });
   }
@@ -327,30 +328,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       builder: (context, value, child) {
         var readNotifier = context.read<Notifier>();
 
-        Vessel.Data vesselDescription(String vessel) {
-          var dataVessel = value.vesselResult
-              .where((e) => e.callSign!.contains(vessel))
-              .first;
-          return dataVessel;
-        }
-
-        LatestVesselCoor.Data vesselLatestCoor(String vessel) {
-          LatestVesselCoor.Data latestCoor =
-              value.coorResult.where((e) => e.callSign!.contains(vessel)).first;
-          return latestCoor;
-        }
-
-        searchVessel(String callSign) {
-          LatestVesselCoor.Data vessel = vesselLatestCoor(callSign);
-          readNotifier.initLatLangCoor(call_sign: vessel.callSign);
-
-          readNotifier.clickVessel(vessel.callSign!);
-          _animatedMapMove(
+        Future<void> searchVessel(String callSign) async {
+          value.clickVessel(callSign);
+          Future.delayed(Duration(seconds: 1),(){
+            print(value.searchKapal!.kapal!.callSign);
+            value.initLatLangCoor(call_sign: callSign);
+            _animatedMapMove(
               LatLng(
-                vessel.coorGga!.latitude!.toDouble(),
-                vessel.coorGga!.longitude!.toDouble(),
+                value.searchKapal!.coor!.coorGga!.latitude!.toDouble(),
+                value.searchKapal!.coor!.coorGga!.longitude!.toDouble(),
               ),
               13);
+          });
+          
         }
 
         return Scaffold(
@@ -659,7 +649,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                     "port": portController.text,
                                                                                     "size": vesselSize!,
                                                                                   };
-                                                                                  readNotifier.submitVessel(data,_pageSize,context);
+                                                                                  value.submitVessel(data,context);
 
                                                                                   // submitVessel();
                                                                                 },
@@ -745,33 +735,33 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                         "Action")),
                                                               ],
                                                             rows: value
-                                                                .dataVesselTable
+                                                                .vesselCoorResult
                                                                 .map((data) {
                                                               return DataRow(
                                                                   cells: [
                                                                     DataCell(
-                                                                        Text(data
+                                                                        Text(data.kapal!
                                                                             .callSign!)),
                                                                     DataCell(
-                                                                        Text(data
+                                                                        Text(data.kapal!
                                                                             .flag!)),
                                                                     DataCell(
-                                                                        Text(data
+                                                                        Text(data.kapal!
                                                                             .kelas!)),
                                                                     DataCell(
-                                                                        Text(data
+                                                                        Text(data.kapal!
                                                                             .builder!)),
                                                                     DataCell(
-                                                                        Text(data
+                                                                        Text(data.kapal!
                                                                             .yearBuilt!)),
                                                                     DataCell(
-                                                                        Text(data
+                                                                        Text(data.kapal!
                                                                             .ip!)),
                                                                     DataCell(
-                                                                        Text(data
+                                                                        Text(data.kapal!
                                                                             .port!)),
                                                                     DataCell(
-                                                                        Text(data
+                                                                        Text(data.kapal!
                                                                             .size!)),
                                                                     DataCell(
                                                                         Row(
@@ -787,14 +777,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                       onPressed:
                                                                               () {
                                                                         // print(data.callSign);
-                                                                        callsignController.text = data.callSign!;
-                                                                         flagController.text= data.flag!;
-                                                                         classController.text = data.kelas!;
-                                                                         builderController.text = data.builder!;
-                                                                         yearbuiltController.text = data.yearBuilt!;
-                                                                         ipController.text = data.ip! ;
-                                                                         portController.text = data.port!;
-                                                                         vesselSize = data.size!;
+                                                                        callsignController.text = data.kapal!.callSign!;
+                                                                         flagController.text= data.kapal!.flag!;
+                                                                         classController.text = data.kapal!.kelas!;
+                                                                         builderController.text = data.kapal!.builder!;
+                                                                         yearbuiltController.text = data.kapal!.yearBuilt!;
+                                                                         ipController.text = data.kapal!.ip! ;
+                                                                         portController.text = data.kapal!.port!;
+                                                                         vesselSize = data.kapal!.size!;
                                                                                 showDialog(
                                                                                     context: context,
                                                                                     barrierDismissible:
@@ -943,7 +933,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                                        double.infinity,
                                                                                                        child:
                                                                                                        DropdownSearch<String>(
-                                                                                                         selectedItem: data.size ?? "",
+                                                                                                         selectedItem: data.kapal!.size ?? "",
                                                                                                          dropdownBuilder: (context, selectedItem) => Text(
                                                                                                            selectedItem ?? "Ukuran Kapal",
                                                                                                            style: TextStyle(fontSize: 15, color: Colors.black54),
@@ -1042,7 +1032,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                                                return;
                                                                                                              }
                                                                                                              Map<String,String> dataEdit = {
-                                                                                                               "old_call_sign": data.callSign!,
+                                                                                                               "old_call_sign": data.kapal!.callSign!,
                                                                                                                "call_sign": callsignController.text,
                                                                                                                "flag": flagController.text,
                                                                                                                "class": classController.text,
@@ -1089,8 +1079,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                       ),
                                                                       onPressed:
                                                                               () {
-                                                                            readNotifier.deleteVessel(
-                                                                                data.callSign,
+                                                                            value.deleteVessel(
+                                                                                data.kapal!.callSign,
                                                                                 context,_pageSize);
                                                                       },
                                                                     ),
@@ -1107,10 +1097,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               selectedPage: value.currentPage,
                                               pagesVisible: 7,
                                               onPageChanged: (page) {
-                                                readNotifier
+                                                value
                                                     .incrementPage(page);
-                                                readNotifier
-                                                    .fetchDataVessel(10);
+                                                value
+                                                    .initVesselCoor();
                                               },
                                               nextIcon: const Icon(
                                                 Icons.arrow_forward_ios,
@@ -1182,12 +1172,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     children: [
                       Container(
                         width: 300,
-                        child: SearchField<Vessel.Data>(
+                        child: SearchField<VesselCoor.Data>(
                           controller: SearchVessel,
-                          suggestions: value.vesselResult
+                          suggestions: value.vesselCoorResult
                               .map(
-                                (e) => SearchFieldListItem<Vessel.Data>(
-                                  e.callSign!,
+                                (e) => SearchFieldListItem<VesselCoor.Data>(
+                                  e.kapal!.callSign!,
                                   item: e,
                                   // Use child to show Custom Widgets in the suggestions
                                   // defaults to Text widget
@@ -1198,7 +1188,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                         SizedBox(
                                           width: 10,
                                         ),
-                                        Text(e.callSign!),
+                                        Text(e.kapal!.callSign!),
                                       ],
                                     ),
                                   ),
@@ -1377,7 +1367,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             );
                                             Timer(Duration(milliseconds: 300),
                                                 () {
-                                              readNotifier.clickVessel("");
+                                              value.removeClickedVessel();
                                             });
                                           },
                                           child: Container(
@@ -1411,14 +1401,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      "${value.runtimeType}",
+                                                      "${value.searchKapal!.kapal!.callSign}",
                                                       style: TextStyle(
                                                           fontSize: 20,
                                                           fontWeight:
                                                               FontWeight.bold),
                                                     ),
                                                     Text(
-                                                      "${vesselDescription(value.onClickVessel).flag!}",
+                                                      "${value.searchKapal!.kapal!.flag}",
                                                       style: TextStyle(
                                                           fontSize: 14,
                                                           fontWeight:
@@ -1481,7 +1471,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             ),
                                                           ),
                                                           Text(
-                                                            "${predictLatLong(vesselLatestCoor(value.onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(value.onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(value.onClickVessel).coorHdt!.headingDegree ?? vesselLatestCoor(value.onClickVessel).defaultHeading!, value.predictMovementVessel).latitude.toStringAsFixed(5)}}",
+                                                            "${predictLatLong(value.searchKapal!.coor!.coorGga!.latitude!.toDouble(), value.searchKapal!.coor!.coorGga!.longitude!.toDouble(), 100, value.searchKapal!.coor!.coorHdt!.headingDegree ?? value.searchKapal!.coor!.defaultHeading!, value.predictMovementVessel).latitude.toStringAsFixed(5)}}",
                                                             style: TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
@@ -1529,7 +1519,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                             ),
                                                           ),
                                                           Text(
-                                                            "${predictLatLong(vesselLatestCoor(value.onClickVessel).coorGga!.latitude!.toDouble(), vesselLatestCoor(value.onClickVessel).coorGga!.longitude!.toDouble(), 100, vesselLatestCoor(value.onClickVessel).coorHdt!.headingDegree ?? vesselLatestCoor(value.onClickVessel).defaultHeading!, value.predictMovementVessel).longitude.toStringAsFixed(5)}",
+                                                            "${predictLatLong(value.searchKapal!.coor!.coorGga!.latitude!.toDouble(), value.searchKapal!.coor!.coorGga!.longitude!.toDouble(), 100, value.searchKapal!.coor!.coorHdt!.headingDegree ?? value.searchKapal!.coor!.defaultHeading!, value.predictMovementVessel).latitude.toStringAsFixed(5)}}",
                                                             style: TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
@@ -1601,23 +1591,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               for (var x in value.latLangResult.reversed)
                                 if (x.callSign == value.onClickVessel)
                                   LatLng(x.latitude!, x.longitude!),
-                              for (var i in value.coorResult)
-                                if (i.callSign == value.onClickVessel)
+                              // for (var i in value.vesselCoorResult)
+                              if(value.searchKapal != null)
+                                if (value.searchKapal!.kapal!.callSign == value.onClickVessel)
                                   LatLng(
                                       predictLatLong(
-                                              i.coorGga!.latitude!.toDouble(),
-                                              i.coorGga!.longitude!.toDouble(),
+                                              value.searchKapal!.coor!.coorGga!.latitude!.toDouble(),
+                                              value.searchKapal!.coor!.coorGga!.longitude!.toDouble(),
                                               100,
-                                              i.coorHdt!.headingDegree ??
-                                                  i.defaultHeading!.toDouble(),
+                                              value.searchKapal!.coor!.coorHdt!.headingDegree ??
+                                                  value.searchKapal!.coor!.defaultHeading!.toDouble(),
                                               value.predictMovementVessel)
                                           .latitude,
                                       predictLatLong(
-                                              i.coorGga!.latitude!.toDouble(),
-                                              i.coorGga!.longitude!.toDouble(),
+                                              value.searchKapal!.coor!.coorGga!.latitude!.toDouble(),
+                                              value.searchKapal!.coor!.coorGga!.longitude!.toDouble(),
                                               100,
-                                              i.coorHdt!.headingDegree ??
-                                                  i.defaultHeading!.toDouble(),
+                                              value.searchKapal!.coor!.coorHdt!.headingDegree ??
+                                                  value.searchKapal!.coor!.defaultHeading!.toDouble(),
                                               value.predictMovementVessel)
                                           .longitude
                                       // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
@@ -1657,29 +1648,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       MarkerLayer(
                         markers: 
-                          value.coorResult.map((i) => 
+                          value.vesselCoorResult.map((i) => 
                             Marker(
-                              width: vesselSizes(vesselDescription(i.callSign!)
-                                  .size
-                                  .toString()),
-                              height: vesselSizes(vesselDescription(i.callSign!)
-                                  .size
-                                  .toString()),
+                              width: vesselSizes(i.kapal!.size!.toString()),
+                              height: vesselSizes(i.kapal!.size!.toString()),
                               point: LatLng(
                                   predictLatLong(
-                                          i.coorGga!.latitude!.toDouble(),
-                                          i.coorGga!.longitude!.toDouble(),
+                                          i.coor!.coorGga!.latitude!.toDouble(),
+                                          i.coor!.coorGga!.longitude!.toDouble(),
                                           100,
-                                          i.coorHdt!.headingDegree ??
-                                              i.defaultHeading!.toDouble(),
+                                          i.coor!.coorHdt!.headingDegree ??
+                                              i.coor!.defaultHeading!.toDouble(),
                                           value.predictMovementVessel)
                                       .latitude,
                                   predictLatLong(
-                                          i.coorGga!.latitude!.toDouble(),
-                                          i.coorGga!.longitude!.toDouble(),
+                                          i.coor!.coorGga!.latitude!.toDouble(),
+                                          i.coor!.coorGga!.longitude!.toDouble(),
                                           100,
-                                          i.coorHdt!.headingDegree ??
-                                              i.defaultHeading!.toDouble(),
+                                          i.coor!.coorHdt!.headingDegree ??
+                                              i.coor!.defaultHeading!.toDouble(),
                                           value.predictMovementVessel)
                                       .longitude
                                   // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
@@ -1689,12 +1676,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               builder: (context) {
                                 return GestureDetector(
                                   onTap: () {
-                                    searchVessel(i.callSign!);
+                                    searchVessel(i.kapal!.callSign);
                                   },
                                   child: Transform.rotate(
                                     angle: degreesToRadians(
-                                        i.coorHdt!.headingDegree ??
-                                            i.defaultHeading!.toDouble()),
+                                        i.coor!.coorHdt!.headingDegree ??
+                                            i.coor!.defaultHeading!.toDouble()),
                                     child: Image.asset("assets/ship.png"),
                                   ),
                                 );

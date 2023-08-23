@@ -9,6 +9,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:vts_maps/api/GetAllVesselCoor.dart' as LatestVesselCoor;
 import 'package:vts_maps/api/GetAllLatLangCoor.dart' as LatLangCoor;
 import 'package:vts_maps/api/GetAllVessel.dart' as Vessel;
+import 'package:vts_maps/api/GetKapalAndCoor.dart' as VesselCoor;
 import 'package:vts_maps/api/api.dart';
 import 'package:vts_maps/model/kml_model.dart';
 import 'package:vts_maps/utils/constants.dart';
@@ -29,35 +30,18 @@ class Notifier extends ChangeNotifier {
   }
 
   // === API ===
-  List<Vessel.Data> _vesselResult = [];
-  List<Vessel.Data> get vesselResult => _vesselResult;
 
-  // bool _loading = false;
-  // bool get loading => _loading ;
-  
-  void initVessel() {
-    Api.getAllVessel().then((value) {
-    _vesselResult.clear();
-      if (value.total! == 0) {
-        _vesselResult = [];
-      }
-      if (value.total! > 0) {
-        _vesselResult.addAll(value.data!);
-        // vesselTotal = value.total!;
-      }
-      print(value.data!.first.callSign);
-    });
-    notifyListeners();
-  }
+  List<VesselCoor.Data> _vesselCoorResult = [];
+  List<VesselCoor.Data> get vesselCoorResult => _vesselCoorResult;
 
   int _currentPage = 1;
   int get currentPage => _currentPage;
+  
+  int _pageSize = 1;
+  int get pageSize => _pageSize;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
-  
-  List<Vessel.Data> _dataVesselTable = [];
-  List<Vessel.Data> get dataVesselTable => _dataVesselTable;
 
   int _totalVessel = 0;
   int get totalVessel => _totalVessel;
@@ -66,33 +50,55 @@ class Notifier extends ChangeNotifier {
     _currentPage = pageIndex;
     notifyListeners();
   }
-  void fetchDataVessel(int _pageSize) {
+  void initVesselCoor() {
     _isLoading = true;
-    Api.getAllVessel(page: _currentPage, perpage: _pageSize).then((value) {
-      _dataVesselTable.clear();
+    Api.getKapalAndCoor().then((value){
+      _vesselCoorResult.clear();
       if (value.total! == 0) {
-        _dataVesselTable = [];
         _isLoading = false;
+        _vesselCoorResult = [];
         _totalVessel = value.total!;
       }
       if (value.total! > 0) {
-        _dataVesselTable.addAll(value.data!);
+        _vesselCoorResult.addAll(value.data!);
         _isLoading = false;
         _totalVessel = value.total!;
       }
+      print(value.data!.first.kapal!.callSign);
     });
     notifyListeners();
   }
 
-  void submitVessel(data,pageSize,context){
+
+  // List<Vessel.Data> _vesselResult = [];
+  // List<Vessel.Data> get vesselResult => _vesselResult;
+
+  // bool _loading = false;
+  // bool get loading => _loading;
+  
+  // void initVessel() {
+  //   Api.getAllVessel().then((value) {
+  //   _vesselResult.clear();
+  //     if (value.total! == 0) {
+  //       _vesselResult = [];
+  //     }
+  //     if (value.total! > 0) {
+  //       _vesselResult.addAll(value.data!);
+  //       // vesselTotal = value.total!;
+  //     }
+  //     print(value.data!.first.callSign);
+  //   });
+  //   notifyListeners();
+  // }
+
+  void submitVessel(data,context){
      Api.createVessel(data).then((value) {
       if (value.message != "Data berhasil masuk database") {
         EasyLoading.showError("Gagal Menambahkan Kapal");
       }
       if (value.message == "Data berhasil masuk database") {
         EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
-        fetchDataVessel(pageSize);
-        initVessel();
+        initVesselCoor();
         Navigator.pop(context);
       }
       if (value.message == "Validator Fails") {
@@ -108,8 +114,7 @@ class Notifier extends ChangeNotifier {
     Api.deleteVessel(callSign).then((value) {
           if (value.status == 200) {
             EasyLoading.showSuccess("Kapal Terhapus..");
-            fetchDataVessel(pageSize);
-            initVessel();
+            initVesselCoor();
             Navigator.pop(context);
           } else {
             EasyLoading.showError(
@@ -126,8 +131,7 @@ class Notifier extends ChangeNotifier {
       }
       if (value.message == "Data berhasil di ubah database") {
         EasyLoading.showSuccess("Berhasil Edit Kapal");
-        fetchDataVessel(pageSize);
-        initVessel();
+        initVesselCoor();
         Navigator.pop(context);
       }
       if (value.message == "Validator Fails") {
@@ -139,21 +143,21 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<LatestVesselCoor.Data> _coorResult = [];
-  List<LatestVesselCoor.Data> get coorResult => _coorResult;
+  // List<LatestVesselCoor.Data> _coorResult = [];
+  // List<LatestVesselCoor.Data> get coorResult => _coorResult;
 
-  void initCoorVessel() {
-    Api.getAllVesselLatestCoor().then((value) {
-      _coorResult.clear();
-      if (value.total! == 0) {
-        _coorResult = [];
-      }
-      if (value.total! > 0) {
-        _coorResult.addAll(value.data!);
-      }
-    });
-    notifyListeners();
-  }
+  // void initCoorVessel() {
+  //   Api.getAllVesselLatestCoor().then((value) {
+  //     _coorResult.clear();
+  //     if (value.total! == 0) {
+  //       _coorResult = [];
+  //     }
+  //     if (value.total! > 0) {
+  //       _coorResult.addAll(value.data!);
+  //     }
+  //   });
+  //   notifyListeners();
+  // }
 
   List<LatLangCoor.Data> _latLangResult = [];
   List<LatLangCoor.Data> get latLangResult => _latLangResult;
@@ -166,7 +170,6 @@ class Notifier extends ChangeNotifier {
       }
       if (value.total! > 0) {
         _latLangResult.addAll(value.data!);
-        print(_latLangResult.where((e) => e.callSign == call_sign).length);
       }
     });
     notifyListeners();
@@ -176,8 +179,32 @@ class Notifier extends ChangeNotifier {
   String _onClickVessel = "";
   String get onClickVessel => _onClickVessel;
 
+  VesselCoor.Data? _searchKapal; 
+  VesselCoor.Data? get searchKapal => _searchKapal; 
+
   void clickVessel(String call_sign){
+      try {
+    Api.getKapalAndCoor(call_sign: call_sign).then((value){
+        _searchKapal = null;
+        // print(value.data!.first.kapal!.callSign);
+        if (value.total! == 0) {
+          _searchKapal = null;
+        }
+        if (value.total! > 0) {
+          _searchKapal = value.data!.first as VesselCoor.Data;
+          // vesselTotal = value.total!;
+        }
     _onClickVessel = call_sign;
+    });
+      } catch (e) {
+        print(e); 
+      }
+    notifyListeners();
+  }
+
+  void removeClickedVessel(){
+    _onClickVessel = "";
+    _searchKapal = null;
     notifyListeners();
   }
 

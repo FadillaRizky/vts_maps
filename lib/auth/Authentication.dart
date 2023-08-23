@@ -21,7 +21,8 @@ class Auth {
       if (response.statusCode == 200) {
         return LoginResponse.fromJson(jsonDecode(response.body));
       }
-      if (response.statusCode == 400) {
+
+      if (response.statusCode == 400 && response.statusCode == 404) {
         return LoginResponse.fromJson(jsonDecode(response.body));
       } else {
         throw "Gagal Login User:\n${response.body}";
