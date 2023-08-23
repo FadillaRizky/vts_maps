@@ -73,11 +73,9 @@ class _LoginState extends State<Login> {
     );
     try {
       Auth.Login(data).then((value) {
-        LoginPref.saveToSharedPref(value.token!);
         if (value.message == "Login Success") {
           final notifier = Provider.of<Notifier>(context, listen: false);
           notifier.setAuth(value.token!);
-          LoginPref.saveToSharedPref(value.token!);
           EasyLoading.showSuccess("Login Berhasil");
           Navigator.pop(context);
           Navigator.pushReplacement(
@@ -110,120 +108,122 @@ class _LoginState extends State<Login> {
               color: Colors.white, // Change this color to the desired color
             ),
           ),
-          body: Row(
-            children: [
-              Expanded(
-                child: Stack(children: [
-                  Image.asset(
-                    "assets/background-login.jpg",
-                    fit: BoxFit.cover,
-                    height: double.infinity,
-                  ),
-                ]),
-              ),
-              Container(
-                color: Color(0xFF2B3B9A),
-                width: 500,
-                height: double.infinity,
-                child: Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 50,
-                      ),
-                      Text("Login", style: Constants.title1),
-                      Spacer(),
-                      Container(
-                        child: TextFormField(
-                          keyboardType: TextInputType.text,
-                          controller: emailController,
-                          textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
-                            hintText: "Email",
-                            prefixIcon: Icon(Icons.email_outlined),
-                            // hintStyle: Constants.hintStyle,
-                            border: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(width: 0, style: BorderStyle.none),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                          ),
+          body: Container(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Stack(children: [
+                    Image.asset(
+                      "assets/background-login.jpg",
+                      fit: BoxFit.cover,
+                      height: double.infinity,
+                    ),
+                  ]),
+                ),
+                Container(
+                  color: Color(0xFF2B3B9A),
+                  width: MediaQuery.of(context).size.width <= 500 ? MediaQuery.of(context).size.width : 500,
+                  height: double.infinity,
+                  child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 50,
                         ),
-                      ),
-                      SizedBox(
-                        height: 15,
-                      ),
-                      Container(
-                        child: TextFormField(
-                          obscureText: invisible,
-                          keyboardType: TextInputType.text,
-                          textInputAction: TextInputAction.next,
-                          controller: passwordController,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.fromLTRB(3, 3, 3, 3),
-                            hintText: "Password",
-                            // prefixIconConstraints: BoxConstraints.loose(Size.square(30)),
-                            prefixIcon: Icon(Icons.lock),
-                            // hintStyle: Constants.hintStyle,
-                            border: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(width: 0, style: BorderStyle.none),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            suffixIcon: IconButton(
-                              icon: Icon((invisible == true)
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off),
-                              onPressed: () {
-                                setState(() {
-                                  invisible = !invisible;
-                                });
-                              },
+                        Text("Login", style: Constants.title1),
+                        Spacer(),
+                        Container(
+                          child: TextFormField(
+                            keyboardType: TextInputType.text,
+                            controller: emailController,
+                            textInputAction: TextInputAction.next,
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
+                              hintText: "Email",
+                              prefixIcon: Icon(Icons.email_outlined),
+                              // hintStyle: Constants.hintStyle,
+                              border: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(width: 0, style: BorderStyle.none),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
                             ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        height: 15,
-                      ),
-                      Container(
-                        width: double.infinity,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [
-                            Color.fromARGB(225, 0, 111, 186),
-                            Color.fromARGB(225, 58, 171, 249)
-                          ]),
-                          borderRadius: BorderRadius.circular(20),
+                        SizedBox(
+                          height: 15,
                         ),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                          ),
-                          onPressed: () {
-                            login();
-                          },
-                          child: Text(
-                            "Login",
-                            style: Constants.button1,
+                        Container(
+                          child: TextFormField(
+                            obscureText: invisible,
+                            keyboardType: TextInputType.text,
+                            textInputAction: TextInputAction.next,
+                            controller: passwordController,
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.fromLTRB(3, 3, 3, 3),
+                              hintText: "Password",
+                              // prefixIconConstraints: BoxConstraints.loose(Size.square(30)),
+                              prefixIcon: Icon(Icons.lock),
+                              // hintStyle: Constants.hintStyle,
+                              border: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(width: 0, style: BorderStyle.none),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              suffixIcon: IconButton(
+                                icon: Icon((invisible == true)
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() {
+                                    invisible = !invisible;
+                                  });
+                                },
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        height: 80,
-                      )
-                    ],
+                        SizedBox(
+                          height: 15,
+                        ),
+                        Container(
+                          width: double.infinity,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: [
+                              Color.fromARGB(225, 0, 111, 186),
+                              Color.fromARGB(225, 58, 171, 249)
+                            ]),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                            ),
+                            onPressed: () {
+                              login();
+                            },
+                            child: Text(
+                              "Login",
+                              style: Constants.button1,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 80,
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           bottomNavigationBar: Container(
             height: 50,

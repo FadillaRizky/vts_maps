@@ -262,9 +262,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     notifier.initLatLangCoor();
     notifier.loadKMZData(context);
     notifier.fetchDataVessel(_pageSize);
-    Timer.periodic(const Duration(milliseconds: 1000), (timer) {
-      notifier.initKalmanFilter();
-    });
     Timer.periodic(const Duration(minutes: 5), (timer) {
       notifier.resetKalmanFilter();
       notifier.initVessel();
@@ -1230,7 +1227,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     children: [
                       TileLayer(
                         urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          // Google RoadMap
+                          // 'http://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}',
+                          // Google Altered roadmap
+                          // 'https://mt0.google.com/vt/lyrs=r&hl=en&x={x}&y={y}&z={z}',
+                          // Google Satellite
+                          // 'https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}',
+                          // Google Terrain
+                          // 'https://mt0.google.com/vt/lyrs=p&hl=en&x={x}&y={y}&z={z}',
+                          // Google Hybrid
+                          'https://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}',
+                          // Open Street Map
+                          // 'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
                         userAgentPackageName:
                             'dev.fleaflet.flutter_map.example',
                       ),
@@ -1308,7 +1316,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 height: 250,
                               ),
                             ),
-                          for (var i in value.coorResult)
+                        ]
+                      ),
+                      MarkerLayer(
+                        markers: 
+                          value.coorResult.map((i) => 
                             Marker(
                               width: vesselSizes(vesselDescription(i.callSign!)
                                   .size
@@ -1338,12 +1350,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   ),
                               rotateOrigin: Offset(10, -10),
                               builder: (context) {
-                                var vessel = value.vesselResult.where((e) {
-                                  if (e.callSign == i.callSign!) {
-                                    return true;
-                                  }
-                                  return false;
-                                });
                                 return GestureDetector(
                                   onTap: () {
                                     searchVessel(i.callSign!);
@@ -1357,7 +1363,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 );
                               },
                             ),
-                        ],
+                            ).toList(),     
                       ),
                     ],
                   ),

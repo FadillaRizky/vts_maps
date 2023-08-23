@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:vts_maps/api/GetAllLatLangCoor.dart';
 import 'package:vts_maps/api/GetAllVessel.dart';
+import 'package:vts_maps/api/GetKapalAndCoor.dart';
 import 'package:vts_maps/api/SubmitVesselResponse.dart';
 
 import '../utils/shared_pref.dart';
@@ -20,7 +21,31 @@ class Api{
     var response = await http.get(
       Uri.parse(url),
     );
-    print("${response.statusCode} kapal");
+    if (response.statusCode == 200) {
+      return GetAllVessel.fromJson(jsonDecode(response.body));
+    }
+    //jika tidak,muncul pesan error
+    throw "Gagal request all vessel:\n${response.body}";
+  
+  }
+
+  static Future<GetKapalAndCoor> getKapalAndCoor({String call_sign = ""})async{
+    var url = "$BASE_URL/get_kapal_and_latest_coor?call_sign=$call_sign";
+    var response = await http.get(
+      Uri.parse(url),
+    );
+    if (response.statusCode == 200) {
+      return GetKapalAndCoor.fromJson(jsonDecode(response.body));
+    }
+    //jika tidak,muncul pesan error
+    throw "Gagal request all vessel:\n${response.body}";
+  }
+
+  static Future<GetAllVessel> getVessel({required String call_sign}) async {
+    var url = "$BASE_URL/get_kapal?call_sign=$call_sign";
+    var response = await http.get(
+      Uri.parse(url),
+    );
     if (response.statusCode == 200) {
       return GetAllVessel.fromJson(jsonDecode(response.body));
     }
@@ -33,7 +58,6 @@ class Api{
     var response = await http.get(
       Uri.parse(url),
     );
-    print("${response.statusCode} latlang coor");
     if (response.statusCode == 200) {
       return GetAllLatLangCoor.fromJson(jsonDecode(response.body));
     }
@@ -46,7 +70,6 @@ class Api{
     var response = await http.get(
       Uri.parse(url),
     );
-    print("${response.statusCode} coor");
     if (response.statusCode == 200) {
       return GetAllVesselCoor.fromJson(jsonDecode(response.body));
     }

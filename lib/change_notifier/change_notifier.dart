@@ -44,6 +44,7 @@ class Notifier extends ChangeNotifier {
         _vesselResult.addAll(value.data!);
         // vesselTotal = value.total!;
       }
+      print(value.data!.first.callSign);
     });
     notifyListeners();
   }
