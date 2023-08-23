@@ -86,14 +86,14 @@ class _MyAppState extends State<MyApp> {
       builder: EasyLoading.init(),
       home:
 
-      // load == true
-      //     ? home
-      //     : Scaffold(
-      //         body: Center(
-      //           child: CircularProgressIndicator(),
-      //         ),
-      //       ),
-      HomePage(),
+      load == true
+          ? home
+          : Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+      // HomePage(),
     );
   }
 }

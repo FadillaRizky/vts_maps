@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:vts_maps/api/GetAllVesselCoor.dart' as LatestVesselCoor;
@@ -78,6 +79,61 @@ class Notifier extends ChangeNotifier {
         _isLoading = false;
         _totalVessel = value.total!;
       }
+    });
+    notifyListeners();
+  }
+
+  void submitVessel(data,pageSize,context){
+     Api.createVessel(data).then((value) {
+      if (value.message != "Data berhasil masuk database") {
+        EasyLoading.showError("Gagal Menambahkan Kapal");
+      }
+      if (value.message == "Data berhasil masuk database") {
+        EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
+        fetchDataVessel(pageSize);
+        initVessel();
+        Navigator.pop(context);
+      }
+      if (value.message == "Validator Fails") {
+        EasyLoading.showError("Call Sign sudah terdaftar");
+        Navigator.pop(context);
+      }
+      return;
+    });
+     notifyListeners();
+  }
+
+  void deleteVessel(callSign,context,pageSize){
+    Api.deleteVessel(callSign).then((value) {
+          if (value.status == 200) {
+            EasyLoading.showSuccess("Kapal Terhapus..");
+            fetchDataVessel(pageSize);
+            initVessel();
+            Navigator.pop(context);
+          } else {
+            EasyLoading.showError(
+                "Gagal Menghapus Kapal..");
+          }
+        });
+    notifyListeners();
+  }
+
+  void editVessel(data,pageSize,context){
+    Api.editVessel(data).then((value) {
+      if (value.message != "Data berhasil di ubah database") {
+        EasyLoading.showError("Gagal Edit Kapal");
+      }
+      if (value.message == "Data berhasil di ubah database") {
+        EasyLoading.showSuccess("Berhasil Edit Kapal");
+        fetchDataVessel(pageSize);
+        initVessel();
+        Navigator.pop(context);
+      }
+      if (value.message == "Validator Fails") {
+        EasyLoading.showError("Call Sign tidak ditemukan");
+        Navigator.pop(context);
+      }
+      return;
     });
     notifyListeners();
   }

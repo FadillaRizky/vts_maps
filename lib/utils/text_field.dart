@@ -6,10 +6,12 @@ class VesselTextField extends StatelessWidget {
     required this.controller,
     required this.hint,
     required this.type,
+    this.initValue,
   });
 
   final TextEditingController controller;
   final String hint;
+  final String? initValue;
   final TextInputType type;
 
   @override
@@ -21,6 +23,7 @@ class VesselTextField extends StatelessWidget {
           height: 30,
           child: TextFormField(
             controller: controller,
+            initialValue: initValue,
             keyboardType: type,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
