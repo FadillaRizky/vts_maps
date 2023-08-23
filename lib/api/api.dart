@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:vts_maps/api/EditVesselResponse.dart';
 import 'package:vts_maps/api/GetAllLatLangCoor.dart';
 import 'package:vts_maps/api/GetAllVessel.dart';
 import 'package:vts_maps/api/GetKapalAndCoor.dart';
@@ -104,6 +105,34 @@ class Api{
       rethrow;
     }
   }
+  static Future<EditVesselResponse>editVessel(Map<String,String> data) async {
+    try{
+      var url = "$BASE_URL/update_kapal";
+      var datatoken = await LoginPref.getPref();
+      var token = datatoken.token!;
+      var response = await http.post(
+        Uri.parse(url),
+        body: data,
+        headers: {
+          // 'Content-type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        return EditVesselResponse.fromJson(jsonDecode(response.body));
+      }
+      if (response.statusCode == 400) {
+        return EditVesselResponse.fromJson(jsonDecode(response.body));
+      }
+      else {
+        throw "Gagal edit vessel:\n${response.body}";
+      }
+    }catch(e){
+      print("error nya $e");
+      rethrow;
+    }
+  }
+
   static Future<DeleteVesselResponse> deleteVessel(String callSign) async {
     var url = "$BASE_URL/delete_kapal/$callSign";
     var response = await http.delete(
