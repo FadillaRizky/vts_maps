@@ -48,6 +48,7 @@ class KmlPolygon {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  // final GlobalKey _key = GlobalKey();
   // Controller
   final SnappingSheetController snappingSheetController =
       new SnappingSheetController();
@@ -76,6 +77,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   LatLng? latLng;
 
   int vesselTotal = 0;
+
+  // final GlobalKey _widgetKey = GlobalKey();
+  // OverlayEntry? _overlayEntry;
+  // bool isHovered = false;
 
   int _currentPage = 1;
   int _pageSize = 10;
@@ -264,6 +269,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
+
+
   @override
   void initState() {
     super.initState();
@@ -275,6 +282,31 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       updatePoint(null, context);
     });
   }
+
+  // void _showCursorTooltip(BuildContext context) {
+  //   final RenderBox renderBox = _key.currentContext!.findRenderObject() as RenderBox;
+  //   final overlay = OverlayEntry(
+  //     builder: (context) {
+  //       final screenSize = MediaQuery.of(context).size;
+  //       final position = renderBox.localToGlobal(Offset.zero);
+  //       final cursorY = position.dy - 40.0; // Sesuaikan posisi tooltip di atas cursor
+  //       final cursorX = position.dx - 20.0; // Sesuaikan posisi tooltip di atas cursor
+  //
+  //       return Positioned(
+  //         left: cursorX,
+  //         top: cursorY,
+  //         child: CursorTooltip(text: 'Tooltip Text'),
+  //       );
+  //     },
+  //   );
+  //
+  //   Overlay.of(context)!.insert(overlay);
+  // }
+
+  // void _hideCursorTooltip() {
+  //   _overlayEntry?.remove();
+  //   _overlayEntry = null;
+  // }
 
   void _animatedMapMove(LatLng destLocation, double destZoom) {
     final camera = mapController.camera;
@@ -964,7 +996,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                                            "small",
                                                                                                            "medium",
                                                                                                            "large",
-                                                                                                           "extra large",
                                                                                                          ],
                                                                                                          onChanged: (value) {
                                                                                                            vesselSize = value;
@@ -1682,7 +1713,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     angle: degreesToRadians(
                                         i.coor!.coorHdt!.headingDegree ??
                                             i.coor!.defaultHeading!.toDouble()),
-                                    child: Image.asset("assets/ship.png"),
+                                    child: Tooltip(
+                                      message: i.kapal!.callSign!.toString(),
+                                      child: Image.asset(
+                                          "assets/ship.png"),
+                                    ),
                                   ),
                                 );
                               },
@@ -1755,3 +1790,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 //   @override
 //   int get selectedRowCount => 0;
 // }
+
+class CursorTooltip extends StatelessWidget {
+  final String text;
+
+  CursorTooltip({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        padding: EdgeInsets.all(8),
+        child: Text(
+          text,
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+}

@@ -125,17 +125,46 @@ class Notifier extends ChangeNotifier {
   }
 
   void editVessel(data,pageSize,context){
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
     Api.editVessel(data).then((value) {
+      print(value.message);
       if (value.message != "Data berhasil di ubah database") {
+        Navigator.pop(context);
         EasyLoading.showError("Gagal Edit Kapal");
       }
       if (value.message == "Data berhasil di ubah database") {
+        Navigator.pop(context);
         EasyLoading.showSuccess("Berhasil Edit Kapal");
         initVesselCoor();
         Navigator.pop(context);
       }
       if (value.message == "Validator Fails") {
-        EasyLoading.showError("Call Sign tidak ditemukan");
+        Navigator.pop(context);
+        EasyLoading.showError("Call Sign sudah digunakan");
         Navigator.pop(context);
       }
       return;

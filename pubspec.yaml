@@ -52,6 +52,7 @@ dependencies:
   pagination_flutter: ^0.0.8
   number_paginator: ^0.3.2
   provider: ^6.0.5
+  flutter_styled_toast: ^2.1.3
 
 
 
