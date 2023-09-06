@@ -13,7 +13,8 @@ import '../utils/shared_pref.dart';
 import 'DeleteVesselResponse.dart';
 import 'GetAllVesselCoor.dart';
 
-const BASE_URL = "https://client-project.enricko.site/api";
+// const BASE_URL = "https://client-project.enricko.site/api";
+const BASE_URL = "https://api.binav-avts.id/api";
 // const BASE_URL = "http://127.0.0.1:8000/api";
 class Api{
 

@@ -50,9 +50,9 @@ class Notifier extends ChangeNotifier {
     _currentPage = pageIndex;
     notifyListeners();
   }
-  void initVesselCoor() {
+  void initVesselCoor() async{
     _isLoading = true;
-    Api.getKapalAndCoor().then((value){
+    await Api.getKapalAndCoor().then((value){
       _vesselCoorResult.clear();
       if (value.total! == 0) {
         _isLoading = false;
@@ -124,7 +124,7 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void editVessel(data,pageSize,context){
+  void editVessel(data,pageSize,context)async{
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -150,7 +150,7 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-    Api.editVessel(data).then((value) {
+   await Api.editVessel(data).then((value) {
       print(value.message);
       if (value.message != "Data berhasil di ubah database") {
         Navigator.pop(context);

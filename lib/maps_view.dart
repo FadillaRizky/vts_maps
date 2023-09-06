@@ -604,7 +604,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                 "small",
                                                                                 "medium",
                                                                                 "large",
-                                                                                "extra large",
                                                                               ],
                                                                               onChanged: (value) {
                                                                                 vesselSize = value;
@@ -865,6 +864,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                                     IconButton(
                                                                                                       onPressed:
                                                                                                           () {
+                                                                                                        callsignController.clear();
+                                                                                                        flagController.clear();
+                                                                                                        classController.clear();
+                                                                                                        builderController.clear();
+                                                                                                        yearbuiltController.clear();
+                                                                                                        ipController.clear();
+                                                                                                        portController.clear();
+                                                                                                        // vesselSize = null;
                                                                                                         Navigator.pop(context);
                                                                                                       },
                                                                                                       icon:
@@ -1012,6 +1019,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                                        children: [
                                                                                                          InkWell(
                                                                                                            onTap: () {
+                                                                                                             callsignController.clear();
+                                                                                                             flagController.clear();
+                                                                                                             classController.clear();
+                                                                                                             builderController.clear();
+                                                                                                             yearbuiltController.clear();
+                                                                                                             ipController.clear();
+                                                                                                             portController.clear();
                                                                                                              Navigator.pop(context);
                                                                                                            },
                                                                                                            child: Container(
@@ -1074,6 +1088,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                                                "size": vesselSize!,
                                                                                                              };
                                                                                                              readNotifier.editVessel(dataEdit,_pageSize,context);
+                                                                                                             callsignController.clear();
+                                                                                                             flagController.clear();
+                                                                                                             classController.clear();
+                                                                                                             builderController.clear();
+                                                                                                             yearbuiltController.clear();
+                                                                                                             ipController.clear();
+                                                                                                             portController.clear();
 
                                                                                                              // submitVessel();
                                                                                                            },
