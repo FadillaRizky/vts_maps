@@ -78,6 +78,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   int vesselTotal = 0;
 
+  num currentZoom = 15.0;
+
   // final GlobalKey _widgetKey = GlobalKey();
   // OverlayEntry? _overlayEntry;
   // bool isHovered = false;
@@ -126,15 +128,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   double vesselSizes(String size) {
     switch (size) {
       case "small":
-        return 35.0;
+        return 4.0;
       case "medium":
-        return 50.0;
+        return 8.0;
       case "large":
-        return 65.0;
+        return 12.0;
       case "extra_large":
-        return 70.0;
+        return 16.0;
       default:
-        return 35.0;
+        return 8.0;
     }
   }
 
@@ -361,7 +363,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         var readNotifier = context.read<Notifier>();
 
         Future<void> searchVessel(String callSign) async {
-          value.clickVessel(callSign);
+          value.clickVessel(callSign,context);
           Future.delayed(Duration(seconds: 1),(){
             print(value.searchKapal!.kapal!.callSign);
             value.initLatLangCoor(call_sign: callSign);
@@ -1220,87 +1222,91 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   //     ),
                   //   ),
                   // ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 300,
-                        child: SearchField<VesselCoor.Data>(
-                          controller: SearchVessel,
-                          suggestions: value.vesselCoorResult
-                              .map(
-                                (e) => SearchFieldListItem<VesselCoor.Data>(
-                                  e.kapal!.callSign!,
-                                  item: e,
-                                  // Use child to show Custom Widgets in the suggestions
-                                  // defaults to Text widget
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      children: [
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Text(e.kapal!.callSign!),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .where((e) => e.searchKey
-                                  .toLowerCase()
-                                  .contains(SearchVessel.text.toLowerCase()))
-                              .toList(),
-                          searchInputDecoration: InputDecoration(
-                            hintText: "Pilih Call Sign Kapal",
-                            labelText: "Pilih Call Sign Kapal",
-                            hintStyle: TextStyle(color: Colors.black),
-                            labelStyle: TextStyle(color: Colors.black),
-                            prefixIcon: Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Icon(Icons.search),
-                            ),
-                            filled: true,
-                            fillColor: Color.fromARGB(255, 230, 230, 230),
-                            prefixIconColor: Colors.black,
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  width: 3,
-                                  color:
-                                      const Color.fromARGB(255, 230, 230, 230)),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  width: 3,
-                                  color:
-                                      const Color.fromARGB(255, 230, 230, 230)),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      InkWell(
-                        onTap: () {
-                          searchVessel(SearchVessel.text);
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Icon(Icons.search),
-                        ),
-                      )
-                    ],
-                  ),
+
                 ],
               ),
             ),
+              actions: [
+                Container(
+                  width: 300,
+                  height: 50,
+                  child: SearchField<VesselCoor.Data>(
+                    controller: SearchVessel,
+                    suggestions: value.vesselCoorResult
+                        .map(
+                          (e) => SearchFieldListItem<VesselCoor.Data>(
+                        e.kapal!.callSign!,
+                        item: e,
+                        // Use child to show Custom Widgets in the suggestions
+                        // defaults to Text widget
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Text(e.kapal!.callSign!),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                        .where((e) => e.searchKey
+                        .toLowerCase()
+                        .contains(SearchVessel.text.toLowerCase()))
+                        .toList(),
+                    searchInputDecoration: InputDecoration(
+                      hintText: "Pilih Call Sign Kapal",
+                      // labelText: "Pilih Call Sign Kapal",
+                      hintStyle: TextStyle(color: Colors.black),
+                      // labelStyle: TextStyle(color: Colors.black),
+                      prefixIcon: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Icon(Icons.search),
+                      ),
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 230, 230, 230),
+                      prefixIconColor: Colors.black,
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            width: 3,
+                            color:
+                            const Color.fromARGB(255, 230, 230, 230)),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            width: 3,
+                            color:
+                            const Color.fromARGB(255, 230, 230, 230)),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                InkWell(
+                  onTap: () {
+                    searchVessel(SearchVessel.text);
+                  },
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Icon(Icons.search),
+                  ),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+              ],
           ),
           // drawer: Drawer(
           //   child: Padding(
@@ -1347,8 +1353,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       maxZoom: 18,
                       initialZoom: 10,
                       initialCenter: const LatLng(-1.089955, 117.360343),
+                      onPositionChanged: (position, hasGesture) {
+                        setState(() {
+                          // print(position.zoom!);
+                          // currentZoom = pow(position.zoom!,1.50);
+                          currentZoom = (position.zoom! - 8) * 9;
+                          // print(currentZoom);
+                        });
+                        // readNotifier.vesselSize(position.zoom!,vesselSizes());
+                      },
                     ),
                     nonRotatedChildren: [
+                      /// button zoom in/out kanan bawah
                       FlutterMapZoomButtons(
                         minZoom: 4,
                         maxZoom: 19,
@@ -1356,6 +1372,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         padding: 10,
                         alignment: Alignment.bottomRight,
                       ),
+                      /// widget skala kiri atas
                       ScaleLayerWidget(
                         options: ScaleLayerPluginOption(
                           lineColor: Colors.blue,
@@ -1365,6 +1382,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           padding: const EdgeInsets.all(10),
                         ),
                       ),
+                      /// widget berisi detail informasi kapal
                       if (value.onClickVessel != "")
                         Center(
                           child: Container(
@@ -1699,11 +1717,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ]
                       ),
                       MarkerLayer(
-                        markers: 
-                          value.vesselCoorResult.map((i) => 
+                        markers:
+                          value.vesselCoorResult.map((i) =>
                             Marker(
-                              width: vesselSizes(i.kapal!.size!.toString()),
-                              height: vesselSizes(i.kapal!.size!.toString()),
+                              width:
+                              // mapController.zoom * 1,
+                              // (mapController.zoom - 10) / 2,
+                              // vesselSizes(i.kapal!.size!.toString()) + currentZoom,
+                              // 10 + currentZoom,
+                              // currentZoom.toDouble(),
+                              // value.currentZoom.toDouble(),
+                              vesselSizes(i.kapal!.size!.toString()) + currentZoom.toDouble(),
+
+                              height:
+                              // mapController.zoom * 1,
+                              // (mapController.zoom - 10) / 2,
+                              // vesselSizes(i.kapal!.size!.toString()) + currentZoom,
+                              // 10 + currentZoom,
+                              // currentZoom.toDouble() ,
+                              // value.currentZoom.toDouble(),
+                              vesselSizes(i.kapal!.size!.toString()) + currentZoom.toDouble(),
                               point: LatLng(
                                   predictLatLong(
                                           i.coor!.coorGga!.latitude!.toDouble(),
@@ -1725,6 +1758,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   //   i.coorGga!.longitude!.toDouble()
                                   ),
                               rotateOrigin: Offset(10, -10),
+
                               builder: (context) {
                                 return GestureDetector(
                                   onTap: () {
@@ -1737,13 +1771,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     child: Tooltip(
                                       message: i.kapal!.callSign!.toString(),
                                       child: Image.asset(
-                                          "assets/ship.png"),
+                                          "assets/ship.png",
+                                        height:
+                                        vesselSizes(i.kapal!.size!.toString()) + currentZoom.toDouble(),
+                                        width:
+                                        vesselSizes(i.kapal!.size!.toString()) + currentZoom.toDouble(),
+                                      ),
                                     ),
                                   ),
                                 );
                               },
                             ),
-                            ).toList(),     
+                            ).toList(),
+
                       ),
                     ],
                   ),

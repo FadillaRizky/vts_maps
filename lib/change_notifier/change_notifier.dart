@@ -124,6 +124,16 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  // num _currentZoom = 15;
+  // num get currentZoom => _currentZoom;
+  //
+  // void vesselSize(zoom,type){
+  //   _currentZoom = (zoom - 8) * 9;
+  //   // _currentZoom = zoom + 5.0;
+  //   print(_currentZoom);
+  //   notifyListeners();
+  // }
+
   void editVessel(data,pageSize,context)async{
     showDialog(
       context: context,
@@ -211,19 +221,47 @@ class Notifier extends ChangeNotifier {
   VesselCoor.Data? _searchKapal; 
   VesselCoor.Data? get searchKapal => _searchKapal; 
 
-  void clickVessel(String call_sign){
+  void clickVessel(String call_sign,context){
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
       try {
     Api.getKapalAndCoor(call_sign: call_sign).then((value){
         _searchKapal = null;
         // print(value.data!.first.kapal!.callSign);
         if (value.total! == 0) {
           _searchKapal = null;
+          // Navigator.pop(context);
         }
         if (value.total! > 0) {
           _searchKapal = value.data!.first as VesselCoor.Data;
+          // Navigator.pop(context);
           // vesselTotal = value.total!;
         }
     _onClickVessel = call_sign;
+        Navigator.pop(context);
     });
       } catch (e) {
         print(e); 
