@@ -91,6 +91,8 @@ flutter:
     - assets/kml/cta.kml
     - assets/kml/format_pipa.kml
     - assets/kml/
+    - assets/xml/kapal.xml
+    - assets/xml/
     - assets/
     - assets/background-login.jpg
     - assets/maps-icon.png
