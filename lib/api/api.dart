@@ -136,7 +136,7 @@ class Api{
 
   static Future<DeleteVesselResponse> deleteVessel(String callSign) async {
     var url = "$BASE_URL/delete_kapal/$callSign";
-    var response = await http.delete(
+    var response = await http.post(
       Uri.parse(url),
     );
     if (response.statusCode == 200) {

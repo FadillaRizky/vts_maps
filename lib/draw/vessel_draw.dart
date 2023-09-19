@@ -29,7 +29,7 @@ class _VesselDrawerState extends State<VesselDrawer> {
 
   Future<void> loadVesselParameters() async {
     try {
-      final xmlString = await rootBundle.loadString('xml/kapal.xml');
+      final xmlString = await rootBundle.loadString('assets/xml/kapal.xml');
       final document = XmlDocument.parse(xmlString);
 
       final vesselShape = document.findAllElements('VesselShape').first;
