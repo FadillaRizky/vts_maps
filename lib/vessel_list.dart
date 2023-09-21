@@ -21,62 +21,62 @@ class _VesselScreenState extends State<VesselScreen> {
   TextEditingController classController = TextEditingController();
   TextEditingController builderController = TextEditingController();
   TextEditingController yearbuiltController = TextEditingController();
-
-  submitVessel() async {
-    var data = {
-      "call_sign": callsignController.text,
-      "flag": flagController.text,
-      "class": classController.text,
-      "builder": builderController.text,
-      "year_built": yearbuiltController.text,
-    };
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(
-                color: Colors.white,
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Text(
-                "Loading..",
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-   await Api.createVessel(data).then((value) {
-      print(value.message);
-       if (value.message != "Data berhasil masuk database") {
-        EasyLoading.showError("Gagal Menambahkan Kapal");
-      }
-       if (value.message == "Data berhasil masuk database") {
-         EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
-         callsignController.clear();
-         flagController.clear();
-         classController.clear();
-         builderController.clear();
-         yearbuiltController.clear();
-         Navigator.pop(context);
-         Navigator.pop(context);
-       }
-       if (value.message == "Validator Fails") {
-        EasyLoading.showError("Call Sign sudah terdaftar");
-        Navigator.pop(context);
-      }
-      return;
-    });
-  }
+  //
+  // submitVessel() async {
+  //   var data = {
+  //     "call_sign": callsignController.text,
+  //     "flag": flagController.text,
+  //     "class": classController.text,
+  //     "builder": builderController.text,
+  //     "year_built": yearbuiltController.text,
+  //   };
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (BuildContext context) {
+  //       return Dialog(
+  //         backgroundColor: Colors.transparent,
+  //         elevation: 0,
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             CircularProgressIndicator(
+  //               color: Colors.white,
+  //             ),
+  //             SizedBox(
+  //               height: 20,
+  //             ),
+  //             Text(
+  //               "Loading..",
+  //               style: TextStyle(color: Colors.white, fontSize: 20),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  //  await Api.createVessel(data).then((value) {
+  //     print(value.message);
+  //      if (value.message != "Data berhasil masuk database") {
+  //       EasyLoading.showError("Gagal Menambahkan Kapal");
+  //     }
+  //      if (value.message == "Data berhasil masuk database") {
+  //        EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
+  //        callsignController.clear();
+  //        flagController.clear();
+  //        classController.clear();
+  //        builderController.clear();
+  //        yearbuiltController.clear();
+  //        Navigator.pop(context);
+  //        Navigator.pop(context);
+  //      }
+  //      if (value.message == "Validator Fails") {
+  //       EasyLoading.showError("Call Sign sudah terdaftar");
+  //       Navigator.pop(context);
+  //     }
+  //     return;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +228,7 @@ class _VesselScreenState extends State<VesselScreen> {
                                       children: [
                                         InkWell(
                                           onTap: (){
-                                            submitVessel();
+                                            // submitVessel();
                                           },
                                           child: Container(
                                             decoration: BoxDecoration(

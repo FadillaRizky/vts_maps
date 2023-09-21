@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:math';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
@@ -71,7 +72,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   List<Vessel.Data> vesselResult = [];
   List<LatLangCoor.Data> latLangResult = [];
 
-  // Random Variable
+  /// Random Variable
   final pointSize = 75.0;
   final pointY = 75.0;
 
@@ -88,6 +89,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _currentPage = 1;
   int _pageSize = 10;
   List<Vessel.Data> _dataVesselTable = [];
+
+  ///variable insert file
+  PlatformFile? file;
+
+  PlatformFile? fileInsert;
 
   // Animated Map Variable
   static const _startedId = 'AnimatedMapController#MoveStarted';
@@ -610,6 +616,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                               },
                                                                             ),
                                                                           ),
+                                                                          GestureDetector(
+                                                                              onTap: () async {
+                                                                                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                                                                  type: FileType.custom,
+                                                                                  allowedExtensions: ['xml']
+                                                                                );
+
+                                                                                if (result != null) {
+                                                                                  fileInsert = result.files.first;
+                                                                                }
+                                                                              },
+                                                                              child: (fileInsert == null)
+                                                                                  ? Image.asset(
+                                                                                      "assets/add_file_icon.png",
+                                                                                      width: 50,
+                                                                                      height: 50,
+                                                                                    )
+                                                                                  : Image.asset(
+                                                                                      "assets/xml_icon.png",
+                                                                                      width: 50,
+                                                                                      height: 50,
+                                                                                    )),
                                                                           SizedBox(
                                                                             height:
                                                                                 5,
@@ -638,51 +666,53 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                               ),
                                                                               InkWell(
                                                                                 onTap: () {
-                                                                                  if (callsignController.text.isEmpty) {
-                                                                                    EasyLoading.showError("Kolom Call Sign Masih Kosong...");
+                                                                                  // if (callsignController.text.isEmpty) {
+                                                                                  //   EasyLoading.showError("Kolom Call Sign Masih Kosong...");
+                                                                                  //   return;
+                                                                                  // }
+                                                                                  // if (flagController.text.isEmpty) {
+                                                                                  //   EasyLoading.showError("Kolom Bendera Masih Kosong...");
+                                                                                  //   return;
+                                                                                  // }
+                                                                                  // if (classController.text.isEmpty) {
+                                                                                  //   EasyLoading.showError("Kolom Kelas Masih Kosong...");
+                                                                                  //   return;
+                                                                                  // }
+                                                                                  // if (builderController.text.isEmpty) {
+                                                                                  //   EasyLoading.showError("Kolom Builder Masih Kosong...");
+                                                                                  //   return;
+                                                                                  // }
+                                                                                  // if (yearbuiltController.text.isEmpty) {
+                                                                                  //   EasyLoading.showError("Kolom Tahun Pembuatan Masih Kosong...");
+                                                                                  //   return;
+                                                                                  // }
+                                                                                  // if (ipController.text.isEmpty) {
+                                                                                  //   EasyLoading.showError("Kolom IP Pembuatan Masih Kosong...");
+                                                                                  //   return;
+                                                                                  // }
+                                                                                  // if (portController.text.isEmpty) {
+                                                                                  //   EasyLoading.showError("Kolom Port Masih Kosong...");
+                                                                                  //   return;
+                                                                                  // }
+                                                                                  // if (vesselSize == null) {
+                                                                                  //   EasyLoading.showError("Kolom Ukuran Kapal Masih Kosong...");
+                                                                                  //   return;
+                                                                                  // }
+                                                                                  if (fileInsert == null) {
+                                                                                    EasyLoading.showError("Kolom File Masih Kosong...");
                                                                                     return;
                                                                                   }
-                                                                                  if (flagController.text.isEmpty) {
-                                                                                    EasyLoading.showError("Kolom Bendera Masih Kosong...");
-                                                                                    return;
-                                                                                  }
-                                                                                  if (classController.text.isEmpty) {
-                                                                                    EasyLoading.showError("Kolom Kelas Masih Kosong...");
-                                                                                    return;
-                                                                                  }
-                                                                                  if (builderController.text.isEmpty) {
-                                                                                    EasyLoading.showError("Kolom Builder Masih Kosong...");
-                                                                                    return;
-                                                                                  }
-                                                                                  if (yearbuiltController.text.isEmpty) {
-                                                                                    EasyLoading.showError("Kolom Tahun Pembuatan Masih Kosong...");
-                                                                                    return;
-                                                                                  }
-                                                                                  if (ipController.text.isEmpty) {
-                                                                                    EasyLoading.showError("Kolom IP Pembuatan Masih Kosong...");
-                                                                                    return;
-                                                                                  }
-                                                                                  if (portController.text.isEmpty) {
-                                                                                    EasyLoading.showError("Kolom Port Masih Kosong...");
-                                                                                    return;
-                                                                                  }
-                                                                                  if (vesselSize == null) {
-                                                                                    EasyLoading.showError("Kolom Ukuran Kapal Masih Kosong...");
-                                                                                    return;
-                                                                                  }
-                                                                                  Map<String, String> data = {
-                                                                                    "call_sign": callsignController.text,
-                                                                                    "flag": flagController.text,
-                                                                                    "class": classController.text,
-                                                                                    "builder": builderController.text,
-                                                                                    "year_built": yearbuiltController.text,
-                                                                                    "ip": ipController.text,
-                                                                                    "port": portController.text,
-                                                                                    "size": vesselSize!,
-                                                                                  };
-                                                                                  value.submitVessel(data, context);
-
-                                                                                  // submitVessel();
+                                                                                  List<String> data = [
+                                                                                    callsignController.text,
+                                                                                    "INDO",
+                                                                                    "BKI",
+                                                                                    "BATAM",
+                                                                                    "2004",
+                                                                                    "8.215.38.33",
+                                                                                    "5017",
+                                                                                    "small",
+                                                                                  ];
+                                                                                  value.submitVessel(data, context,fileInsert);
                                                                                 },
                                                                                 child: Container(
                                                                                   decoration: BoxDecoration(
@@ -694,7 +724,40 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                                   height: 30,
                                                                                   child: Text("Simpan"),
                                                                                 ),
-                                                                              )
+                                                                              ),
+                                                                              // SizedBox(
+                                                                              //   width: 5,
+                                                                              // ),
+                                                                              // ElevatedButton(
+                                                                              //   onPressed: () {
+                                                                              //     // Map<String, dynamic> data = {
+                                                                              //     //   "call_sign": "ydbu212",
+                                                                              //     //   "flag": "INDO",
+                                                                              //     //   "class": "BKI",
+                                                                              //     //   "builder": "BATAM",
+                                                                              //     //   "year_built": "2004",
+                                                                              //     //   "ip": "8.215.38.33",
+                                                                              //     //   "port": "5017",
+                                                                              //     //   "size": "small",
+                                                                              //     //   "xml_file": fileInsert!,
+                                                                              //     // };
+                                                                              //     List<String> data = [
+                                                                              //       "ydbu123",
+                                                                              //       "INDO",
+                                                                              //       "BKI",
+                                                                              //       "BATAM",
+                                                                              //       "2004",
+                                                                              //       "8.215.38.33",
+                                                                              //       "5017",
+                                                                              //       "small",
+                                                                              //     ];
+                                                                              //
+                                                                              //     Api.submitCreateVessel(data,fileInsert!).then((value) {
+                                                                              //
+                                                                              //     });
+                                                                              //   },
+                                                                              //   child: Text("Submit"),
+                                                                              // )
                                                                             ],
                                                                           )
                                                                         ],
@@ -763,6 +826,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                         "Size")),
                                                                 DataColumn(
                                                                     label: Text(
+                                                                        "Add XML")),
+                                                                DataColumn(
+                                                                    label: Text(
                                                                         "Action")),
                                                               ],
                                                             rows: value
@@ -794,6 +860,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                     DataCell(Text(data
                                                                         .kapal!
                                                                         .size!)),
+                                                                    DataCell(
+                                                                        // (file == null)?
+                                                                        IconButton(
+                                                                      icon: Icon(
+                                                                          Icons
+                                                                              .add),
+                                                                      onPressed:
+                                                                          () async {
+                                                                        FilePickerResult?
+                                                                            result =
+                                                                            await FilePicker.platform.pickFiles();
+                                                                        if (result !=
+                                                                            null) {
+                                                                          file = result
+                                                                              .files
+                                                                              .first;
+                                                                        }
+                                                                      },
+                                                                    )
+                                                                        // :Image.asset("assets/xml_icon.png")
+                                                                        ),
                                                                     DataCell(
                                                                         Row(
                                                                       children: [

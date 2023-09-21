@@ -1,7 +1,9 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:vts_maps/api/EditVesselResponse.dart';
 import 'package:vts_maps/api/GetAllLatLangCoor.dart';
@@ -79,32 +81,69 @@ class Api{
     throw "Gagal request all vessel:\n${response.body}";
 
   }
-  static Future<SubmitVesselResponse>createVessel(Map<String,String> data) async {
+  static Future<SubmitVesselResponse>createVessel(List<String> data,PlatformFile file) async {
     try{
+      // var datatoken = await LoginPref.getPref();
+      // var token = datatoken.token!;
+      // request.headers["Content-type"] = 'application/xml';
+      // request.headers["Authorization"] = 'Bearer $token';
       var url = "$BASE_URL/insert_kapal";
-      var datatoken = await LoginPref.getPref();
-      var token = datatoken.token!;
-      var response = await http.post(
-        Uri.parse(url),
-        body: data,
-        headers: {
-          // 'Content-type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
+      var request = await http.MultipartRequest('post', Uri.parse(url));
+      request.fields["call_sign"] = data[0];
+      request.fields["flag"] = data[1];
+      request.fields["class"] = data[2];
+      request.fields["builder"] = data[3];
+      request.fields["year_built"] = data[4];
+      request.fields["ip"] = data[5];
+      request.fields["port"] = data[6];
+      request.fields["size"] = data[7];
+      request.files
+          .add(await http.MultipartFile.fromBytes(
+          'xml_file',
+          file.bytes!));
+      var response = await request.send();
+      // print(response.stream);
+      var responseJson = await http.Response.fromStream(response);
+      // print(response.statusCode);
+
       if (response.statusCode == 200) {
-        return SubmitVesselResponse.fromJson(jsonDecode(response.body));
+        return SubmitVesselResponse.fromJson(jsonDecode(responseJson.body));
       }
       if (response.statusCode == 400) {
-        return SubmitVesselResponse.fromJson(jsonDecode(response.body));
+        return SubmitVesselResponse.fromJson(jsonDecode(responseJson.body));
       }
       else {
-        throw "Gagal create vessel:\n${response.body}";
+        throw "Gagal create vessel";
       }
     }catch(e){
       print("error nya $e");
       rethrow;
     }
+    // try{
+    //   var url = "$BASE_URL/insert_kapal";
+    //   // var datatoken = await LoginPref.getPref();
+    //   // var token = datatoken.token!;
+    //   var response = await http.post(
+    //     Uri.parse(url),
+    //     body: data,
+    //     headers: {
+    //       // 'Content-type': 'application/json',
+    //       // 'Authorization': 'Bearer $token',
+    //     },
+    //   );
+    //   if (response.statusCode == 200) {
+    //     return SubmitVesselResponse.fromJson(jsonDecode(response.body));
+    //   }
+    //   if (response.statusCode == 400) {
+    //     return SubmitVesselResponse.fromJson(jsonDecode(response.body));
+    //   }
+    //   else {
+    //     throw "Gagal create vessel:\n${response.body}";
+    //   }
+    // }catch(e){
+    //   print("error nya $e");
+    //   rethrow;
+    // }
   }
   static Future<EditVesselResponse>editVessel(Map<String,String> data) async {
     try{
@@ -145,4 +184,48 @@ class Api{
     throw "Gagal delete vessel:\n${response.body}";
 
   }
+
+  // static Future<SubmitVesselResponse> submitCreateVessel(List<String> data,PlatformFile file) async {
+  //  try{
+  //    // var datatoken = await LoginPref.getPref();
+  //    // var token = datatoken.token!;
+  //    var url = "$BASE_URL/insert_kapal";
+  //    var request = await http.MultipartRequest('post', Uri.parse(url));
+  //
+  //    // request.headers["Content-type"] = 'application/xml';
+  //    // request.headers["Authorization"] = 'Bearer $token';
+  //    request.fields["call_sign"] = data[0];
+  //    request.fields["flag"] = data[1];
+  //    request.fields["class"] = data[2];
+  //    request.fields["builder"] = data[3];
+  //    request.fields["year_built"] = data[4];
+  //    request.fields["ip"] = data[5];
+  //    request.fields["port"] = data[6];
+  //    request.fields["size"] = data[7];
+  //    request.files
+  //        .add(await http.MultipartFile.fromBytes(
+  //        'xml_file',
+  //        file.bytes!));
+  //
+  //
+  //    var response = await request.send();
+  //    // print(response.stream);
+  //    var responseJson = await http.Response.fromStream(response);
+  //    // print(response.statusCode);
+  //
+  //    if (response.statusCode == 200) {
+  //      return SubmitVesselResponse.fromJson(jsonDecode(responseJson.body));
+  //    }
+  //    if (response.statusCode == 400) {
+  //      return SubmitVesselResponse.fromJson(jsonDecode(responseJson.body));
+  //    }
+  //    else {
+  //      throw "Gagal create vessel";
+  //    }
+  //  }catch(e){
+  //    print("error nya $e");
+  //    rethrow;
+  //  }
+  // }
+
 }

@@ -91,19 +91,25 @@ class Notifier extends ChangeNotifier {
   //   notifyListeners();
   // }
 
-  void submitVessel(data,context){
-     Api.createVessel(data).then((value) {
-      if (value.message != "Data berhasil masuk database") {
-        EasyLoading.showError("Gagal Menambahkan Kapal");
+  void submitVessel(data,context,file)async{
+
+    await Api.createVessel(data,file).then((value) {
+      print(value.message);
+      print(value.error!.callSign);
+      print(value.error!.xmlFile);
+      if (value.message == "Validator Fails") {
+        EasyLoading.showError("Call Sign sudah Terdaftar");
+        return;
       }
       if (value.message == "Data berhasil masuk database") {
         EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
         initVesselCoor();
         Navigator.pop(context);
+        return;
       }
-      if (value.message == "Validator Fails") {
-        EasyLoading.showError("Call Sign sudah terdaftar");
-        Navigator.pop(context);
+      if (value.message != "Data berhasil masuk database") {
+        EasyLoading.showError("Gagal Menambahkan Kapal, Coba Lagi...");
+        return;
       }
       return;
     });
