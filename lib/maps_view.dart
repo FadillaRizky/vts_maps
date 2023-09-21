@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:html' as html;
 import 'dart:math' as math;
 import 'dart:math';
+import 'package:http/http.dart' as http;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -91,9 +93,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   List<Vessel.Data> _dataVesselTable = [];
 
   ///variable insert file
-  PlatformFile? file;
+  // PlatformFile? file;
 
   PlatformFile? fileInsert;
+  html.File? filexml;
 
   // Animated Map Variable
   static const _startedId = 'AnimatedMapController#MoveStarted';
@@ -145,6 +148,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       default:
         return 8.0;
     }
+  }
+
+  Future<void> selectFile()async {
+
+    final input = html.FileUploadInputElement()
+      ..accept =
+          'application/xml, text/xml'; // You can specify the file types you want to allow here, like 'image/*', 'video/*', or '*/*' for all types.
+
+    input
+        .click(); // Trigger a click event on the input element to open the file picker dialog.
+
+    input.onChange.listen((e) {
+      final file = input.files?.first; // Get the selected file.
+      if (file != null) {
+        filexml = file;
+        // print('Selected file: ${file.name}');
+      }
+    });
   }
 
   // submitVessel() async {
@@ -510,257 +531,318 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                         ],
                                                                       ),
                                                                     ),
-                                                                    Padding(
-                                                                      padding:
-                                                                          EdgeInsets.all(
-                                                                              8),
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          VesselTextField(
-                                                                            controller:
-                                                                                callsignController,
-                                                                            hint:
-                                                                                'Call Sign',
-                                                                            type:
-                                                                                TextInputType.text,
-                                                                          ),
-                                                                          VesselTextField(
-                                                                            controller:
-                                                                                flagController,
-                                                                            hint:
-                                                                                'Bendera',
-                                                                            type:
-                                                                                TextInputType.text,
-                                                                          ),
-                                                                          VesselTextField(
-                                                                            controller:
-                                                                                classController,
-                                                                            hint:
-                                                                                'Kelas',
-                                                                            type:
-                                                                                TextInputType.text,
-                                                                          ),
-                                                                          VesselTextField(
-                                                                            controller:
-                                                                                builderController,
-                                                                            hint:
-                                                                                'Builder',
-                                                                            type:
-                                                                                TextInputType.text,
-                                                                          ),
-                                                                          VesselTextField(
-                                                                            controller:
-                                                                                yearbuiltController,
-                                                                            hint:
-                                                                                'Tahun Pembuatan',
-                                                                            type:
-                                                                                TextInputType.number,
-                                                                          ),
-                                                                          VesselTextField(
-                                                                            controller:
-                                                                                ipController,
-                                                                            hint:
-                                                                                'IP',
-                                                                            type:
-                                                                                TextInputType.text,
-                                                                          ),
-                                                                          VesselTextField(
-                                                                            controller:
-                                                                                portController,
-                                                                            hint:
-                                                                                'Port',
-                                                                            type:
-                                                                                TextInputType.number,
-                                                                          ),
-                                                                          SizedBox(
-                                                                            height:
-                                                                                30,
-                                                                            width:
-                                                                                double.infinity,
-                                                                            child:
-                                                                                DropdownSearch<String>(
-                                                                              dropdownBuilder: (context, selectedItem) => Text(
-                                                                                selectedItem ?? "Ukuran Kapal",
-                                                                                style: TextStyle(fontSize: 15, color: Colors.black54),
-                                                                              ),
-                                                                              popupProps: PopupPropsMultiSelection.dialog(
-                                                                                fit: FlexFit.loose,
-                                                                                itemBuilder: (context, item, isSelected) => ListTile(
-                                                                                  title: Text(
-                                                                                    item,
-                                                                                    style: TextStyle(
-                                                                                      fontSize: 15,
+                                                                    SingleChildScrollView(
+                                                                      child: Padding(
+                                                                        padding:
+                                                                            EdgeInsets.all(
+                                                                                8),
+                                                                        child:
+                                                                            Column(
+                                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                                          children: [
+                                                                            VesselTextField(
+                                                                              controller:
+                                                                                  callsignController,
+                                                                              hint:
+                                                                                  'Call Sign',
+                                                                              type:
+                                                                                  TextInputType.text,
+                                                                            ),
+                                                                            VesselTextField(
+                                                                              controller:
+                                                                                  flagController,
+                                                                              hint:
+                                                                                  'Bendera',
+                                                                              type:
+                                                                                  TextInputType.text,
+                                                                            ),
+                                                                            VesselTextField(
+                                                                              controller:
+                                                                                  classController,
+                                                                              hint:
+                                                                                  'Kelas',
+                                                                              type:
+                                                                                  TextInputType.text,
+                                                                            ),
+                                                                            VesselTextField(
+                                                                              controller:
+                                                                                  builderController,
+                                                                              hint:
+                                                                                  'Builder',
+                                                                              type:
+                                                                                  TextInputType.text,
+                                                                            ),
+                                                                            VesselTextField(
+                                                                              controller:
+                                                                                  yearbuiltController,
+                                                                              hint:
+                                                                                  'Tahun Pembuatan',
+                                                                              type:
+                                                                                  TextInputType.number,
+                                                                            ),
+                                                                            VesselTextField(
+                                                                              controller:
+                                                                                  ipController,
+                                                                              hint:
+                                                                                  'IP',
+                                                                              type:
+                                                                                  TextInputType.text,
+                                                                            ),
+                                                                            VesselTextField(
+                                                                              controller:
+                                                                                  portController,
+                                                                              hint:
+                                                                                  'Port',
+                                                                              type:
+                                                                                  TextInputType.number,
+                                                                            ),
+                                                                            SizedBox(
+                                                                              height:
+                                                                                  30,
+                                                                              width:
+                                                                                  double.infinity,
+                                                                              child:
+                                                                                  DropdownSearch<String>(
+                                                                                dropdownBuilder: (context, selectedItem) => Text(
+                                                                                  selectedItem ?? "Ukuran Kapal",
+                                                                                  style: TextStyle(fontSize: 15, color: Colors.black54),
+                                                                                ),
+                                                                                popupProps: PopupPropsMultiSelection.dialog(
+                                                                                  fit: FlexFit.loose,
+                                                                                  itemBuilder: (context, item, isSelected) => ListTile(
+                                                                                    title: Text(
+                                                                                      item,
+                                                                                      style: TextStyle(
+                                                                                        fontSize: 15,
+                                                                                      ),
                                                                                     ),
                                                                                   ),
                                                                                 ),
-                                                                              ),
-                                                                              dropdownDecoratorProps: DropDownDecoratorProps(
-                                                                                dropdownSearchDecoration: InputDecoration(
-                                                                                  border: OutlineInputBorder(
-                                                                                    borderSide: BorderSide.none,
-                                                                                    borderRadius: BorderRadius.circular(10),
+                                                                                dropdownDecoratorProps: DropDownDecoratorProps(
+                                                                                  dropdownSearchDecoration: InputDecoration(
+                                                                                    border: OutlineInputBorder(
+                                                                                      borderSide: BorderSide.none,
+                                                                                      borderRadius: BorderRadius.circular(10),
+                                                                                    ),
+                                                                                    contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
+                                                                                    filled: true,
+                                                                                    fillColor: Colors.black12,
                                                                                   ),
-                                                                                  contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
-                                                                                  filled: true,
-                                                                                  fillColor: Colors.black12,
                                                                                 ),
+                                                                                items: [
+                                                                                  "small",
+                                                                                  "medium",
+                                                                                  "large",
+                                                                                ],
+                                                                                onChanged: (value) {
+                                                                                  vesselSize = value;
+                                                                                },
                                                                               ),
-                                                                              items: [
-                                                                                "small",
-                                                                                "medium",
-                                                                                "large",
-                                                                              ],
-                                                                              onChanged: (value) {
-                                                                                vesselSize = value;
-                                                                              },
                                                                             ),
-                                                                          ),
-                                                                          GestureDetector(
-                                                                              onTap: () async {
-                                                                                FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                                                                  type: FileType.custom,
-                                                                                  allowedExtensions: ['xml']
-                                                                                );
-
-                                                                                if (result != null) {
-                                                                                  fileInsert = result.files.first;
-                                                                                }
-                                                                              },
-                                                                              child: (fileInsert == null)
+                                                                            SizedBox(height: 5,),
+                                                                            GestureDetector(
+                                                                                onTap:
+                                                                                () async {
+                                                                              selectFile();
+                                                                              //   FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                                                              //     type: FileType.custom,
+                                                                              //     allowedExtensions: ['xml']
+                                                                              //   );
+                                                                              //
+                                                                              //   if (result != null) {
+                                                                              //     fileInsert = result.files.first;
+                                                                              //   }
+                                                                              // },
+                                                                            },
+                                                                              child:  (filexml == null)
                                                                                   ? Image.asset(
-                                                                                      "assets/add_file_icon.png",
-                                                                                      width: 50,
-                                                                                      height: 50,
-                                                                                    )
+                                                                                "assets/add_file_icon.png",
+                                                                                width: 50,
+                                                                                height: 50,
+                                                                              )
                                                                                   : Image.asset(
-                                                                                      "assets/xml_icon.png",
-                                                                                      width: 50,
-                                                                                      height: 50,
-                                                                                    )),
-                                                                          SizedBox(
-                                                                            height:
-                                                                                5,
-                                                                          ),
-                                                                          Row(
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.end,
-                                                                            children: [
-                                                                              InkWell(
-                                                                                onTap: () {
-                                                                                  Navigator.pop(context);
-                                                                                },
-                                                                                child: Container(
-                                                                                  decoration: BoxDecoration(
-                                                                                    borderRadius: BorderRadius.circular(10),
-                                                                                    color: Color(0xFFFF0000),
+                                                                                "assets/xml_icon.png",
+                                                                                width: 50,
+                                                                                height: 50,
+                                                                              ),
+                                                                            ),
+                                                                            SizedBox(
+                                                                              height:
+                                                                                  5,
+                                                                            ),
+                                                                            Row(
+                                                                              mainAxisAlignment:
+                                                                                  MainAxisAlignment.end,
+                                                                              children: [
+                                                                                InkWell(
+                                                                                  onTap: () {
+                                                                                    Navigator.pop(context);
+                                                                                  },
+                                                                                  child: Container(
+                                                                                    decoration: BoxDecoration(
+                                                                                      borderRadius: BorderRadius.circular(10),
+                                                                                      color: Color(0xFFFF0000),
+                                                                                    ),
+                                                                                    padding: EdgeInsets.all(5),
+                                                                                    alignment: Alignment.center,
+                                                                                    height: 30,
+                                                                                    child: Text("Batal"),
                                                                                   ),
-                                                                                  padding: EdgeInsets.all(5),
-                                                                                  alignment: Alignment.center,
-                                                                                  height: 30,
-                                                                                  child: Text("Batal"),
                                                                                 ),
-                                                                              ),
-                                                                              SizedBox(
-                                                                                width: 5,
-                                                                              ),
-                                                                              InkWell(
-                                                                                onTap: () {
-                                                                                  // if (callsignController.text.isEmpty) {
-                                                                                  //   EasyLoading.showError("Kolom Call Sign Masih Kosong...");
-                                                                                  //   return;
-                                                                                  // }
-                                                                                  // if (flagController.text.isEmpty) {
-                                                                                  //   EasyLoading.showError("Kolom Bendera Masih Kosong...");
-                                                                                  //   return;
-                                                                                  // }
-                                                                                  // if (classController.text.isEmpty) {
-                                                                                  //   EasyLoading.showError("Kolom Kelas Masih Kosong...");
-                                                                                  //   return;
-                                                                                  // }
-                                                                                  // if (builderController.text.isEmpty) {
-                                                                                  //   EasyLoading.showError("Kolom Builder Masih Kosong...");
-                                                                                  //   return;
-                                                                                  // }
-                                                                                  // if (yearbuiltController.text.isEmpty) {
-                                                                                  //   EasyLoading.showError("Kolom Tahun Pembuatan Masih Kosong...");
-                                                                                  //   return;
-                                                                                  // }
-                                                                                  // if (ipController.text.isEmpty) {
-                                                                                  //   EasyLoading.showError("Kolom IP Pembuatan Masih Kosong...");
-                                                                                  //   return;
-                                                                                  // }
-                                                                                  // if (portController.text.isEmpty) {
-                                                                                  //   EasyLoading.showError("Kolom Port Masih Kosong...");
-                                                                                  //   return;
-                                                                                  // }
-                                                                                  // if (vesselSize == null) {
-                                                                                  //   EasyLoading.showError("Kolom Ukuran Kapal Masih Kosong...");
-                                                                                  //   return;
-                                                                                  // }
-                                                                                  if (fileInsert == null) {
-                                                                                    EasyLoading.showError("Kolom File Masih Kosong...");
-                                                                                    return;
-                                                                                  }
-                                                                                  List<String> data = [
-                                                                                    callsignController.text,
-                                                                                    "INDO",
-                                                                                    "BKI",
-                                                                                    "BATAM",
-                                                                                    "2004",
-                                                                                    "8.215.38.33",
-                                                                                    "5017",
-                                                                                    "small",
-                                                                                  ];
-                                                                                  value.submitVessel(data, context,fileInsert);
-                                                                                },
-                                                                                child: Container(
-                                                                                  decoration: BoxDecoration(
-                                                                                    borderRadius: BorderRadius.circular(10),
-                                                                                    color: Color(0xFF399D44),
+                                                                                // SizedBox(
+                                                                                //   width: 5,
+                                                                                // ),
+                                                                                // InkWell(
+                                                                                //   onTap: () {
+                                                                                //     // // if (callsignController.text.isEmpty) {
+                                                                                //     // //   EasyLoading.showError("Kolom Call Sign Masih Kosong...");
+                                                                                //     // //   return;
+                                                                                //     // // }
+                                                                                //     // // if (flagController.text.isEmpty) {
+                                                                                //     // //   EasyLoading.showError("Kolom Bendera Masih Kosong...");
+                                                                                //     // //   return;
+                                                                                //     // // }
+                                                                                //     // // if (classController.text.isEmpty) {
+                                                                                //     // //   EasyLoading.showError("Kolom Kelas Masih Kosong...");
+                                                                                //     // //   return;
+                                                                                //     // // }
+                                                                                //     // // if (builderController.text.isEmpty) {
+                                                                                //     // //   EasyLoading.showError("Kolom Builder Masih Kosong...");
+                                                                                //     // //   return;
+                                                                                //     // // }
+                                                                                //     // // if (yearbuiltController.text.isEmpty) {
+                                                                                //     // //   EasyLoading.showError("Kolom Tahun Pembuatan Masih Kosong...");
+                                                                                //     // //   return;
+                                                                                //     // // }
+                                                                                //     // // if (ipController.text.isEmpty) {
+                                                                                //     // //   EasyLoading.showError("Kolom IP Pembuatan Masih Kosong...");
+                                                                                //     // //   return;
+                                                                                //     // // }
+                                                                                //     // // if (portController.text.isEmpty) {
+                                                                                //     // //   EasyLoading.showError("Kolom Port Masih Kosong...");
+                                                                                //     // //   return;
+                                                                                //     // // }
+                                                                                //     // // if (vesselSize == null) {
+                                                                                //     // //   EasyLoading.showError("Kolom Ukuran Kapal Masih Kosong...");
+                                                                                //     // //   return;
+                                                                                //     // // }
+                                                                                //     // if (fileInsert == null) {
+                                                                                //     //   EasyLoading.showError("Kolom File Masih Kosong...");
+                                                                                //     //   return;
+                                                                                //     // }
+                                                                                //     // List<String> data = [
+                                                                                //     //   callsignController.text,
+                                                                                //     //   "INDO",
+                                                                                //     //   "BKI",
+                                                                                //     //   "BATAM",
+                                                                                //     //   "2004",
+                                                                                //     //   "8.215.38.33",
+                                                                                //     //   "5017",
+                                                                                //     //   "small",
+                                                                                //     // ];
+                                                                                //     // value.submitVessel(data, context,fileInsert);
+                                                                                //   },
+                                                                                //   child: Container(
+                                                                                //     decoration: BoxDecoration(
+                                                                                //       borderRadius: BorderRadius.circular(10),
+                                                                                //       color: Color(0xFF399D44),
+                                                                                //     ),
+                                                                                //     padding: EdgeInsets.all(5),
+                                                                                //     alignment: Alignment.center,
+                                                                                //     height: 30,
+                                                                                //     child: Text("Simpan"),
+                                                                                //   ),
+                                                                                // ),
+                                                                                SizedBox(
+                                                                                  width: 5,
+                                                                                ),
+                                                                                InkWell(
+                                                                                  onTap: () {
+
+                                                                                    // Api.createVessel(data).then((value) {
+                                                                                    //   print(value.message);
+                                                                                    //     print(value.error!.callSign);
+                                                                                    //     print(value.error!.xmlFile);
+                                                                                    // });
+                                                                                    // List<String> data = [
+                                                                                    //   callsignController.text,
+                                                                                    //   "INDO",
+                                                                                    //   "BKI",
+                                                                                    //   "BATAM",
+                                                                                    //   "2004",
+                                                                                    //   "8.215.38.33",
+                                                                                    //   "5017",
+                                                                                    //   "small",
+                                                                                    // ];
+                                                                                        if (callsignController.text.isEmpty) {
+                                                                                          EasyLoading.showError("Kolom Call Sign Masih Kosong...");
+                                                                                          return;
+                                                                                        }
+                                                                                        if (flagController.text.isEmpty) {
+                                                                                          EasyLoading.showError("Kolom Bendera Masih Kosong...");
+                                                                                          return;
+                                                                                        }
+                                                                                        if (classController.text.isEmpty) {
+                                                                                          EasyLoading.showError("Kolom Kelas Masih Kosong...");
+                                                                                          return;
+                                                                                        }
+                                                                                        if (builderController.text.isEmpty) {
+                                                                                          EasyLoading.showError("Kolom Builder Masih Kosong...");
+                                                                                          return;
+                                                                                        }
+                                                                                        if (yearbuiltController.text.isEmpty) {
+                                                                                          EasyLoading.showError("Kolom Tahun Pembuatan Masih Kosong...");
+                                                                                          return;
+                                                                                        }
+                                                                                        if (ipController.text.isEmpty) {
+                                                                                          EasyLoading.showError("Kolom IP Pembuatan Masih Kosong...");
+                                                                                          return;
+                                                                                        }
+                                                                                        if (portController.text.isEmpty) {
+                                                                                          EasyLoading.showError("Kolom Port Masih Kosong...");
+                                                                                          return;
+                                                                                        }
+                                                                                        if (vesselSize == null) {
+                                                                                          EasyLoading.showError("Kolom Ukuran Kapal Masih Kosong...");
+                                                                                          return;
+                                                                                        }
+                                                                                        if (filexml == null) {
+                                                                                          EasyLoading.showError("Kolom File Masih Kosong...");
+                                                                                          return;
+                                                                                        }
+                                                                                    List<String> data = [
+                                                                                      callsignController.text,
+                                                                                      flagController.text,
+                                                                                      classController.text,
+                                                                                      builderController.text,
+                                                                                      yearbuiltController.text,
+                                                                                      ipController.text,
+                                                                                      portController.text,
+                                                                                      vesselSize!,
+                                                                                    ];
+                                                                                        value.submitVessel(data, context,filexml);
+                                                                                    // Api.submitCreateVessel(data, filexml!).then((value) {
+                                                                                    //   print(value.message);
+                                                                                    //   // print(value.error!.callSign);
+                                                                                    //   // print(value.error!.xmlFile);
+                                                                                    // });
+                                                                                  },
+                                                                                  child: Container(
+                                                                                    decoration: BoxDecoration(
+                                                                                      borderRadius: BorderRadius.circular(10),
+                                                                                      color: Color(
+                                                                                          0xFF24A438),
+                                                                                    ),
+                                                                                    padding: EdgeInsets.all(5),
+                                                                                    alignment: Alignment.center,
+                                                                                    height: 30,
+                                                                                    child: Text("Submit"),
                                                                                   ),
-                                                                                  padding: EdgeInsets.all(5),
-                                                                                  alignment: Alignment.center,
-                                                                                  height: 30,
-                                                                                  child: Text("Simpan"),
-                                                                                ),
-                                                                              ),
-                                                                              // SizedBox(
-                                                                              //   width: 5,
-                                                                              // ),
-                                                                              // ElevatedButton(
-                                                                              //   onPressed: () {
-                                                                              //     // Map<String, dynamic> data = {
-                                                                              //     //   "call_sign": "ydbu212",
-                                                                              //     //   "flag": "INDO",
-                                                                              //     //   "class": "BKI",
-                                                                              //     //   "builder": "BATAM",
-                                                                              //     //   "year_built": "2004",
-                                                                              //     //   "ip": "8.215.38.33",
-                                                                              //     //   "port": "5017",
-                                                                              //     //   "size": "small",
-                                                                              //     //   "xml_file": fileInsert!,
-                                                                              //     // };
-                                                                              //     List<String> data = [
-                                                                              //       "ydbu123",
-                                                                              //       "INDO",
-                                                                              //       "BKI",
-                                                                              //       "BATAM",
-                                                                              //       "2004",
-                                                                              //       "8.215.38.33",
-                                                                              //       "5017",
-                                                                              //       "small",
-                                                                              //     ];
-                                                                              //
-                                                                              //     Api.submitCreateVessel(data,fileInsert!).then((value) {
-                                                                              //
-                                                                              //     });
-                                                                              //   },
-                                                                              //   child: Text("Submit"),
-                                                                              // )
-                                                                            ],
-                                                                          )
-                                                                        ],
+                                                                                )
+                                                                              ],
+                                                                            )
+                                                                          ],
+                                                                        ),
                                                                       ),
                                                                     ),
                                                                   ],
@@ -873,7 +955,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                             await FilePicker.platform.pickFiles();
                                                                         if (result !=
                                                                             null) {
-                                                                          file = result
+                                                                          fileInsert = result
                                                                               .files
                                                                               .first;
                                                                         }
