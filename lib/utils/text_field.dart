@@ -29,8 +29,8 @@ class VesselTextField extends StatelessWidget {
               contentPadding: EdgeInsets.fromLTRB(20, 3, 1, 3),
               hintText: hint,
               labelText: hint,
-              hintStyle: TextStyle(color: Colors.black, fontSize: 15),
-              labelStyle: TextStyle(color: Colors.black, fontSize: 15),
+              hintStyle: TextStyle(color: Colors.black54, fontSize: 15),
+              labelStyle: TextStyle(color: Colors.black54, fontSize: 15),
               border: OutlineInputBorder(
                 borderSide: BorderSide(width: 0, style: BorderStyle.none),
                 borderRadius: BorderRadius.circular(20),

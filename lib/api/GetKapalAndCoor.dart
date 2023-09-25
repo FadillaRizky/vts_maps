@@ -1,4 +1,3 @@
-
 class GetKapalAndCoor {
   String? message;
   int? status;
@@ -73,12 +72,12 @@ class Data {
 
 class Coor {
   int? idCoor;
-  dynamic callSign;
+  String? callSign;
   int? seriesId;
   double? defaultHeading;
   CoorHdt? coorHdt;
   CoorGga? coorGga;
-  dynamic createdAt;
+  String? createdAt;
   dynamic updatedAt;
 
   Coor({this.idCoor, this.callSign, this.seriesId, this.defaultHeading, this.coorHdt, this.coorGga, this.createdAt, this.updatedAt});
@@ -87,7 +86,9 @@ class Coor {
     if(json["id_coor"] is int) {
       idCoor = json["id_coor"];
     }
-    callSign = json["call_sign"];
+    if(json["call_sign"] is String) {
+      callSign = json["call_sign"];
+    }
     if(json["series_id"] is int) {
       seriesId = json["series_id"];
     }
@@ -100,7 +101,9 @@ class Coor {
     if(json["coor_gga"] is Map) {
       coorGga = json["coor_gga"] == null ? null : CoorGga.fromJson(json["coor_gga"]);
     }
-    createdAt = json["created_at"];
+    if(json["created_at"] is String) {
+      createdAt = json["created_at"];
+    }
     updatedAt = json["updated_at"];
   }
 
@@ -124,7 +127,7 @@ class Coor {
 
 class CoorGga {
   int? idCoorGga;
-  int? utcPosition;
+  double? utcPosition;
   double? latitude;
   String? directionLatitude;
   double? longitude;
@@ -143,7 +146,7 @@ class CoorGga {
     if(json["id_coor_gga"] is int) {
       idCoorGga = json["id_coor_gga"];
     }
-    if(json["utc_position"] is int) {
+    if(json["utc_position"] is double) {
       utcPosition = json["utc_position"];
     }
     if(json["latitude"] is double) {
@@ -201,16 +204,22 @@ class CoorGga {
 }
 
 class CoorHdt {
-  dynamic idCoorHdt;
-  dynamic headingDegree;
-  dynamic checksum;
+  int? idCoorHdt;
+  double? headingDegree;
+  String? checksum;
 
   CoorHdt({this.idCoorHdt, this.headingDegree, this.checksum});
 
   CoorHdt.fromJson(Map<String, dynamic> json) {
-    idCoorHdt = json["id_coor_hdt"];
-    headingDegree = json["heading_degree"];
-    checksum = json["checksum"];
+    if(json["id_coor_hdt"] is int) {
+      idCoorHdt = json["id_coor_hdt"];
+    }
+    if(json["heading_degree"] is double) {
+      headingDegree = json["heading_degree"];
+    }
+    if(json["checksum"] is String) {
+      checksum = json["checksum"];
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -223,21 +232,24 @@ class CoorHdt {
 }
 
 class Kapal {
-  dynamic callSign;
+  String? callSign;
   String? flag;
   String? kelas;
   String? builder;
   String? size;
   String? ip;
   String? port;
+  String? xmlFile;
   String? yearBuilt;
-  dynamic createdAt;
-  dynamic updatedAt;
+  String? createdAt;
+  String? updatedAt;
 
-  Kapal({this.callSign, this.flag, this.kelas, this.builder, this.size, this.ip, this.port, this.yearBuilt, this.createdAt, this.updatedAt});
+  Kapal({this.callSign, this.flag, this.kelas, this.builder, this.size, this.ip, this.port, this.xmlFile, this.yearBuilt, this.createdAt, this.updatedAt});
 
   Kapal.fromJson(Map<String, dynamic> json) {
-    callSign = json["call_sign"];
+    if(json["call_sign"] is String) {
+      callSign = json["call_sign"];
+    }
     if(json["flag"] is String) {
       flag = json["flag"];
     }
@@ -256,11 +268,18 @@ class Kapal {
     if(json["port"] is String) {
       port = json["port"];
     }
+    if(json["xml_file"] is String) {
+      xmlFile = json["xml_file"];
+    }
     if(json["year_built"] is String) {
       yearBuilt = json["year_built"];
     }
-    createdAt = json["created_at"];
-    updatedAt = json["updated_at"];
+    if(json["created_at"] is String) {
+      createdAt = json["created_at"];
+    }
+    if(json["updated_at"] is String) {
+      updatedAt = json["updated_at"];
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -272,6 +291,7 @@ class Kapal {
     _data["size"] = size;
     _data["ip"] = ip;
     _data["port"] = port;
+    _data["xml_file"] = xmlFile;
     _data["year_built"] = yearBuilt;
     _data["created_at"] = createdAt;
     _data["updated_at"] = updatedAt;

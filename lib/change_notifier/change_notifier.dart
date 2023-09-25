@@ -57,12 +57,12 @@ class Notifier extends ChangeNotifier {
       if (value.total! == 0) {
         _isLoading = false;
         _vesselCoorResult = [];
-        _totalVessel = value.total!;
+        _totalVessel = value.total!.toInt();
       }
       if (value.total! > 0) {
         _vesselCoorResult.addAll(value.data!);
         _isLoading = false;
-        _totalVessel = value.total!;
+        _totalVessel = value.total!.toInt();
       }
       print(value.data!.first.kapal!.callSign);
     });
@@ -156,7 +156,7 @@ class Notifier extends ChangeNotifier {
   //   notifyListeners();
   // }
 
-  void editVessel(data,pageSize,context)async{
+  void editVessel(data,pageSize,context,file)async{
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -182,7 +182,7 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-   await Api.editVessel(data).then((value) {
+   await Api.editVessel(data,file).then((value) {
       print(value.message);
       if (value.message != "Data berhasil di ubah database") {
         Navigator.pop(context);

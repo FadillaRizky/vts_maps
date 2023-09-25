@@ -145,32 +145,73 @@ class Api{
       rethrow;
     }
   }
-  static Future<EditVesselResponse>editVessel(Map<String,String> data) async {
+  static Future<EditVesselResponse>editVessel(List<String> data,html.File? file) async {
     try{
-      var url = "$BASE_URL/update_kapal";
-      var datatoken = await LoginPref.getPref();
-      var token = datatoken.token!;
-      var response = await http.post(
-        Uri.parse(url),
-        body: data,
-        headers: {
-          // 'Content-type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-      if (response.statusCode == 200) {
-        return EditVesselResponse.fromJson(jsonDecode(response.body));
+      // var datatoken = await LoginPref.getPref();
+      // var token = datatoken.token!;
+      // var url = "$BASE_URL/insert_kapal";
+      // var request = await http.MultipartRequest('post', Uri.parse(url));
+      final url = Uri.parse('$BASE_URL/update_kapal');
+
+      final formData = html.FormData();
+      if (file != null) {
+        formData.appendBlob('xml_file', file);
       }
-      if (response.statusCode == 400) {
-        return EditVesselResponse.fromJson(jsonDecode(response.body));
+      formData.append("old_call_sign", data[0]);
+      formData.append("call_sign", data[1]);
+      formData.append("flag", data[2]);
+      formData.append("class", data[3]);
+      formData.append("builder", data[4]);
+      formData.append("year_built", data[5]);
+      formData.append("ip", data[6]);
+      formData.append("port", data[7]);
+      formData.append("size", data[8]);
+
+      final request = html.HttpRequest();
+      request.open('POST', url.toString());
+      request.send(formData);
+
+      await request.onLoadEnd.first;
+      if (request.status == 200) {
+        print('statuscode 200,');
+        return EditVesselResponse.fromJson(jsonDecode(request.responseText!));
+      }
+      if (request.status == 400) {
+        print('statuscode 400,');
+        return EditVesselResponse.fromJson(jsonDecode(request.responseText!));
       }
       else {
-        throw "Gagal edit vessel:\n${response.body}";
+        throw "Gagal create vessel";
       }
     }catch(e){
       print("error nya $e");
       rethrow;
     }
+    // try{
+    //   var url = "$BASE_URL/update_kapal";
+    //   var datatoken = await LoginPref.getPref();
+    //   var token = datatoken.token!;
+    //   var response = await http.post(
+    //     Uri.parse(url),
+    //     body: data,
+    //     headers: {
+    //       // 'Content-type': 'application/json',
+    //       'Authorization': 'Bearer $token',
+    //     },
+    //   );
+    //   if (response.statusCode == 200) {
+    //     return EditVesselResponse.fromJson(jsonDecode(response.body));
+    //   }
+    //   if (response.statusCode == 400) {
+    //     return EditVesselResponse.fromJson(jsonDecode(response.body));
+    //   }
+    //   else {
+    //     throw "Gagal edit vessel:\n${response.body}";
+    //   }
+    // }catch(e){
+    //   print("error nya $e");
+    //   rethrow;
+    // }
   }
 
   static Future<DeleteVesselResponse> deleteVessel(String callSign) async {

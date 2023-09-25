@@ -98,7 +98,8 @@ flutter:
     - assets/background-login.jpg
     - assets/maps-icon.png
     - assets/xml_icon.png
-    - assets/add_file_icon.png
+    - assets/add_file_icon.png    - assets/xml_icon2.png
+
 
 
   #   - images/a_dot_ham.jpeg
