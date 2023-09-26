@@ -16,6 +16,7 @@ import 'package:vts_maps/utils/constants.dart';
 import 'package:vts_maps/utils/shared_pref.dart';
 import 'package:xml/xml.dart';
 import 'package:xml/xml.dart' as xml;
+import 'dart:html' as html;
 
 class Notifier extends ChangeNotifier {
 
@@ -92,38 +93,46 @@ class Notifier extends ChangeNotifier {
   // }
 
   void submitVessel(data,context,file)async{
-    // await Api.createVessel(data).then((value) {
-    //   print(value.message);
-    //   print(value.error!.callSign);
-    //   print(value.error!.xmlFile);
-    //   if (value.message == "Validator Fails") {
-    //     EasyLoading.showError("Call Sign sudah Terdaftar");
-    //     return;
-    //   }
-    //   if (value.message == "Data berhasil masuk database") {
-    //     EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
-    //     initVesselCoor();
-    //     Navigator.pop(context);
-    //     return;
-    //   }
-    //   if (value.message != "Data berhasil masuk database") {
-    //     EasyLoading.showError("Gagal Menambahkan Kapal, Coba Lagi...");
-    //     return;
-    //   }
-    //   return;
-    // });
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
     await Api.submitCreateVessel(data, file).then((value){
           if (value.message == "Validator Fails") {
+            Navigator.pop(context);
             EasyLoading.showError("Call Sign sudah Terdaftar");
             return;
           }
           if (value.message == "Data berhasil masuk database") {
+            Navigator.pop(context);
             EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
             initVesselCoor();
             Navigator.pop(context);
             return;
           }
           if (value.message != "Data berhasil masuk database") {
+            Navigator.pop(context);
             EasyLoading.showError("Gagal Menambahkan Kapal, Coba Lagi...");
             return;
           }
@@ -400,6 +409,35 @@ class Notifier extends ChangeNotifier {
     }
 
     return polygons;
+  }
+
+  html.File? _fileXml ;
+  html.File? get fileXml => _fileXml;
+
+  String? _nameFile = "";
+  String? get nameFile => _nameFile;
+
+  void selectFile()async {
+
+    final input = html.FileUploadInputElement()
+      ..accept =
+          'application/xml, text/xml';
+    input
+        .click();
+    input.onChange.listen((e) {
+      final file = input.files?.first;
+      if (file != null) {
+          _fileXml = file;
+          _nameFile = file.name;
+      }
+    });
+    notifyListeners();
+  }
+
+  void clearFile(){
+    _fileXml = null;
+    _nameFile = "";
+    notifyListeners();
   }
 
 }
