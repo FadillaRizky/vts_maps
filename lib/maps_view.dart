@@ -624,37 +624,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             ],
           ),
-          // drawer: Drawer(
-          //   child: Padding(
-          //     padding: const EdgeInsets.all(15),
-          //     child: Column(
-          //       children: [
-          //         Text(
-          //           "Menu",
-          //           style: Constants.title1,
-          //         ),
-          //         SizedBox(
-          //           height: 10,
-          //         ),
-          //         ListTile(
-          //           leading: Icon(Icons.menu),
-          //           trailing: Text(
-          //             "Vessel",
-          //             style: TextStyle(
-          //               fontSize: 16,
-          //             ),
-          //           ),
-          //           onTap: () {
-          //             // Navigator.push(context,
-          //             //     MaterialPageRoute(builder: (context) => HomePage()));
-          //           },
-          //         ),
-          //         ListTile(leading: Text("menu2")),
-          //         ListTile(leading: Text("menu3")),
-          //       ],
-          //     ),
-          //   ),
-          // ),
           body: Padding(
             padding: const EdgeInsets.all(8),
             child: Column(
