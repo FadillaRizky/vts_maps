@@ -640,10 +640,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       initialCenter: const LatLng(-1.089955, 117.360343),
                       onPositionChanged: (position, hasGesture) {
                         setState(() {
-                          // print(position.zoom!);
-                          // currentZoom = pow(position.zoom!,1.50);
                           currentZoom = (position.zoom! - 8) * 9;
-                          // print(currentZoom);
                         });
                         // readNotifier.vesselSize(position.zoom!,vesselSizes());
                       },
