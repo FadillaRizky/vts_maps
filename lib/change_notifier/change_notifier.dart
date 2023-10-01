@@ -10,6 +10,7 @@ import 'package:vts_maps/api/GetAllVesselCoor.dart' as LatestVesselCoor;
 import 'package:vts_maps/api/GetAllLatLangCoor.dart' as LatLangCoor;
 import 'package:vts_maps/api/GetAllVessel.dart' as Vessel;
 import 'package:vts_maps/api/GetKapalAndCoor.dart' as VesselCoor;
+import 'package:vts_maps/api/GetPipelineResponse.dart' as Pipeline;
 import 'package:vts_maps/api/api.dart';
 import 'package:vts_maps/model/kml_model.dart';
 import 'package:vts_maps/utils/constants.dart';
@@ -30,8 +31,7 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  // === API ===
-
+  /// CRUD VESSEL
   List<VesselCoor.Data> _vesselCoorResult = [];
   List<VesselCoor.Data> get vesselCoorResult => _vesselCoorResult;
 
@@ -70,28 +70,6 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-
-  // List<Vessel.Data> _vesselResult = [];
-  // List<Vessel.Data> get vesselResult => _vesselResult;
-
-  // bool _loading = false;
-  // bool get loading => _loading;
-  
-  // void initVessel() {
-  //   Api.getAllVessel().then((value) {
-  //   _vesselResult.clear();
-  //     if (value.total! == 0) {
-  //       _vesselResult = [];
-  //     }
-  //     if (value.total! > 0) {
-  //       _vesselResult.addAll(value.data!);
-  //       // vesselTotal = value.total!;
-  //     }
-  //     print(value.data!.first.callSign);
-  //   });
-  //   notifyListeners();
-  // }
-
   void submitVessel(data,context,file)async{
     showDialog(
       context: context,
@@ -127,8 +105,8 @@ class Notifier extends ChangeNotifier {
           if (value.message == "Data berhasil masuk database") {
             Navigator.pop(context);
             EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
-            initVesselCoor();
             Navigator.pop(context);
+            initVesselCoor();
             return;
           }
           if (value.message != "Data berhasil masuk database") {
@@ -140,30 +118,6 @@ class Notifier extends ChangeNotifier {
     });
      notifyListeners();
   }
-
-  void deleteVessel(callSign,context,pageSize){
-    Api.deleteVessel(callSign).then((value) {
-          if (value.status == 200) {
-            EasyLoading.showSuccess("Kapal Terhapus..");
-            initVesselCoor();
-            Navigator.pop(context);
-          } else {
-            EasyLoading.showError(
-                "Gagal Menghapus Kapal..");
-          }
-        });
-    notifyListeners();
-  }
-
-  // num _currentZoom = 15;
-  // num get currentZoom => _currentZoom;
-  //
-  // void vesselSize(zoom,type){
-  //   _currentZoom = (zoom - 8) * 9;
-  //   // _currentZoom = zoom + 5.0;
-  //   print(_currentZoom);
-  //   notifyListeners();
-  // }
 
   void editVessel(data,pageSize,context,file)async{
     showDialog(
@@ -191,7 +145,7 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-   await Api.editVessel(data,file).then((value) {
+    await Api.editVessel(data,file).then((value) {
       print(value.message);
       if (value.message != "Data berhasil di ubah database") {
         Navigator.pop(context);
@@ -200,8 +154,8 @@ class Notifier extends ChangeNotifier {
       if (value.message == "Data berhasil di ubah database") {
         Navigator.pop(context);
         EasyLoading.showSuccess("Berhasil Edit Kapal");
-        initVesselCoor();
         Navigator.pop(context);
+        initVesselCoor();
       }
       if (value.message == "Validator Fails") {
         Navigator.pop(context);
@@ -213,21 +167,160 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  // List<LatestVesselCoor.Data> _coorResult = [];
-  // List<LatestVesselCoor.Data> get coorResult => _coorResult;
+  void deleteVessel(callSign,context,pageSize){
+    Api.deleteVessel(callSign).then((value) {
+      if (value.status == 200) {
+        EasyLoading.showSuccess("Kapal Terhapus..");
+        Navigator.pop(context);
+        initVesselCoor();
+      } else {
+        EasyLoading.showError(
+            "Gagal Menghapus Kapal..");
+      }
+    });
+    notifyListeners();
+  }
 
-  // void initCoorVessel() {
-  //   Api.getAllVesselLatestCoor().then((value) {
-  //     _coorResult.clear();
-  //     if (value.total! == 0) {
-  //       _coorResult = [];
-  //     }
-  //     if (value.total! > 0) {
-  //       _coorResult.addAll(value.data!);
-  //     }
-  //   });
-  //   notifyListeners();
-  // }
+  /// CRUD PIPELINE
+  List<Pipeline.Data> _getPipelineResult = [];
+  List<Pipeline.Data> get getPipelineResult => _getPipelineResult;
+
+  int _totalPipeline = 0;
+  int get totalPipeline => _totalPipeline;
+
+  void initPipeline() async{
+    _isLoading = true;
+    await Api.getPipeline().then((value){
+      _getPipelineResult.clear();
+      if (value.total! == 0) {
+        _isLoading = false;
+        _getPipelineResult = [];
+        _totalPipeline = value.total!.toInt();
+      }
+      if (value.total! > 0) {
+        _getPipelineResult.addAll(value.data!);
+        _isLoading = false;
+        _totalPipeline = value.total!.toInt();
+      }
+    });
+    notifyListeners();
+  }
+
+  void submitPipeline(String name,bool onOff,context,file)async{
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    await Api.submitPipeline(name,onOff,file).then((value){
+      print(value.message);
+      // if (value.message == "Validator Fails") {
+      //   Navigator.pop(context);
+      //   EasyLoading.showError("Call Sign sudah Terdaftar");
+      //   return;
+      // }
+      if (value.message == "Data berhasil masuk database") {
+        Navigator.pop(context);
+        EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
+        Navigator.pop(context);
+        initPipeline();
+        return;
+      }
+      if (value.message != "Data berhasil masuk database") {
+        Navigator.pop(context);
+        EasyLoading.showError("Gagal Menambahkan Kapal, Coba Lagi...");
+        return;
+      }
+      return;
+    });
+    notifyListeners();
+  }
+
+  void editPipeline(id,String name,bool onOff,BuildContext context,file)async{
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    await Api.editPipeline(id,name,onOff,file).then((value) {
+      print(value.message);
+      if (value.message != "Data berhasil di ubah database") {
+        Navigator.pop(context);
+        EasyLoading.showError("Gagal Edit Data");
+      }
+      if (value.message == "Data berhasil di ubah database") {
+        Navigator.pop(context);
+        EasyLoading.showSuccess("Berhasil Edit Data");
+        Navigator.pop(context);
+        initPipeline();
+      }
+      // if (value.message == "Validator Fails") {
+      //   Navigator.pop(context);
+      //   EasyLoading.showError("Nama sudah digunakan");
+      //   Navigator.pop(context);
+      // }
+      return;
+    });
+    notifyListeners();
+  }
+
+  void deletePipeline(id,context){
+    Api.deletePipeline(id).then((value) {
+          if (value.status == 200) {
+            EasyLoading.showSuccess("Data Terhapus..");
+            Navigator.pop(context);
+            initPipeline();
+          } else {
+            EasyLoading.showError(
+                "Gagal Menghapus Data..");
+          }
+        });
+    notifyListeners();
+  }
+
+
+
+
 
   List<LatLangCoor.Data> _latLangResult = [];
   List<LatLangCoor.Data> get latLangResult => _latLangResult;
@@ -411,23 +504,28 @@ class Notifier extends ChangeNotifier {
     return polygons;
   }
 
-  html.File? _fileXml ;
-  html.File? get fileXml => _fileXml;
+  /// UTILS
+  html.File? _file ;
+  html.File? get file => _file;
 
   String? _nameFile = "";
   String? get nameFile => _nameFile;
 
-  void selectFile()async {
+  void selectFile(String Type)async {
 
     final input = html.FileUploadInputElement()
       ..accept =
-          'application/xml, text/xml';
+      (Type == "XML")?
+          'application/xml, text/xml'
+      : (Type == "KMZ")
+    ?'.kml,.kmz'
+      :'*/*';
     input
         .click();
     input.onChange.listen((e) {
       final file = input.files?.first;
       if (file != null) {
-          _fileXml = file;
+          _file = file;
           _nameFile = file.name;
       }
     });
@@ -435,7 +533,7 @@ class Notifier extends ChangeNotifier {
   }
 
   void clearFile(){
-    _fileXml = null;
+    _file = null;
     _nameFile = "";
     notifyListeners();
   }
