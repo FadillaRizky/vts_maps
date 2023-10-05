@@ -70,9 +70,10 @@ class _MyAppState extends State<MyApp> {
         debugShowCheckedModeBanner: false,
         title: 'AVTS',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          textTheme: GoogleFonts.robotoTextTheme()
-              .copyWith(titleSmall: GoogleFonts.roboto()),
+          // colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+              fontFamily: 'Roboto',
+          // textTheme: GoogleFonts.robotoTextTheme()
+          //     .copyWith(titleSmall: GoogleFonts.roboto()),
           useMaterial3: true,
         ),
         scrollBehavior: MaterialScrollBehavior().copyWith(

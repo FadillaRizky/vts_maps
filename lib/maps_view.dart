@@ -68,9 +68,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Controller pipeline
   TextEditingController nameController = TextEditingController();
+
   ///variable switch
   bool isSwitched = false;
-
 
   late final MapController mapController;
 
@@ -96,8 +96,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _currentPage = 1;
   int _pageSize = 10;
   List<Vessel.Data> _dataVesselTable = [];
-
-
 
   // Animated Map Variable
   static const _startedId = 'AnimatedMapController#MoveStarted';
@@ -306,8 +304,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   shape: const RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(5))),
-                                  child: SizedBox(
+                                  child: Container(
                                       width: width / 1.5,
+                                      color: Colors.white,
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         crossAxisAlignment:
@@ -322,7 +321,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                       .spaceBetween,
                                               children: [
                                                 Text(
-                                                  "Vessel List",
+                                                  "   Vessel List",
                                                   style: GoogleFonts.openSans(
                                                       fontSize: 20),
                                                 ),
@@ -336,7 +335,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             ),
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.all(5),
+                                            padding: const EdgeInsets.all(10),
                                             child: Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment
@@ -344,153 +343,155 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               children: [
                                                 Text(
                                                     "Page ${value.currentPage} of ${(value.totalVessel / 10).ceil()}"),
-                                                InkWell(
-                                                  onTap: () {
-                                                    AddVesselAndCoor(
-                                                        context, value);
-                                                  },
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10),
-                                                      color: const Color(
-                                                          0xFF399D44),
+                                                ElevatedButton(
+                                                    style: ButtonStyle(
+                                                      shape: MaterialStateProperty.all(
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          4))),
+                                                      backgroundColor:
+                                                          MaterialStateProperty
+                                                              .all(Colors
+                                                                  .blueAccent),
                                                     ),
-                                                    padding:
-                                                        const EdgeInsets.all(5),
-                                                    alignment: Alignment.center,
-                                                    height: 40,
-                                                    child:
-                                                        const Icon(Icons.add),
-                                                  ),
-                                                )
+                                                    onPressed: () {
+                                                      AddVesselAndCoor(
+                                                          context, value);
+                                                    },
+                                                    child: Text("Add Vessel",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)))
                                               ],
                                             ),
                                           ),
                                           SizedBox(
-                                            height: 400,
+                                            height: 380,
                                             child: SingleChildScrollView(
-                                              child: SingleChildScrollView(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  child: value.isLoading
-                                                      ? const Center(
-                                                          child:
-                                                              CircularProgressIndicator())
-                                                      : DataTable(
-                                                          columns: [
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "CallSign")),
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "Flag")),
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "Kelas")),
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "Builder")),
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "Year Built")),
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "IP")),
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "Port")),
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "Size")),
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "file XML")),
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "Action")),
-                                                            ],
-                                                          rows: value
-                                                              .vesselCoorResult
-                                                              .map((data) {
-                                                            return DataRow(
-                                                                cells: [
-                                                                  DataCell(Text(data
-                                                                      .kapal!
-                                                                      .callSign!)),
-                                                                  DataCell(Text(data
-                                                                      .kapal!
-                                                                      .flag!)),
-                                                                  DataCell(Text(data
-                                                                      .kapal!
-                                                                      .kelas!)),
-                                                                  DataCell(Text(data
-                                                                      .kapal!
-                                                                      .builder!)),
-                                                                  DataCell(Text(data
-                                                                      .kapal!
-                                                                      .yearBuilt!)),
-                                                                  DataCell(Text(
-                                                                      data.kapal!
-                                                                          .ip!)),
-                                                                  DataCell(Text(data
-                                                                      .kapal!
-                                                                      .port!)),
-                                                                  DataCell(Text(data
-                                                                      .kapal!
-                                                                      .size!)),
-                                                                  DataCell(Text(data
-                                                                      .kapal!
-                                                                      .xmlFile!)),
-                                                                  DataCell(Row(
-                                                                    children: [
-                                                                      IconButton(
-                                                                        icon:
-                                                                            const Icon(
-                                                                          Icons
-                                                                              .edit,
-                                                                          color:
-                                                                              Colors.blue,
-                                                                        ),
-                                                                        onPressed:
-                                                                            () {
-                                                                          editVesselAndCoor(
-                                                                              data,
-                                                                              context,
-                                                                              readNotifier);
-                                                                        },
-                                                                      ),
-                                                                      IconButton(
-                                                                        icon:
-                                                                            const Icon(
-                                                                          Icons
-                                                                              .delete,
-                                                                          color:
-                                                                              Colors.red,
-                                                                        ),
-                                                                        onPressed:
-                                                                            () {
-                                                                          Alerts.showAlertYesNo(title: "are you sure you want to delete this data?",
-                                                                              onPressYes: (){
-                                                                                value.deleteVessel(
-                                                                                    data.kapal!.callSign,
-                                                                                    context,
-                                                                                    _pageSize);
-                                                                              },
-                                                                              onPressNo: (){
-                                                                            Navigator.pop(context);
-                                                                              },
-                                                                              context: context);
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                child: value.isLoading
+                                                    ? const Center(
+                                                        child:
+                                                            CircularProgressIndicator())
+                                                    : DataTable(
+                                                        headingRowColor:
+                                                            MaterialStateProperty
+                                                                .all(Colors
+                                                                    .black12),
+                                                        // border: TableBorder.symmetric(
+                                                        //     outside:BorderSide.none ),
 
-
-                                                                        },
+                                                        columns: [
+                                                          const DataColumn(
+                                                              label: Text(
+                                                                  "CallSign")),
+                                                          const DataColumn(
+                                                              label:
+                                                                  Text("Flag")),
+                                                          const DataColumn(
+                                                              label: Text(
+                                                                  "Kelas")),
+                                                          const DataColumn(
+                                                              label: Text(
+                                                                  "Builder")),
+                                                          const DataColumn(
+                                                              label: Text(
+                                                                  "Year Built")),
+                                                          const DataColumn(
+                                                              label:
+                                                                  Text("IP")),
+                                                          const DataColumn(
+                                                              label:
+                                                                  Text("Port")),
+                                                          const DataColumn(
+                                                              label:
+                                                                  Text("Size")),
+                                                          const DataColumn(
+                                                              label: Text(
+                                                                  "file XML")),
+                                                          const DataColumn(
+                                                              label: Text(
+                                                                  "Action")),
+                                                        ],
+                                                        rows:
+                                                        value
+                                                            .vesselCoorResult
+                                                            .map((data) {
+                                                          return DataRow(
+                                                              cells: [
+                                                                DataCell(Text(data
+                                                                    .kapal!
+                                                                    .callSign!)),
+                                                                DataCell(Text(
+                                                                    data.kapal!
+                                                                        .flag!)),
+                                                                DataCell(Text(data
+                                                                    .kapal!
+                                                                    .kelas!)),
+                                                                DataCell(Text(data
+                                                                    .kapal!
+                                                                    .builder!)),
+                                                                DataCell(Text(data
+                                                                    .kapal!
+                                                                    .yearBuilt!)),
+                                                                DataCell(Text(
+                                                                    data.kapal!
+                                                                        .ip!)),
+                                                                DataCell(Text(
+                                                                    data.kapal!
+                                                                        .port!)),
+                                                                DataCell(Text(
+                                                                    data.kapal!
+                                                                        .size!)),
+                                                                DataCell(Text(data
+                                                                    .kapal!
+                                                                    .xmlFile!)),
+                                                                DataCell(Row(
+                                                                  children: [
+                                                                    IconButton(
+                                                                      icon:
+                                                                          const Icon(
+                                                                        Icons
+                                                                            .edit,
+                                                                        color: Colors
+                                                                            .blue,
                                                                       ),
-                                                                    ],
-                                                                  )),
-                                                                ]);
-                                                          }).toList())),
-                                            ),
+                                                                      onPressed:
+                                                                          () {
+                                                                        editVesselAndCoor(
+                                                                            data,
+                                                                            context,
+                                                                            readNotifier);
+                                                                      },
+                                                                    ),
+                                                                    IconButton(
+                                                                      icon:
+                                                                          const Icon(
+                                                                        Icons
+                                                                            .delete,
+                                                                        color: Colors
+                                                                            .red,
+                                                                      ),
+                                                                      onPressed:
+                                                                          () {
+                                                                        Alerts.showAlertYesNo(
+                                                                            title: "Are you sure you want to delete this data?",
+                                                                            onPressYes: () {
+                                                                              value.deleteVessel(data.kapal!.callSign, context, _pageSize);
+                                                                            },
+                                                                            onPressNo: () {
+                                                                              Navigator.pop(context);
+                                                                            },
+                                                                            context: context);
+                                                                      },
+                                                                    ),
+                                                                  ],
+                                                                )),
+                                                              ]);
+                                                        }).toList())),
                                           ),
                                           Pagination(
                                             numOfPages:
@@ -552,8 +553,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   shape: const RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(5))),
-                                  child: SizedBox(
+                                  child: Container(
                                       width: width / 1.5,
+                                      color: Colors.white,
                                       child: Column(
                                           mainAxisSize: MainAxisSize.min,
                                           crossAxisAlignment:
@@ -583,7 +585,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.all(5),
+                                              padding: const EdgeInsets.all(10),
                                               child: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
@@ -591,555 +593,563 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                 children: [
                                                   Text(
                                                       "Page ${value.currentPage} of ${(value.totalVessel / 10).ceil()}"),
-                                                  InkWell(
-                                                    onTap: () {
-                                                      showDialog(
-                                                          context: context,
-                                                          barrierDismissible:
-                                                              false,
-                                                          builder: (BuildContext
-                                                              context) {
-                                                            var width =
-                                                                MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .width;
-                                                            return Dialog(
-                                                              shape: const RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius.all(
-                                                                          Radius.circular(
-                                                                              5))),
-                                                              child: SizedBox(
-                                                                width:
-                                                                    width / 3,
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .min,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Container(
-                                                                      color: Colors
-                                                                          .black12,
-                                                                      padding:
-                                                                          const EdgeInsets.all(
-                                                                              8),
-                                                                      child:
-                                                                          Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceBetween,
-                                                                        children: [
-                                                                          Text(
-                                                                            "Add Pipeline",
-                                                                            style:
-                                                                                GoogleFonts.openSans(fontSize: 15),
-                                                                          ),
-                                                                          IconButton(
-                                                                            onPressed:
-                                                                                () {
-                                                                                  nameController.clear();
-                                                                                  isSwitched = false;
-                                                                                  value.clearFile();
-                                                                                  Navigator.pop(context);
-                                                                            },
-                                                                            icon:
-                                                                                const Icon(Icons.close),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                    SizedBox(
-                                                                      height:
-                                                                          485,
-                                                                      child:
-                                                                          Padding(
+                                                  ElevatedButton(
+                                                      style: ButtonStyle(
+                                                        shape: MaterialStateProperty.all(
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            4))),
+                                                        backgroundColor:
+                                                            MaterialStateProperty
+                                                                .all(Colors
+                                                                    .blueAccent),
+                                                      ),
+                                                      onPressed: () {
+                                                        showDialog(
+                                                            context: context,
+                                                            barrierDismissible:
+                                                                false,
+                                                            builder:
+                                                                (BuildContext
+                                                                    context) {
+                                                              var width =
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width;
+                                                              return Dialog(
+                                                                shape: const RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.all(
+                                                                            Radius.circular(5),),),
+                                                                child: SizedBox(
+                                                                  width:
+                                                                      width / 3,
+                                                                  child: Column(
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .min,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Container(
+                                                                        color: Colors
+                                                                            .black12,
                                                                         padding:
                                                                             const EdgeInsets.all(8),
                                                                         child:
-                                                                            SingleChildScrollView(
+                                                                            Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.spaceBetween,
+                                                                          children: [
+                                                                            Text(
+                                                                              "  Add Pipeline",
+                                                                              style: GoogleFonts.openSans(fontSize: 15, fontWeight: FontWeight.w600),
+                                                                            ),
+                                                                            IconButton(
+                                                                              onPressed: () {
+                                                                                nameController.clear();
+                                                                                isSwitched = false;
+                                                                                value.clearFile();
+                                                                                Navigator.pop(context);
+                                                                              },
+                                                                              icon: const Icon(Icons.close),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                      SizedBox(
+                                                                        height:
+                                                                            485,
+                                                                        child:
+                                                                            Padding(
+                                                                          padding:
+                                                                              const EdgeInsets.all(8),
                                                                           child:
-                                                                              Column(
-                                                                            crossAxisAlignment:
-                                                                                CrossAxisAlignment.start,
-                                                                            children: [
-                                                                              VesselTextField(
-                                                                                controller: nameController,
-                                                                                hint: 'Name',
-                                                                                type: TextInputType.text,
-                                                                              ),
-                                                                              const SizedBox(
-                                                                                height: 5,
-                                                                              ),
-                                                                              GestureDetector(
-                                                                                onTap: () {
-                                                                                  readNotifier.selectFile("KMZ");
-                                                                                },
-                                                                                child: Card(
-                                                                                  color: Colors.black12,
-                                                                                  child: Padding(
-                                                                                    padding: const EdgeInsets.all(8.0),
-                                                                                    child: Column(
-                                                                                      children: [
-                                                                                        const Text(
-                                                                                          "Upload your file",
-                                                                                          style: TextStyle(fontSize: 13, color: Colors.white),
-                                                                                        ),
-                                                                                        const Text("KMZ / KML", style: TextStyle(fontSize: 10, color: Colors.white)),
-                                                                                        const SizedBox(
-                                                                                          height: 8,
-                                                                                        ),
-                                                                                        Card(
-                                                                                          child: Padding(
-                                                                                            padding: const EdgeInsets.all(5),
-                                                                                            child: Column(
-                                                                                              children: [
-                                                                                                Image.asset(
-                                                                                                  "assets/xml_icon2.png",
-                                                                                                  height: 55,
-                                                                                                ),
-                                                                                                ConstrainedBox(
-                                                                                                  constraints: BoxConstraints(maxWidth: 70),
-                                                                                                  child: Text(
-                                                                                                    value.nameFile!,
-                                                                                                    style: const TextStyle(fontSize: 10, color: Colors.black),
-                                                                                                    maxLines: 3,
-                                                                                                    overflow: TextOverflow.ellipsis,
-                                                                                                  ),
-                                                                                                )
-                                                                                              ],
-                                                                                            ),
+                                                                              SingleChildScrollView(
+                                                                            child:
+                                                                                Column(
+                                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                                              children: [
+                                                                                VesselTextField(
+                                                                                  controller: nameController,
+                                                                                  hint: 'Name',
+                                                                                  type: TextInputType.text,
+                                                                                ),
+                                                                                const SizedBox(
+                                                                                  height: 5,
+                                                                                ),
+                                                                                Text(
+                                                                                  " Upload File",
+                                                                                  style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.w500),
+                                                                                ),
+                                                                                Divider(),
+                                                                                GestureDetector(
+                                                                                  onTap: () {
+                                                                                    readNotifier.selectFile("KMZ");
+                                                                                  },
+                                                                                  child: Card(
+                                                                                    color: Colors.white30,
+                                                                                    child: Padding(
+                                                                                      padding: const EdgeInsets.all(8.0),
+                                                                                      child: Column(
+                                                                                        children: [
+                                                                                          const Text(
+                                                                                            "Upload your file",
+                                                                                            style: TextStyle(fontSize: 13, color: Colors.black),
                                                                                           ),
-                                                                                        )
-                                                                                      ],
+                                                                                          const Text("KMZ / KML", style: TextStyle(fontSize: 10, color: Colors.black)),
+                                                                                          const SizedBox(
+                                                                                            height: 8,
+                                                                                          ),
+                                                                                          Card(
+                                                                                            child: Padding(
+                                                                                              padding: const EdgeInsets.all(5),
+                                                                                              child: Column(
+                                                                                                children: [
+                                                                                                  Image.asset(
+                                                                                                    "assets/xml_icon2.png",
+                                                                                                    height: 55,
+                                                                                                  ),
+                                                                                                  ConstrainedBox(
+                                                                                                    constraints: BoxConstraints(maxWidth: 70),
+                                                                                                    child: Text(
+                                                                                                      value.nameFile!,
+                                                                                                      style: const TextStyle(fontSize: 10, color: Colors.black),
+                                                                                                      maxLines: 3,
+                                                                                                      overflow: TextOverflow.ellipsis,
+                                                                                                    ),
+                                                                                                  )
+                                                                                                ],
+                                                                                              ),
+                                                                                            ),
+                                                                                          )
+                                                                                        ],
+                                                                                      ),
                                                                                     ),
                                                                                   ),
                                                                                 ),
-                                                                              ),
-                                                                              const SizedBox(
-                                                                                height: 5,
-                                                                              ),
-                                                                              SizedBox(
-                                                                                height: 40,
-                                                                                child: FittedBox(
-                                                                                  fit: BoxFit.fill,
-                                                                                  child: Switch(
-                                                                                    value: isSwitched,
-                                                                                    onChanged: (bool value) {
-                                                                                      setState(() {
-                                                                                        isSwitched = value;
-                                                                                      });
-                                                                                    },
-                                                                                    activeTrackColor: Colors.lightGreen,
-                                                                                    activeColor: Colors.green,
-                                                                                  ),
+                                                                                const SizedBox(
+                                                                                  height: 5,
                                                                                 ),
-                                                                              ),
-                                                                              const SizedBox(
-                                                                                height: 5,
-                                                                              ),
-                                                                              Row(
-                                                                                mainAxisAlignment: MainAxisAlignment.end,
-                                                                                children: [
-                                                                                  InkWell(
-                                                                                    onTap: () {
-                                                                                      ///
-                                                                                      nameController.clear();
-                                                                                      isSwitched = false;
-                                                                                      value.clearFile();
-                                                                                      Navigator.pop(context);
-
-                                                                                    },
-                                                                                    child: Container(
-                                                                                      decoration: BoxDecoration(
-                                                                                        borderRadius: BorderRadius.circular(10),
-                                                                                        color: const Color(0xFFFF0000),
+                                                                                Text(
+                                                                                  " Switch",
+                                                                                  style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.w500),
+                                                                                ),
+                                                                                Divider(),
+                                                                                Row(
+                                                                                  children: [
+                                                                                    SizedBox(
+                                                                                      height: 40,
+                                                                                      child: FittedBox(
+                                                                                        fit: BoxFit.fill,
+                                                                                        child: Switch(
+                                                                                          value: isSwitched,
+                                                                                          onChanged: (bool value) {
+                                                                                            setState(() {
+                                                                                              isSwitched = value;
+                                                                                            });
+                                                                                          },
+                                                                                          activeTrackColor: Colors.lightGreen,
+                                                                                          activeColor: Colors.green,
+                                                                                        ),
                                                                                       ),
-                                                                                      padding: const EdgeInsets.all(5),
-                                                                                      alignment: Alignment.center,
-                                                                                      height: 30,
-                                                                                      child: const Text("Batal"),
                                                                                     ),
-                                                                                  ),
-                                                                                  const SizedBox(
-                                                                                    width: 5,
-                                                                                  ),
-                                                                                  InkWell(
-                                                                                    onTap: () {
-                                                                                      if (nameController.text.isEmpty) {
-                                                                                        EasyLoading.showError(
-                                                                                            "Kolom Name Sign Masih Kosong...");
-                                                                                        return;
-                                                                                      }
-                                                                                      if (value.file == null) {
-                                                                                        EasyLoading.showError(
-                                                                                            "Kolom File Masih Kosong...");
-                                                                                        return;
-                                                                                      }
-                                                                                      value.submitPipeline(nameController.text, isSwitched, context, value.file);
-                                                                                      nameController.clear();
-                                                                                      isSwitched = false;
-                                                                                      value.clearFile();
+                                                                                    Text(
+                                                                                      isSwitched ? "On" : "Off",
+                                                                                      style: TextStyle(fontSize: 15),
+                                                                                    )
+                                                                                  ],
+                                                                                ),
+                                                                                const SizedBox(
+                                                                                  height: 5,
+                                                                                ),
 
-                                                                                    },
-                                                                                    child: Container(
-                                                                                      decoration: BoxDecoration(
-                                                                                        borderRadius: BorderRadius.circular(10),
-                                                                                        color: const Color(0xFF399D44),
-                                                                                      ),
-                                                                                      padding: const EdgeInsets.all(5),
-                                                                                      alignment: Alignment.center,
-                                                                                      height: 30,
-                                                                                      child: const Text("Simpan"),
+                                                                                Row(
+                                                                                  mainAxisAlignment: MainAxisAlignment.end,
+                                                                                  children: [
+                                                                                    SizedBox(
+                                                                                      width: 80,
+                                                                                      child: TextButton(
+                                                                                          style: ButtonStyle(
+                                                                                              shape: MaterialStateProperty.all(
+                                                                                            RoundedRectangleBorder(
+                                                                                              borderRadius: BorderRadius.circular(4),
+                                                                                              side: BorderSide(
+                                                                                                color: Colors.black12,
+                                                                                              ),
+                                                                                            ),
+                                                                                          )),
+                                                                                          onPressed: () {
+                                                                                            nameController.clear();
+                                                                                            isSwitched = false;
+                                                                                            value.clearFile();
+                                                                                            Navigator.pop(context);
+                                                                                          },
+                                                                                          child: Text(
+                                                                                            "Cancel",
+                                                                                            style: TextStyle(color: Colors.blueAccent),
+                                                                                          )),
                                                                                     ),
-                                                                                  )
-                                                                                ],
-                                                                              )
-                                                                            ],
+                                                                                    const SizedBox(
+                                                                                      width: 5,
+                                                                                    ),
+                                                                                    SizedBox(
+                                                                                      width: 80,
+                                                                                      child: ElevatedButton(
+                                                                                          style: ButtonStyle(
+                                                                                            shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))),
+                                                                                            backgroundColor: MaterialStateProperty.all(Colors.blueAccent),
+                                                                                          ),
+                                                                                          onPressed: () {
+                                                                                            if (nameController.text.isEmpty) {
+                                                                                              EasyLoading.showError("Kolom Name Sign Masih Kosong...");
+                                                                                              return;
+                                                                                            }
+                                                                                            if (value.file == null) {
+                                                                                              EasyLoading.showError("Kolom File Masih Kosong...");
+                                                                                              return;
+                                                                                            }
+                                                                                            value.submitPipeline(nameController.text, isSwitched, context, value.file);
+                                                                                            nameController.clear();
+                                                                                            isSwitched = false;
+                                                                                            value.clearFile();
+                                                                                          },
+                                                                                          child: Text(
+                                                                                            "Save",
+                                                                                            style: TextStyle(color: Colors.white),
+                                                                                          )),
+                                                                                    )
+                                                                                  ],
+                                                                                )
+                                                                              ],
+                                                                            ),
                                                                           ),
                                                                         ),
                                                                       ),
-                                                                    ),
-                                                                  ],
+                                                                    ],
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                            );
-                                                          });
-                                                    },
-                                                    child: Container(
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(10),
-                                                        color: const Color(
-                                                            0xFF399D44),
-                                                      ),
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              5),
-                                                      alignment:
-                                                          Alignment.center,
-                                                      height: 40,
-                                                      child:
-                                                          const Icon(Icons.add),
-                                                    ),
-                                                  )
+                                                              );
+                                                            });
+                                                      },
+                                                      child: Text(
+                                                          "Add Pipeline",
+                                                          style: TextStyle(
+                                                              color: Colors
+                                                                  .white)))
                                                 ],
                                               ),
                                             ),
                                             SizedBox(
-                                              height: 400,
+                                              height: 380,
                                               width: double.infinity,
                                               child: SingleChildScrollView(
-                                                child: SingleChildScrollView(
-                                                    scrollDirection:
-                                                        Axis.horizontal,
-                                                    child: value.isLoading
-                                                        ? const Center(
-                                                            child:
-                                                                CircularProgressIndicator())
-                                                        : Container(
-                                                            width: 900,
-                                                            child: DataTable(
-                                                                columns: [
-                                                                  const DataColumn(
-                                                                      label: Text(
-                                                                          "Name")),
-                                                                  const DataColumn(
-                                                                      label: Text(
-                                                                          "File")),
-                                                                  const DataColumn(
-                                                                      label: Text(
-                                                                          "Switch")),
-                                                                  const DataColumn(
-                                                                      label: Text(
-                                                                          "Action")),
-                                                                ],
-                                                                rows: value
-                                                                    .getPipelineResult
-                                                                    .map(
-                                                                        (data) {
-                                                                  return DataRow(
-                                                                    cells: [
-                                                                      DataCell(
-                                                                          Text(data
-                                                                              .name!)),
-                                                                      DataCell(
-                                                                          Text(data
-                                                                              .file!)),
-                                                                      DataCell(Text(data
-                                                                              .onOff!
+                                                child: value.isLoading
+                                                    ? const Center(
+                                                        child:
+                                                            CircularProgressIndicator())
+                                                    : Container(
+                                                        width: 900,
+                                                        child: DataTable(
+                                                            headingRowColor:
+                                                                MaterialStateProperty
+                                                                    .all(Colors
+                                                                        .black12),
+                                                            columns: [
+                                                              const DataColumn(
+                                                                  label: Text(
+                                                                      "Name")),
+                                                              const DataColumn(
+                                                                  label: Text(
+                                                                      "File")),
+                                                              const DataColumn(
+                                                                  label: Text(
+                                                                      "Switch")),
+                                                              const DataColumn(
+                                                                  label: Text(
+                                                                      "Action")),
+                                                            ],
+                                                            rows: value
+                                                                .getPipelineResult
+                                                                .map((data) {
+                                                              return DataRow(
+                                                                cells: [
+                                                                  DataCell(Text(
+                                                                      data.name!)),
+                                                                  DataCell(Text(
+                                                                      data.file!)),
+                                                                  DataCell(Text(
+                                                                      data.onOff!
                                                                           ? "ON"
                                                                           : "OFF")),
-                                                                      DataCell(Row(
-                                                                        children: [
-                                                                          IconButton(
-                                                                            icon:
+                                                                  DataCell(Row(
+                                                                    children: [
+                                                                      IconButton(
+                                                                        icon:
                                                                             const Icon(
-                                                                              Icons
-                                                                                  .edit,
-                                                                              color:
+                                                                          Icons
+                                                                              .edit,
+                                                                          color:
                                                                               Colors.blue,
-                                                                            ),
-                                                                            onPressed:
-                                                                                () {
-                                                                              isSwitched = data.onOff!;
-                                                                                  nameController.text = data.name!;
-                                                                                  showDialog(
-                                                                                      context: context,
-                                                                                      barrierDismissible:
-                                                                                      false,
-                                                                                      builder: (BuildContext
-                                                                                      context) {
-                                                                                        var width =
-                                                                                            MediaQuery.of(
-                                                                                                context)
-                                                                                                .size
-                                                                                                .width;
-                                                                                        return Dialog(
-                                                                                          shape: const RoundedRectangleBorder(
-                                                                                              borderRadius:
-                                                                                              BorderRadius.all(
-                                                                                                  Radius.circular(
-                                                                                                      5))),
-                                                                                          child: SizedBox(
-                                                                                            width:
-                                                                                            width / 3,
-                                                                                            child: Column(
-                                                                                              mainAxisSize:
-                                                                                              MainAxisSize
-                                                                                                  .min,
-                                                                                              crossAxisAlignment:
-                                                                                              CrossAxisAlignment
-                                                                                                  .start,
-                                                                                              children: [
-                                                                                                Container(
-                                                                                                  color: Colors
-                                                                                                      .black12,
-                                                                                                  padding:
-                                                                                                  const EdgeInsets.all(
-                                                                                                      8),
-                                                                                                  child:
-                                                                                                  Row(
-                                                                                                    mainAxisAlignment:
-                                                                                                    MainAxisAlignment.spaceBetween,
-                                                                                                    children: [
-                                                                                                      Text(
-                                                                                                        "Edit Pipeline",
-                                                                                                        style:
-                                                                                                        GoogleFonts.openSans(fontSize: 15),
-                                                                                                      ),
-                                                                                                      IconButton(
-                                                                                                        onPressed:
-                                                                                                            () {
-                                                                                                          nameController.clear();
-                                                                                                          isSwitched = false;
-                                                                                                          value.clearFile();
-                                                                                                          Navigator.pop(context);
-
-                                                                                                        },
-                                                                                                        icon:
-                                                                                                        const Icon(Icons.close),
-                                                                                                      ),
-                                                                                                    ],
+                                                                        ),
+                                                                        onPressed:
+                                                                            () {
+                                                                          isSwitched =
+                                                                              data.onOff!;
+                                                                          nameController.text =
+                                                                              data.name!;
+                                                                          showDialog(
+                                                                              context: context,
+                                                                              barrierDismissible: false,
+                                                                              builder: (BuildContext context) {
+                                                                                var width = MediaQuery.of(context).size.width;
+                                                                                return Dialog(
+                                                                                  shape: const RoundedRectangleBorder(
+                                                                                    borderRadius: BorderRadius.all(
+                                                                                      Radius.circular(5),
+                                                                                    ),
+                                                                                  ),
+                                                                                  child: Container(
+                                                                                    width: width / 3,
+                                                                                    color: Colors.white,
+                                                                                    child: Column(
+                                                                                      mainAxisSize: MainAxisSize.min,
+                                                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                      children: [
+                                                                                        Container(
+                                                                                          color: Colors.black12,
+                                                                                          padding: const EdgeInsets.all(8),
+                                                                                          child: Row(
+                                                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                            children: [
+                                                                                              Text(
+                                                                                                "  Edit Pipeline",
+                                                                                                style: GoogleFonts.openSans(fontSize: 15, fontWeight: FontWeight.w600),
+                                                                                              ),
+                                                                                              IconButton(
+                                                                                                onPressed: () {
+                                                                                                  nameController.clear();
+                                                                                                  isSwitched = false;
+                                                                                                  value.clearFile();
+                                                                                                  Navigator.pop(context);
+                                                                                                },
+                                                                                                icon: const Icon(Icons.close),
+                                                                                              ),
+                                                                                            ],
+                                                                                          ),
+                                                                                        ),
+                                                                                        SizedBox(
+                                                                                          height: 485,
+                                                                                          child: Padding(
+                                                                                            padding: const EdgeInsets.all(8),
+                                                                                            child: SingleChildScrollView(
+                                                                                              child: Column(
+                                                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                                children: [
+                                                                                                  VesselTextField(
+                                                                                                    controller: nameController,
+                                                                                                    hint: 'Name',
+                                                                                                    type: TextInputType.text,
                                                                                                   ),
-                                                                                                ),
-                                                                                                SizedBox(
-                                                                                                  height:
-                                                                                                  485,
-                                                                                                  child:
-                                                                                                  Padding(
-                                                                                                    padding:
-                                                                                                    const EdgeInsets.all(8),
-                                                                                                    child:
-                                                                                                    SingleChildScrollView(
-                                                                                                      child:
-                                                                                                      Column(
-                                                                                                        crossAxisAlignment:
-                                                                                                        CrossAxisAlignment.start,
-                                                                                                        children: [
-                                                                                                          VesselTextField(
-                                                                                                            controller: nameController,
-                                                                                                            hint: 'Name',
-                                                                                                            type: TextInputType.text,
-                                                                                                          ),
-                                                                                                          const SizedBox(
-                                                                                                            height: 5,
-                                                                                                          ),
-                                                                                                          GestureDetector(
-                                                                                                            onTap: () {
-                                                                                                              value.selectFile("KMZ");
-                                                                                                            },
-                                                                                                            child: Card(
-                                                                                                              color: Colors.black12,
+                                                                                                  const SizedBox(
+                                                                                                    height: 5,
+                                                                                                  ),
+                                                                                                  Text(
+                                                                                                    " Upload File",
+                                                                                                    style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.w500),
+                                                                                                  ),
+                                                                                                  Divider(),
+                                                                                                  GestureDetector(
+                                                                                                    onTap: () {
+                                                                                                      value.selectFile("KMZ");
+                                                                                                    },
+                                                                                                    child: Card(
+                                                                                                      color: Colors.white30,
+                                                                                                      child: Padding(
+                                                                                                        padding: const EdgeInsets.all(8.0),
+                                                                                                        child: Column(
+                                                                                                          children: [
+                                                                                                            const Text(
+                                                                                                              "Upload your file",
+                                                                                                              style: TextStyle(fontSize: 13, color: Colors.black),
+                                                                                                            ),
+                                                                                                            const Text("KMZ / KML", style: TextStyle(fontSize: 10, color: Colors.black)),
+                                                                                                            const SizedBox(
+                                                                                                              height: 8,
+                                                                                                            ),
+                                                                                                            Card(
                                                                                                               child: Padding(
-                                                                                                                padding: const EdgeInsets.all(8.0),
+                                                                                                                padding: const EdgeInsets.all(5),
                                                                                                                 child: Column(
                                                                                                                   children: [
-                                                                                                                    const Text(
-                                                                                                                      "Upload your file",
-                                                                                                                      style: TextStyle(fontSize: 13, color: Colors.white),
+                                                                                                                    Image.asset(
+                                                                                                                      "assets/xml_icon2.png",
+                                                                                                                      height: 55,
                                                                                                                     ),
-                                                                                                                    const Text("KMZ / KML", style: TextStyle(fontSize: 10, color: Colors.white)),
-                                                                                                                    const SizedBox(
-                                                                                                                      height: 8,
-                                                                                                                    ),
-                                                                                                                    Card(
-                                                                                                                      child: Padding(
-                                                                                                                        padding: const EdgeInsets.all(5),
-                                                                                                                        child: Column(
-                                                                                                                          children: [
-                                                                                                                            Image.asset(
-                                                                                                                              "assets/xml_icon2.png",
-                                                                                                                              height: 55,
-                                                                                                                            ),
-                                                                                                                            ConstrainedBox(
-                                                                                                                              constraints: BoxConstraints(maxWidth: 70),
-                                                                                                                              child: Text(
-                                                                                                                                value.nameFile != ""
-                                                                                                                                    ? value.nameFile!
-                                                                                                                                    : data.file !=
-                                                                                                                                    null
-                                                                                                                                    ? data.file!
-                                                                                                                                    : "",
-                                                                                                                                style: const TextStyle(fontSize: 10, color: Colors.black),
-                                                                                                                                maxLines: 3,
-                                                                                                                                overflow: TextOverflow.ellipsis,
-                                                                                                                              ),
-                                                                                                                            )
-                                                                                                                          ],
-                                                                                                                        ),
+                                                                                                                    ConstrainedBox(
+                                                                                                                      constraints: BoxConstraints(maxWidth: 70),
+                                                                                                                      child: Text(
+                                                                                                                        value.nameFile != ""
+                                                                                                                            ? value.nameFile!
+                                                                                                                            : data.file != null
+                                                                                                                                ? data.file!
+                                                                                                                                : "",
+                                                                                                                        style: const TextStyle(fontSize: 10, color: Colors.black),
+                                                                                                                        maxLines: 3,
+                                                                                                                        overflow: TextOverflow.ellipsis,
                                                                                                                       ),
                                                                                                                     )
                                                                                                                   ],
                                                                                                                 ),
                                                                                                               ),
-                                                                                                            ),
-                                                                                                          ),
-                                                                                                          const SizedBox(
-                                                                                                            height: 5,
-                                                                                                          ),
-                                                                                                          SizedBox(
-                                                                                                            height: 40,
-                                                                                                            child: FittedBox(
-                                                                                                              fit: BoxFit.fill,
-                                                                                                              child: Switch(
-                                                                                                                value: isSwitched,
-                                                                                                                onChanged: (bool value) {
-                                                                                                                  setState(() {
-                                                                                                                    isSwitched = value;
-                                                                                                                  });
-                                                                                                                },
-                                                                                                                activeTrackColor: Colors.lightGreen,
-                                                                                                                activeColor: Colors.green,
-                                                                                                              ),
-                                                                                                            ),
-                                                                                                          ),
-                                                                                                          const SizedBox(
-                                                                                                            height: 5,
-                                                                                                          ),
-                                                                                                          Row(
-                                                                                                            mainAxisAlignment: MainAxisAlignment.end,
-                                                                                                            children: [
-                                                                                                              InkWell(
-                                                                                                                onTap: () {
-                                                                                                                  ///
-                                                                                                                  nameController.clear();
-                                                                                                                  isSwitched = false;
-                                                                                                                  value.clearFile();
-                                                                                                                  Navigator.pop(context);
-                                                                                                                },
-                                                                                                                child: Container(
-                                                                                                                  decoration: BoxDecoration(
-                                                                                                                    borderRadius: BorderRadius.circular(10),
-                                                                                                                    color: const Color(0xFFFF0000),
-                                                                                                                  ),
-                                                                                                                  padding: const EdgeInsets.all(5),
-                                                                                                                  alignment: Alignment.center,
-                                                                                                                  height: 30,
-                                                                                                                  child: const Text("Batal"),
-                                                                                                                ),
-                                                                                                              ),
-                                                                                                              const SizedBox(
-                                                                                                                width: 5,
-                                                                                                              ),
-                                                                                                              InkWell(
-                                                                                                                onTap: () {
-                                                                                                                  if (nameController.text.isEmpty) {
-                                                                                                                    EasyLoading.showError(
-                                                                                                                        "Kolom Name Masih Kosong...");
-                                                                                                                    return;
-                                                                                                                  }
-                                                                                                                  value.editPipeline(data.idMapping, nameController.text, isSwitched, context, value.file);
-                                                                                                                  nameController.clear();
-                                                                                                                  isSwitched = false;
-                                                                                                                  value.clearFile();
-                                                                                                                },
-                                                                                                                child: Container(
-                                                                                                                  decoration: BoxDecoration(
-                                                                                                                    borderRadius: BorderRadius.circular(10),
-                                                                                                                    color: const Color(0xFF399D44),
-                                                                                                                  ),
-                                                                                                                  padding: const EdgeInsets.all(5),
-                                                                                                                  alignment: Alignment.center,
-                                                                                                                  height: 30,
-                                                                                                                  child: const Text("Simpan"),
-                                                                                                                ),
-                                                                                                              )
-                                                                                                            ],
-                                                                                                          )
-                                                                                                        ],
+                                                                                                            )
+                                                                                                          ],
+                                                                                                        ),
                                                                                                       ),
                                                                                                     ),
                                                                                                   ),
-                                                                                                ),
-                                                                                              ],
+                                                                                                  const SizedBox(
+                                                                                                    height: 5,
+                                                                                                  ),
+                                                                                                  Text(
+                                                                                                    " Switch",
+                                                                                                    style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.w500),
+                                                                                                  ),
+                                                                                                  Divider(),
+                                                                                                  Row(
+                                                                                                    children: [
+                                                                                                      SizedBox(
+                                                                                                        height: 40,
+                                                                                                        child: FittedBox(
+                                                                                                          fit: BoxFit.fill,
+                                                                                                          child: Switch(
+                                                                                                            value: isSwitched,
+                                                                                                            onChanged: (bool value) {
+                                                                                                              setState(() {
+                                                                                                                isSwitched = value;
+                                                                                                              });
+                                                                                                            },
+                                                                                                            activeTrackColor: Colors.lightGreen,
+                                                                                                            activeColor: Colors.green,
+                                                                                                          ),
+                                                                                                        ),
+                                                                                                      ),
+                                                                                                      Text(
+                                                                                                        isSwitched ? "On" : "Off",
+                                                                                                        style: TextStyle(fontSize: 15),
+                                                                                                      )
+                                                                                                    ],
+                                                                                                  ),
+                                                                                                  const SizedBox(
+                                                                                                    height: 5,
+                                                                                                  ),
+                                                                                                  Row(
+                                                                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                                                                    children: [
+                                                                                                      SizedBox(
+                                                                                                        width: 80,
+                                                                                                        child: TextButton(
+                                                                                                            style: ButtonStyle(
+                                                                                                                shape: MaterialStateProperty.all(
+                                                                                                                  RoundedRectangleBorder(
+                                                                                                                    borderRadius: BorderRadius.circular(4),
+                                                                                                                    side: BorderSide(
+                                                                                                                      color: Colors.black12,
+                                                                                                                    ),
+                                                                                                                  ),
+                                                                                                                )),
+                                                                                                            onPressed: () {
+                                                                                                              nameController.clear();
+                                                                                                              isSwitched = false;
+                                                                                                              value.clearFile();
+                                                                                                              Navigator.pop(context);
+                                                                                                            },
+                                                                                                            child: Text(
+                                                                                                              "Cancel",
+                                                                                                              style: TextStyle(color: Colors.blueAccent),
+                                                                                                            )),
+                                                                                                      ),
+                                                                                                      const SizedBox(
+                                                                                                        width: 5,
+                                                                                                      ),
+                                                                                                      SizedBox(
+                                                                                                        width: 80,
+                                                                                                        child: ElevatedButton(
+                                                                                                            style: ButtonStyle(
+                                                                                                              shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))),
+                                                                                                              backgroundColor: MaterialStateProperty.all(Colors.blueAccent),
+                                                                                                            ),
+                                                                                                            onPressed: () {
+                                                                                                              if (nameController.text.isEmpty) {
+                                                                                                                EasyLoading.showError("Kolom Name Masih Kosong...");
+                                                                                                                return;
+                                                                                                              }
+                                                                                                              value.editPipeline(data.idMapping, nameController.text, isSwitched, context, value.file);
+                                                                                                              nameController.clear();
+                                                                                                              isSwitched = false;
+                                                                                                              value.clearFile();
+                                                                                                            },
+                                                                                                            child: Text(
+                                                                                                              "Save",
+                                                                                                              style: TextStyle(color: Colors.white),
+                                                                                                            )),
+                                                                                                      )
+                                                                                                    ],
+                                                                                                  )
+                                                                                                ],
+                                                                                              ),
                                                                                             ),
                                                                                           ),
-                                                                                        );
-                                                                                      });
-                                                                            },
-                                                                          ),
-                                                                          IconButton(
-                                                                            icon:
+                                                                                        ),
+                                                                                      ],
+                                                                                    ),
+                                                                                  ),
+                                                                                );
+                                                                              });
+                                                                        },
+                                                                      ),
+                                                                      IconButton(
+                                                                        icon:
                                                                             const Icon(
-                                                                              Icons
-                                                                                  .delete,
-                                                                              color:
+                                                                          Icons
+                                                                              .delete,
+                                                                          color:
                                                                               Colors.red,
-                                                                            ),
-                                                                            onPressed:
-                                                                                () {
-                                                                              Alerts.showAlertYesNo(title: "are you sure you want to delete this data?",
-                                                                                  onPressYes: (){
-                                                                                    value.deletePipeline(data.idMapping, context);
-                                                                                  },
-                                                                                  onPressNo: (){
+                                                                        ),
+                                                                        onPressed:
+                                                                            () {
+                                                                          Alerts.showAlertYesNo(
+                                                                              title: "Are you sure you want to delete this data?",
+                                                                              onPressYes: () {
+                                                                                value.deletePipeline(data.idMapping, context);
+                                                                              },
+                                                                              onPressNo: () {
                                                                                 Navigator.pop(context);
-                                                                                  },
-                                                                                  context: context);
-
-                                                                            },
-                                                                          ),
-                                                                        ],
-                                                                      )),
+                                                                              },
+                                                                              context: context);
+                                                                        },
+                                                                      ),
                                                                     ],
-                                                                  );
-                                                                }).toList()),
-                                                          )),
+                                                                  )),
+                                                                ],
+                                                              );
+                                                            }).toList()),
+                                                      ),
                                               ),
                                             ),
                                             Pagination(
                                               numOfPages:
-                                                  (value.totalVessel / 10)
+                                                  (value.totalPipeline / 10)
                                                       .ceil(),
                                               selectedPage: value.currentPage,
                                               pagesVisible: 7,
                                               onPageChanged: (page) {
                                                 value.incrementPage(page);
-                                                value.initVesselCoor();
+                                                value.initPipeline();
                                               },
                                               nextIcon: const Icon(
                                                 Icons.arrow_forward_ios,
@@ -1790,8 +1800,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           return Dialog(
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(5))),
-            child: SizedBox(
+            child: Container(
               width: width / 3,
+              color: Colors.white,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1803,8 +1814,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Add Vessel",
-                          style: GoogleFonts.openSans(fontSize: 15),
+                          "  Add Vessel",
+                          style: GoogleFonts.openSans(
+                              fontSize: 15, fontWeight: FontWeight.w600),
                         ),
                         IconButton(
                           onPressed: () {
@@ -1824,8 +1836,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
-                  SizedBox(
+                  Container(
                     height: 480,
+                    color: Colors.white38,
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: SingleChildScrollView(
@@ -1867,15 +1880,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               hint: 'Port',
                               type: TextInputType.number,
                             ),
+                            Text(
+                              " Vessel Size",
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500),
+                            ),
                             SizedBox(
                               height: 30,
                               width: double.infinity,
                               child: DropdownSearch<String>(
                                 dropdownBuilder: (context, selectedItem) =>
                                     Text(
-                                  selectedItem ?? "Ukuran Kapal",
+                                  selectedItem ?? "",
                                   style: const TextStyle(
-                                      fontSize: 15, color: Colors.black54),
+                                    fontSize: 15,
+                                  ),
                                 ),
                                 popupProps: PopupPropsMultiSelection.dialog(
                                   fit: FlexFit.loose,
@@ -1891,14 +1912,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 ),
                                 dropdownDecoratorProps: DropDownDecoratorProps(
                                   dropdownSearchDecoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      borderRadius: BorderRadius.circular(10),
+                                    // border: OutlineInputBorder(
+                                    //   borderSide: BorderSide(width: 1,color: Colors.black12),
+                                    //   borderRadius: BorderRadius.circular(10),
+                                    // ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          width: 1, color: Colors.blueAccent),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          width: 1, color: Colors.black12),
                                     ),
                                     contentPadding:
-                                        const EdgeInsets.fromLTRB(20, 3, 1, 3),
+                                        const EdgeInsets.fromLTRB(8, 3, 1, 3),
                                     filled: true,
-                                    fillColor: Colors.black12,
+                                    fillColor: Color(0xFFF3F3F3),
                                   ),
                                 ),
                                 items: [
@@ -1916,12 +1945,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ),
 
                             ///file xml
+                            Text(
+                              " Upload File",
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            Divider(),
                             GestureDetector(
                               onTap: () {
                                 value.selectFile("XML");
                               },
                               child: Card(
-                                color: Colors.black12,
+                                color: Colors.white30,
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
@@ -1929,12 +1966,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                       const Text(
                                         "Upload your file",
                                         style: TextStyle(
-                                            fontSize: 13, color: Colors.white),
+                                            fontSize: 13, color: Colors.black),
                                       ),
                                       const Text("XML",
                                           style: TextStyle(
                                               fontSize: 10,
-                                              color: Colors.white)),
+                                              color: Colors.black)),
                                       const SizedBox(
                                         height: 8,
                                       ),
@@ -1976,113 +2013,125 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                InkWell(
-                                  onTap: () {
-                                    callsignController.clear();
-                                    flagController.clear();
-                                    classController.clear();
-                                    builderController.clear();
-                                    yearbuiltController.clear();
-                                    ipController.clear();
-                                    portController.clear();
-                                    vesselSize = null;
-                                    value.clearFile();
-                                    Navigator.pop(context);
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: const Color(0xFFFF0000),
+                                SizedBox(
+                                  width: 80,
+                                  child: TextButton(
+                                    style: ButtonStyle(
+                                        shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        side: BorderSide(
+                                          color: Colors.black12,
+                                        ),
+                                      ),
+                                    )),
+                                    onPressed: () {
+                                      callsignController.clear();
+                                      flagController.clear();
+                                      classController.clear();
+                                      builderController.clear();
+                                      yearbuiltController.clear();
+                                      ipController.clear();
+                                      portController.clear();
+                                      vesselSize = null;
+                                      value.clearFile();
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      "Cancel",
+                                      style:
+                                          TextStyle(color: Colors.blueAccent),
                                     ),
-                                    padding: const EdgeInsets.all(5),
-                                    alignment: Alignment.center,
-                                    height: 30,
-                                    child: const Text("Batal"),
                                   ),
                                 ),
                                 const SizedBox(
                                   width: 5,
                                 ),
-                                InkWell(
-                                  onTap: () {
-                                    if (callsignController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Call Sign Masih Kosong...");
-                                      return;
-                                    }
-                                    if (flagController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Bendera Masih Kosong...");
-                                      return;
-                                    }
-                                    if (classController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Kelas Masih Kosong...");
-                                      return;
-                                    }
-                                    if (builderController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Builder Masih Kosong...");
-                                      return;
-                                    }
-                                    if (yearbuiltController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Tahun Pembuatan Masih Kosong...");
-                                      return;
-                                    }
-                                    if (ipController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom IP Pembuatan Masih Kosong...");
-                                      return;
-                                    }
-                                    if (portController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Port Masih Kosong...");
-                                      return;
-                                    }
-                                    if (vesselSize == null) {
-                                      EasyLoading.showError(
-                                          "Kolom Ukuran Kapal Masih Kosong...");
-                                      return;
-                                    }
-                                    if (value.file == null) {
-                                      EasyLoading.showError(
-                                          "Kolom File Masih Kosong...");
-                                      return;
-                                    }
-                                    List<String> data = [
-                                      callsignController.text,
-                                      flagController.text,
-                                      classController.text,
-                                      builderController.text,
-                                      yearbuiltController.text,
-                                      ipController.text,
-                                      portController.text,
-                                      vesselSize!,
-                                    ];
-                                    value.submitVessel(
-                                        data, context, value.file);
-                                    callsignController.clear();
-                                    flagController.clear();
-                                    classController.clear();
-                                    builderController.clear();
-                                    yearbuiltController.clear();
-                                    ipController.clear();
-                                    portController.clear();
-                                    vesselSize = null;
-                                    value.clearFile();
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: const Color(0xFF24A438),
-                                    ),
-                                    padding: const EdgeInsets.all(5),
-                                    alignment: Alignment.center,
-                                    height: 30,
-                                    child: const Text("Submit"),
-                                  ),
-                                )
+                                SizedBox(
+                                  width: 80,
+                                  child: ElevatedButton(
+                                      style: ButtonStyle(
+                                        shape: MaterialStateProperty.all(
+                                            RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(4))),
+                                        backgroundColor:
+                                            MaterialStateProperty.all(
+                                                Colors.blueAccent),
+                                      ),
+                                      onPressed: () {
+                                        if (callsignController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Call Sign Masih Kosong...");
+                                          return;
+                                        }
+                                        if (flagController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Bendera Masih Kosong...");
+                                          return;
+                                        }
+                                        if (classController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Kelas Masih Kosong...");
+                                          return;
+                                        }
+                                        if (builderController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Builder Masih Kosong...");
+                                          return;
+                                        }
+                                        if (yearbuiltController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Tahun Pembuatan Masih Kosong...");
+                                          return;
+                                        }
+                                        if (ipController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom IP Pembuatan Masih Kosong...");
+                                          return;
+                                        }
+                                        if (portController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Port Masih Kosong...");
+                                          return;
+                                        }
+                                        if (vesselSize == null) {
+                                          EasyLoading.showError(
+                                              "Kolom Ukuran Kapal Masih Kosong...");
+                                          return;
+                                        }
+                                        if (value.file == null) {
+                                          EasyLoading.showError(
+                                              "Kolom File Masih Kosong...");
+                                          return;
+                                        }
+                                        List<String> data = [
+                                          callsignController.text,
+                                          flagController.text,
+                                          classController.text,
+                                          builderController.text,
+                                          yearbuiltController.text,
+                                          ipController.text,
+                                          portController.text,
+                                          vesselSize!,
+                                        ];
+                                        value.submitVessel(
+                                            data, context, value.file);
+                                        callsignController.clear();
+                                        flagController.clear();
+                                        classController.clear();
+                                        builderController.clear();
+                                        yearbuiltController.clear();
+                                        ipController.clear();
+                                        portController.clear();
+                                        vesselSize = null;
+                                        value.clearFile();
+                                      },
+                                      child: Text(
+                                        "Save",
+                                        style: TextStyle(color: Colors.white),
+                                      )),
+                                ),
                               ],
                             )
                           ],
@@ -2115,8 +2164,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           return Dialog(
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(5))),
-            child: SizedBox(
+            child: Container(
               width: width / 3,
+              color: Colors.white,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2128,8 +2178,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Edit Vessel",
-                          style: GoogleFonts.openSans(fontSize: 15),
+                          "  Edit Vessel",
+                          style: GoogleFonts.openSans(
+                              fontSize: 15, fontWeight: FontWeight.w500),
                         ),
                         IconButton(
                           onPressed: () {
@@ -2155,6 +2206,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       padding: const EdgeInsets.all(8),
                       child: SingleChildScrollView(
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             VesselTextField(
                               controller: callsignController,
@@ -2191,6 +2243,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               hint: 'Port',
                               type: TextInputType.number,
                             ),
+                            Text(
+                              " Vessel Size",
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500),
+                            ),
                             SizedBox(
                               height: 30,
                               width: double.infinity,
@@ -2198,9 +2257,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 selectedItem: data.kapal!.size ?? "",
                                 dropdownBuilder: (context, selectedItem) =>
                                     Text(
-                                  selectedItem ?? "Ukuran Kapal",
-                                  style: const TextStyle(
-                                      fontSize: 15, color: Colors.black54),
+                                  selectedItem ?? "",
+                                  style: const TextStyle(fontSize: 15),
                                 ),
                                 popupProps: PopupPropsMultiSelection.dialog(
                                   fit: FlexFit.loose,
@@ -2216,14 +2274,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 ),
                                 dropdownDecoratorProps: DropDownDecoratorProps(
                                   dropdownSearchDecoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      borderRadius: BorderRadius.circular(10),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          width: 1, color: Colors.blueAccent),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          width: 1, color: Colors.black12),
                                     ),
                                     contentPadding:
-                                        const EdgeInsets.fromLTRB(20, 3, 1, 3),
+                                        const EdgeInsets.fromLTRB(8, 3, 1, 3),
                                     filled: true,
-                                    fillColor: Colors.black12,
+                                    fillColor: Color(0xFFF3F3F3),
                                   ),
                                 ),
                                 items: [
@@ -2239,12 +2301,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             const SizedBox(
                               height: 5,
                             ),
+                            Text(
+                              " Upload File",
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            Divider(),
                             GestureDetector(
                               onTap: () {
                                 readNotifier.selectFile("XML");
                               },
                               child: Card(
-                                color: Colors.black12,
+                                color: Colors.white30,
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
@@ -2252,12 +2322,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                       const Text(
                                         "Upload your file",
                                         style: TextStyle(
-                                            fontSize: 13, color: Colors.white),
+                                          color: Colors.black,
+                                          fontSize: 15,
+                                        ),
                                       ),
                                       const Text("XML",
                                           style: TextStyle(
                                               fontSize: 10,
-                                              color: Colors.white)),
+                                              color: Colors.black)),
                                       const SizedBox(
                                         height: 8,
                                       ),
@@ -2308,109 +2380,124 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                InkWell(
-                                  onTap: () {
-                                    callsignController.clear();
-                                    flagController.clear();
-                                    classController.clear();
-                                    builderController.clear();
-                                    yearbuiltController.clear();
-                                    ipController.clear();
-                                    portController.clear();
-                                    vesselSize = null;
-                                    readNotifier.clearFile();
-                                    Navigator.pop(context);
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: const Color(0xFFFF0000),
+                                SizedBox(
+                                  width: 80,
+                                  child: TextButton(
+                                    style: ButtonStyle(
+                                        shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        side: BorderSide(
+                                          color: Colors.black12,
+                                        ),
+                                      ),
+                                    )),
+                                    onPressed: () {
+                                      callsignController.clear();
+                                      flagController.clear();
+                                      classController.clear();
+                                      builderController.clear();
+                                      yearbuiltController.clear();
+                                      ipController.clear();
+                                      portController.clear();
+                                      vesselSize = null;
+                                      readNotifier.clearFile();
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      "Cancel",
+                                      style:
+                                          TextStyle(color: Colors.blueAccent),
                                     ),
-                                    padding: const EdgeInsets.all(5),
-                                    alignment: Alignment.center,
-                                    height: 30,
-                                    child: const Text("Batal"),
                                   ),
                                 ),
                                 const SizedBox(
                                   width: 5,
                                 ),
-                                InkWell(
-                                  onTap: () {
-                                    if (callsignController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Call Sign Masih Kosong...");
-                                      return;
-                                    }
-                                    if (flagController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Bendera Masih Kosong...");
-                                      return;
-                                    }
-                                    if (classController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Kelas Masih Kosong...");
-                                      return;
-                                    }
-                                    if (builderController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Builder Masih Kosong...");
-                                      return;
-                                    }
-                                    if (yearbuiltController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Tahun Pembuatan Masih Kosong...");
-                                      return;
-                                    }
-                                    if (ipController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom IP Pembuatan Masih Kosong...");
-                                      return;
-                                    }
-                                    if (portController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Port Masih Kosong...");
-                                      return;
-                                    }
-                                    if (vesselSize == null) {
-                                      EasyLoading.showError(
-                                          "Kolom Ukuran Kapal Masih Kosong...");
-                                      return;
-                                    }
-                                    List<String> dataEdit = [
-                                      data.kapal!.callSign!,
-                                      callsignController.text,
-                                      flagController.text,
-                                      classController.text,
-                                      builderController.text,
-                                      yearbuiltController.text,
-                                      ipController.text,
-                                      portController.text,
-                                      vesselSize!,
-                                    ];
-                                    readNotifier.editVessel(dataEdit, _pageSize,
-                                        context, readNotifier.file);
-                                    callsignController.clear();
-                                    flagController.clear();
-                                    classController.clear();
-                                    builderController.clear();
-                                    yearbuiltController.clear();
-                                    ipController.clear();
-                                    portController.clear();
-                                    vesselSize = null;
-                                    readNotifier.clearFile();
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: const Color(0xFF399D44),
-                                    ),
-                                    padding: const EdgeInsets.all(5),
-                                    alignment: Alignment.center,
-                                    height: 30,
-                                    child: const Text("Simpan"),
-                                  ),
-                                )
+                                SizedBox(
+                                  width: 80,
+                                  child: ElevatedButton(
+                                      style: ButtonStyle(
+                                        shape: MaterialStateProperty.all(
+                                            RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(4))),
+                                        backgroundColor:
+                                            MaterialStateProperty.all(
+                                                Colors.blueAccent),
+                                      ),
+                                      onPressed: () {
+                                        if (callsignController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Call Sign Masih Kosong...");
+                                          return;
+                                        }
+                                        if (flagController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Bendera Masih Kosong...");
+                                          return;
+                                        }
+                                        if (classController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Kelas Masih Kosong...");
+                                          return;
+                                        }
+                                        if (builderController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Builder Masih Kosong...");
+                                          return;
+                                        }
+                                        if (yearbuiltController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Tahun Pembuatan Masih Kosong...");
+                                          return;
+                                        }
+                                        if (ipController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom IP Pembuatan Masih Kosong...");
+                                          return;
+                                        }
+                                        if (portController.text.isEmpty) {
+                                          EasyLoading.showError(
+                                              "Kolom Port Masih Kosong...");
+                                          return;
+                                        }
+                                        if (vesselSize == null) {
+                                          EasyLoading.showError(
+                                              "Kolom Ukuran Kapal Masih Kosong...");
+                                          return;
+                                        }
+                                        List<String> dataEdit = [
+                                          data.kapal!.callSign!,
+                                          callsignController.text,
+                                          flagController.text,
+                                          classController.text,
+                                          builderController.text,
+                                          yearbuiltController.text,
+                                          ipController.text,
+                                          portController.text,
+                                          vesselSize!,
+                                        ];
+                                        readNotifier.editVessel(
+                                            dataEdit,
+                                            _pageSize,
+                                            context,
+                                            readNotifier.file);
+                                        callsignController.clear();
+                                        flagController.clear();
+                                        classController.clear();
+                                        builderController.clear();
+                                        yearbuiltController.clear();
+                                        ipController.clear();
+                                        portController.clear();
+                                        vesselSize = null;
+                                        readNotifier.clearFile();
+                                      },
+                                      child: Text(
+                                        "Save",
+                                        style: TextStyle(color: Colors.white),
+                                      )),
+                                ),
                               ],
                             )
                           ],
