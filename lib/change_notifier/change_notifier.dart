@@ -416,21 +416,21 @@ class Notifier extends ChangeNotifier {
   List<List<KmlPolygon>> get kmlOverlayPolygons => _kmlOverlayPolygons;
 
   Future<void> loadKMZData(BuildContext context) async {
-    List files = [
-      "assets/kml/Pipa.kmz",
-      "assets/kml/format_pipa.kml",
-    ];
-    for (var file in files) {
-      if (file.endsWith(".kmz")) {
-        final ByteData data = await rootBundle.load(file);
-        final List<int> bytes = data.buffer.asUint8List();
-        final kmlData = Constants.extractKMLDataFromKMZ(bytes);
-        if (kmlData != null) {
-          _kmlOverlayPolygons.add(parseKmlForOverlay(kmzData: kmlData));
+    List<Pipeline.Data> files = _getPipelineResult;
+    for (var data in files) {
+      String file = data.file!;
+      if (data.onOff == true) {
+        if (file.endsWith(".kmz")) {
+          final ByteData data = await rootBundle.load(file);
+          final List<int> bytes = data.buffer.asUint8List();
+          final kmlData = Constants.extractKMLDataFromKMZ(bytes);
+          if (kmlData != null) {
+            _kmlOverlayPolygons.add(parseKmlForOverlay(kmzData: kmlData));
+          }
+        } else if (file.endsWith(".kml")) {
+          final String kmlData = await loadKmlFromFile(file,context);
+          _kmlOverlayPolygons.add(parseKmlForOverlay(kmlData: kmlData));
         }
-      } else if (file.endsWith(".kml")) {
-        final String kmlData = await loadKmlFromFile(file,context);
-        _kmlOverlayPolygons.add(parseKmlForOverlay(kmlData: kmlData));
       }
     }
     notifyListeners();

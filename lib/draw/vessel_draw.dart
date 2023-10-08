@@ -2,9 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 
 class VesselDrawer extends StatefulWidget {
+  final String link;
+  const VesselDrawer({Key? key, required this.link}) : super(key: key);
   @override
   _VesselDrawerState createState() => _VesselDrawerState();
 }
@@ -29,8 +32,9 @@ class _VesselDrawerState extends State<VesselDrawer> {
 
   Future<void> loadVesselParameters() async {
     try {
-      final xmlString = await rootBundle.loadString('assets/xml/kapal.xml');
-      final document = XmlDocument.parse(xmlString);
+      final response = await http.get(Uri.parse(widget.link),headers: {'Accept': 'application/xml'});
+      // final xmlString = await rootBundle.("https://api.binav-avts.id/storage/xml/2023_10_06_12_37_50_YDBU04.xml");
+      final document = XmlDocument.parse(response.body);
 
       final vesselShape = document.findAllElements('VesselShape').first;
       length = double.parse(

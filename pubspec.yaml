@@ -56,6 +56,7 @@ dependencies:
   custom_flutter_painter: ^1.0.1
   file_picker: ^5.5.0
   lottie: ^2.6.0
+  flutter_cache_manager: ^3.3.1
 
 
 
