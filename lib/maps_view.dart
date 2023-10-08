@@ -155,8 +155,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final notifier = await Provider.of<Notifier>(context, listen: false);
     notifier.initVesselCoor();
     notifier.initLatLangCoor();
-    notifier.initPipeline();
-    notifier.loadKMZData(context);
+    notifier.initPipeline(context);
     Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       notifier.initKalmanFilter();
     });
@@ -164,6 +163,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       notifier.initVesselCoor();
       notifier.resetKalmanFilter();
       notifier.initLatLangCoor();
+      notifier.initPipeline(context);
     });
   }
 

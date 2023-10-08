@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:js';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,8 @@ import 'package:vts_maps/utils/shared_pref.dart';
 import 'package:xml/xml.dart';
 import 'package:xml/xml.dart' as xml;
 import 'dart:html' as html;
+
+import 'package:http/http.dart' as http;
 
 class Notifier extends ChangeNotifier {
 
@@ -188,7 +191,7 @@ class Notifier extends ChangeNotifier {
   int _totalPipeline = 0;
   int get totalPipeline => _totalPipeline;
 
-  void initPipeline() async{
+  void initPipeline(BuildContext context) async{
     _isLoading = true;
     await Api.getPipeline().then((value){
       _getPipelineResult.clear();
@@ -203,6 +206,7 @@ class Notifier extends ChangeNotifier {
         _totalPipeline = value.total!.toInt();
       }
     });
+    loadKMZData(context,_getPipelineResult);
     notifyListeners();
   }
 
@@ -243,7 +247,7 @@ class Notifier extends ChangeNotifier {
         Navigator.pop(context);
         EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
         Navigator.pop(context);
-        initPipeline();
+        initPipeline(context);
         return;
       }
       if (value.message != "Data berhasil masuk database") {
@@ -292,7 +296,7 @@ class Notifier extends ChangeNotifier {
         Navigator.pop(context);
         EasyLoading.showSuccess("Berhasil Edit Data");
         Navigator.pop(context);
-        initPipeline();
+        initPipeline(context);
       }
       // if (value.message == "Validator Fails") {
       //   Navigator.pop(context);
@@ -309,7 +313,7 @@ class Notifier extends ChangeNotifier {
           if (value.status == 200) {
             EasyLoading.showSuccess("Data Terhapus..");
             Navigator.pop(context);
-            initPipeline();
+            initPipeline(context);
           } else {
             EasyLoading.showError(
                 "Gagal Menghapus Data..");
@@ -415,30 +419,33 @@ class Notifier extends ChangeNotifier {
   List<List<KmlPolygon>> _kmlOverlayPolygons = [];
   List<List<KmlPolygon>> get kmlOverlayPolygons => _kmlOverlayPolygons;
 
-  Future<void> loadKMZData(BuildContext context) async {
-    List<Pipeline.Data> files = _getPipelineResult;
+  Future<void> loadKMZData(BuildContext context, List<Pipeline.Data> files) async {
     for (var data in files) {
       String file = data.file!;
       if (data.onOff == true) {
+        // final response = await http.get(Uri.parse(data.file!),headers: {'Accept': 'application/xml'});
+        final response = await http.get(Uri.parse(file));
         if (file.endsWith(".kmz")) {
-          final ByteData data = await rootBundle.load(file);
-          final List<int> bytes = data.buffer.asUint8List();
-          final kmlData = Constants.extractKMLDataFromKMZ(bytes);
-          if (kmlData != null) {
-            _kmlOverlayPolygons.add(parseKmlForOverlay(kmzData: kmlData));
+          if (response.statusCode == 200) {
+            final kmlData = Constants.extractKMLDataFromKMZ(response.bodyBytes);
+            if (kmlData != null) {
+              _kmlOverlayPolygons.add(parseKmlForOverlay(kmzData: kmlData));
+            }
+          } else {
+            throw Exception('Failed to load KMZ data: ${response.statusCode}');
           }
         } else if (file.endsWith(".kml")) {
-          final String kmlData = await loadKmlFromFile(file,context);
-          _kmlOverlayPolygons.add(parseKmlForOverlay(kmlData: kmlData));
+          // final String kmlData = await loadKmlFromFile(file,context);
+          _kmlOverlayPolygons.add(parseKmlForOverlay(kmlData: response.body));
         }
       }
     }
     notifyListeners();
   }
 
-  Future<String> loadKmlFromFile(String filePath,BuildContext context) async {
-    return await DefaultAssetBundle.of(context).loadString(filePath);
-  }
+  // Future<String> loadKmlFromFile(String filePath,BuildContext context) async {
+  //   return await DefaultAssetBundle.of(context).loadString(filePath);
+  // }
 
   List<KmlPolygon> parseKmlForOverlay({List<int>? kmzData, String? kmlData}) {
     final List<KmlPolygon> polygons = [];
