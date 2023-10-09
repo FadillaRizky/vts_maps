@@ -397,12 +397,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                       "Year Built")),
                                                               const DataColumn(
                                                                   label: Text(
-                                                                      "IP")),
-                                                              const DataColumn(
-                                                                  label: Text(
-                                                                      "Port")),
-                                                              const DataColumn(
-                                                                  label: Text(
                                                                       "Size")),
                                                               const DataColumn(
                                                                   label: Text(
@@ -431,12 +425,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                   DataCell(Text(data
                                                                       .kapal!
                                                                       .yearBuilt!)),
-                                                                  DataCell(Text(
-                                                                      data.kapal!
-                                                                          .ip!)),
-                                                                  DataCell(Text(data
-                                                                      .kapal!
-                                                                      .port!)),
                                                                   DataCell(Text(data
                                                                       .kapal!
                                                                       .size!)),
@@ -2104,8 +2092,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     classController.text = data.kapal!.kelas!;
     builderController.text = data.kapal!.builder!;
     yearbuiltController.text = data.kapal!.yearBuilt!;
-    ipController.text = data.kapal!.ip!;
-    portController.text = data.kapal!.port!;
     vesselSize = data.kapal!.size!;
     showDialog(
         context: context,

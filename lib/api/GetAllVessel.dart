@@ -45,20 +45,23 @@ class GetAllVessel {
 }
 
 class Data {
+  String? idClient;
   String? callSign;
   String? flag;
   String? kelas;
   String? builder;
   String? size;
-  String? ip;
-  String? port;
+  String? xmlFile;
   String? yearBuilt;
   String? createdAt;
   String? updatedAt;
 
-  Data({this.callSign, this.flag, this.kelas, this.builder, this.size, this.ip, this.port, this.yearBuilt, this.createdAt, this.updatedAt});
+  Data({this.idClient, this.callSign, this.flag, this.kelas, this.builder, this.size, this.xmlFile, this.yearBuilt, this.createdAt, this.updatedAt});
 
   Data.fromJson(Map<String, dynamic> json) {
+    if(json["id_client"] is String) {
+      idClient = json["id_client"];
+    }
     if(json["call_sign"] is String) {
       callSign = json["call_sign"];
     }
@@ -74,11 +77,8 @@ class Data {
     if(json["size"] is String) {
       size = json["size"];
     }
-    if(json["ip"] is String) {
-      ip = json["ip"];
-    }
-    if(json["port"] is String) {
-      port = json["port"];
+    if(json["xml_file"] is String) {
+      xmlFile = json["xml_file"];
     }
     if(json["year_built"] is String) {
       yearBuilt = json["year_built"];
@@ -93,13 +93,13 @@ class Data {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["id_client"] = idClient;
     _data["call_sign"] = callSign;
     _data["flag"] = flag;
     _data["kelas"] = kelas;
     _data["builder"] = builder;
     _data["size"] = size;
-    _data["ip"] = ip;
-    _data["port"] = port;
+    _data["xml_file"] = xmlFile;
     _data["year_built"] = yearBuilt;
     _data["created_at"] = createdAt;
     _data["updated_at"] = updatedAt;

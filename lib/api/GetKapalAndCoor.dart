@@ -1,3 +1,4 @@
+
 class GetKapalAndCoor {
   String? message;
   int? status;
@@ -127,7 +128,7 @@ class Coor {
 
 class CoorGga {
   int? idCoorGga;
-  double? utcPosition;
+  int? utcPosition;
   double? latitude;
   String? directionLatitude;
   double? longitude;
@@ -146,7 +147,7 @@ class CoorGga {
     if(json["id_coor_gga"] is int) {
       idCoorGga = json["id_coor_gga"];
     }
-    if(json["utc_position"] is double) {
+    if(json["utc_position"] is int) {
       utcPosition = json["utc_position"];
     }
     if(json["latitude"] is double) {
@@ -237,14 +238,12 @@ class Kapal {
   String? kelas;
   String? builder;
   String? size;
-  String? ip;
-  String? port;
-  String? xmlFile;
   String? yearBuilt;
   String? createdAt;
   String? updatedAt;
+  String? xmlFile;
 
-  Kapal({this.callSign, this.flag, this.kelas, this.builder, this.size, this.ip, this.port, this.xmlFile, this.yearBuilt, this.createdAt, this.updatedAt});
+  Kapal({this.callSign, this.flag, this.kelas, this.builder, this.size, this.yearBuilt, this.createdAt, this.updatedAt, this.xmlFile});
 
   Kapal.fromJson(Map<String, dynamic> json) {
     if(json["call_sign"] is String) {
@@ -262,15 +261,6 @@ class Kapal {
     if(json["size"] is String) {
       size = json["size"];
     }
-    if(json["ip"] is String) {
-      ip = json["ip"];
-    }
-    if(json["port"] is String) {
-      port = json["port"];
-    }
-    if(json["xml_file"] is String) {
-      xmlFile = json["xml_file"];
-    }
     if(json["year_built"] is String) {
       yearBuilt = json["year_built"];
     }
@@ -279,6 +269,9 @@ class Kapal {
     }
     if(json["updated_at"] is String) {
       updatedAt = json["updated_at"];
+    }
+    if(json["xml_file"] is String) {
+      xmlFile = json["xml_file"];
     }
   }
 
@@ -289,12 +282,10 @@ class Kapal {
     _data["kelas"] = kelas;
     _data["builder"] = builder;
     _data["size"] = size;
-    _data["ip"] = ip;
-    _data["port"] = port;
-    _data["xml_file"] = xmlFile;
     _data["year_built"] = yearBuilt;
     _data["created_at"] = createdAt;
     _data["updated_at"] = updatedAt;
+    _data["xml_file"] = xmlFile;
     return _data;
   }
 }

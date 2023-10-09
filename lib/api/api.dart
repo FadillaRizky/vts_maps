@@ -20,6 +20,8 @@ import 'GetAllVesselCoor.dart';
 import 'GetPipelineResponse.dart';
 
 const BASE_URL = "https://api.binav-avts.id/api";
+// const BASE_URL = "http://127.0.0.1:8000/api";
+
 class Api{
 
   static Future<GetAllVessel> getAllVessel({int page = 1,int perpage = 10}) async {
