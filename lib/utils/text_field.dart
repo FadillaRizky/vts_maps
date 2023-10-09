@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'constants.dart';
+
 class VesselTextField extends StatelessWidget {
   const VesselTextField({
     super.key,
@@ -20,10 +22,10 @@ class VesselTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(" $hint",style: GoogleFonts.roboto(color: Colors.black, fontSize: 15,fontWeight: FontWeight.w500),),
+        // Text(" $hint",style: GoogleFonts.roboto(color: Colors.black, fontSize: 15,fontWeight: FontWeight.w500),),
         SizedBox(
           width: double.infinity,
-          height: 30,
+          height: 35,
           child: TextFormField(
             style: TextStyle(fontSize: 14),
             controller: controller,
@@ -39,20 +41,25 @@ class VesselTextField extends StatelessWidget {
               // border: OutlineInputBorder(
               //   // borderSide: BorderSide(width: 0.5,color: Colors.red),
               // ),
+                labelText: hint,
+                labelStyle: Constants.labelstyle,
+                floatingLabelBehavior:
+                FloatingLabelBehavior.always,
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(width: 1,color: Colors.blueAccent),),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(width: 1,color: Colors.black12),
-              ),
-              // errorText: "This Field is Required",
-
+                enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(width: 1,color: Colors.black38)
+                ),
+              // enabledBorder: OutlineInputBorder(
+              //   borderSide: BorderSide(width: 1,color: Colors.black12),
+              // ),
               filled: true,
-              fillColor: Color(0xFFF3F3F3)
+              fillColor: Colors.white
             ),
           ),
         ),
         SizedBox(
-          height: 5,
+          height: 10,
         )
       ],
     );

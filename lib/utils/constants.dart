@@ -9,6 +9,9 @@ class Constants {
       fontSize: 35, color: Colors.white, fontWeight: FontWeight.w700);
   static TextStyle button1 =
       GoogleFonts.inter(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold);
+  static TextStyle labelstyle = TextStyle(
+      color: Colors.black,
+      fontSize: 16,fontWeight: FontWeight.w600);
 
   static double getPointX(BuildContext context) {
     return 40;

@@ -53,7 +53,7 @@ class Alerts {
           title: Text(title,style: TextStyle(fontSize: 20),),
           actions: [
             // tombel yes
-            SizedBox(width: 80,
+            SizedBox(width: 90,
               child: ElevatedButton(
                 style: ButtonStyle(
                   shape: MaterialStateProperty.all(
@@ -64,25 +64,25 @@ class Alerts {
                   MaterialStateProperty.all(
                       Colors.red),),
                 onPressed: onPressYes,
-                child: Text('Yes',style: TextStyle(color: Colors.white)),
+                child: Text('Delete',style: TextStyle(color: Colors.white)),
               ),
             ),
             //tombol no
             SizedBox(
-              width: 80,
+              width: 90,
               child: TextButton(
                 style: ButtonStyle(
                     shape: MaterialStateProperty.all(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),
                         side: BorderSide(
-                          color: Colors.black12,
+                          color: Colors.black38,
                         ),
                       ),
                     )),
                 onPressed: onPressNo,
                 child: Text('No',style:
-        TextStyle(color: Colors.black12)),
+        TextStyle(color: Colors.black38)),
               ),
             ),
 
