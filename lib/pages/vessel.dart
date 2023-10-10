@@ -207,8 +207,7 @@ class VesselPage{
                                                   editVesselAndCoor(
                                                       data,
                                                       context,
-                                                      value,
-                                                      _pageSize);
+                                                      value);
                                                 },
                                               ),
                                               IconButton(
@@ -224,7 +223,7 @@ class VesselPage{
                                                   Alerts.showAlertYesNo(
                                                       title: "Are you sure you want to delete this data?",
                                                       onPressYes: () {
-                                                        value.deleteVessel(data.kapal!.callSign, context, _pageSize);
+                                                        value.deleteVessel(data.kapal!.callSign, context);
                                                       },
                                                       onPressNo: () {
                                                         Navigator.pop(context);
@@ -732,7 +731,7 @@ class VesselPage{
         });
   }
 
-  static editVesselAndCoor(VesselCoor.Data data, BuildContext context, Notifier value,int _pageSize) {
+  static editVesselAndCoor(VesselCoor.Data data, BuildContext context, Notifier value) {
     callsignController.text = data.kapal!.callSign!;
     flagController.text = data.kapal!.flag!;
     classController.text = data.kapal!.kelas!;
@@ -1115,7 +1114,7 @@ class VesselPage{
                                       portController.text,
                                       vesselSize!,
                                     ];
-                                    value.editVessel(dataEdit, _pageSize,
+                                    value.editVessel(dataEdit,
                                         context, value.file);
                                     callsignController.clear();
                                     flagController.clear();

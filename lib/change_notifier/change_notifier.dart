@@ -12,6 +12,7 @@ import 'package:vts_maps/api/GetAllLatLangCoor.dart' as LatLangCoor;
 import 'package:vts_maps/api/GetAllVessel.dart' as Vessel;
 import 'package:vts_maps/api/GetKapalAndCoor.dart' as VesselCoor;
 import 'package:vts_maps/api/GetPipelineResponse.dart' as Pipeline;
+import 'package:vts_maps/api/GetClientListResponse.dart' as ClientResponse;
 import 'package:vts_maps/api/api.dart';
 import 'package:vts_maps/model/kml_model.dart';
 import 'package:vts_maps/utils/constants.dart';
@@ -122,7 +123,7 @@ class Notifier extends ChangeNotifier {
      notifyListeners();
   }
 
-  void editVessel(data,pageSize,context,file)async{
+  void editVessel(data,context,file)async{
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -170,7 +171,7 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteVessel(callSign,context,pageSize){
+  void deleteVessel(callSign,context){
     Api.deleteVessel(callSign).then((value) {
       if (value.status == 200) {
         EasyLoading.showSuccess("Kapal Terhapus..");
@@ -322,10 +323,33 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// CRUD CLIENT
+  List<ClientResponse.Data> _getClientResult = [];
+  List<ClientResponse.Data> get getClientResult => _getClientResult;
+
+  int _totalClient = 0;
+  int get totalClient => _totalClient;
+
+  void initClientList() async{
+    _isLoading = true;
+    await Api.getClientList().then((value){
+      _getClientResult.clear();
+      if (value.total! == 0) {
+        _isLoading = false;
+        _getClientResult = [];
+        _totalClient = value.total!.toInt();
+      }
+      if (value.total! > 0) {
+        _getClientResult.addAll(value.data!);
+        _isLoading = false;
+        _totalClient = value.total!.toInt();
+      }
+    });
+    notifyListeners();
+  }
 
 
-
-
+/////////-----------------------------------------------------------------/////////////////
   List<LatLangCoor.Data> _latLangResult = [];
   List<LatLangCoor.Data> get latLangResult => _latLangResult;
 

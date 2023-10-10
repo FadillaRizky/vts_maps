@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:vts_maps/api/EditVesselResponse.dart';
 import 'package:vts_maps/api/GetAllLatLangCoor.dart';
 import 'package:vts_maps/api/GetAllVessel.dart';
+import 'package:vts_maps/api/GetClientListResponse.dart';
 import 'package:vts_maps/api/GetKapalAndCoor.dart';
 import 'package:vts_maps/api/SubmitPipelineResponse.dart';
 import 'package:vts_maps/api/SubmitVesselResponse.dart';
@@ -350,6 +351,20 @@ class Api{
     throw "Gagal delete pipeline:\n${response.body}";
 
   }
+
+  /// CRUD CLIENT LIST
+  static Future<GetClientResponse> getClientList({int page = 1})async{
+    var url = "$BASE_URL/get_client?page=$page";
+    var response = await http.get(
+      Uri.parse(url),
+    );
+    if (response.statusCode == 200) {
+      return GetClientResponse.fromJson(jsonDecode(response.body));
+    }
+    //jika tidak,muncul pesan error
+    throw "Gagal request client list:\n${response.body}";
+  }
+
 
 
 

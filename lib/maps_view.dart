@@ -23,6 +23,7 @@ import 'package:latlong2/latlong.dart';
 
 import 'package:vts_maps/change_notifier/change_notifier.dart';
 import 'package:vts_maps/draw/vessel_draw.dart';
+import 'package:vts_maps/pages/client_page.dart';
 import 'package:vts_maps/pages/vessel.dart';
 import 'package:vts_maps/utils/alerts.dart';
 import 'package:vts_maps/utils/text_field.dart';
@@ -157,6 +158,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     notifier.initVesselCoor();
     notifier.initLatLangCoor();
     notifier.initPipeline(context);
+    notifier.initClientList();
     Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       notifier.initKalmanFilter();
     });
@@ -165,6 +167,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       notifier.resetKalmanFilter();
       notifier.initLatLangCoor();
       notifier.initPipeline(context);
+      notifier.initClientList();
     });
   }
 
@@ -292,6 +295,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       value: 'pipelineList',
                       child: Text('Pipeline List'),
                     ),
+                    const PopupMenuItem(
+                      value: 'clientList',
+                      child: Text('Client List'),
+                    ),
                   ],
                   onSelected: (item) {
                     switch (item) {
@@ -411,7 +418,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                         ? const Center(
                                                             child:
                                                                 CircularProgressIndicator())
-                                                        : Container(
+                                                        : SizedBox(
                                                             width: 900,
                                                             child: DataTable(
                                                                 headingRowColor:
@@ -497,7 +504,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               pagesVisible: 7,
                                               onPageChanged: (page) {
                                                 value.incrementPage(page);
-                                                value.initVesselCoor();
+                                                value.initPipeline(context);
                                               },
                                               nextIcon: const Icon(
                                                 Icons.arrow_forward_ios,
@@ -543,6 +550,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             ),
                                           ])));
                             });
+                      case "clientList":
+                        ClientPage.clientList(context,value,_pageSize);
                     }
                   },
                 ),
