@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'constants.dart';
 
-class VesselTextField extends StatelessWidget {
-  const VesselTextField({
+class CustomTextField extends StatelessWidget {
+  const CustomTextField({
     super.key,
     required this.controller,
     required this.hint,

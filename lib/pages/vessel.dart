@@ -19,12 +19,11 @@ class VesselPage{
   static TextEditingController portController = TextEditingController();
   static String? vesselSize;
 
-  static vesselList(BuildContext context,Notifier value, int _pageSize){
+  static vesselList(BuildContext context,Notifier value,){
     showDialog(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
-      var height = MediaQuery.of(context).size.height;
       var width = MediaQuery.of(context).size.width;
 
       return Dialog(
@@ -108,7 +107,7 @@ class VesselPage{
                                               .all(Colors
                                                   .blueAccent)),
                                   onPressed: () {
-                                    AddVesselAndCoor(
+                                    addVesselAndCoor(
                                         context, value);
                                   },
                                   child: Text(
@@ -288,7 +287,7 @@ class VesselPage{
               )));
     });
   }
-  static AddVesselAndCoor(BuildContext context, Notifier value) {
+  static addVesselAndCoor(BuildContext context, Notifier value) {
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -345,37 +344,37 @@ class VesselPage{
                             SizedBox(
                               height: 5,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: callsignController,
                               hint: 'Call Sign',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: flagController,
                               hint: 'Bendera',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: classController,
                               hint: 'Kelas',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: builderController,
                               hint: 'Builder',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: yearbuiltController,
                               hint: 'Tahun Pembuatan',
                               type: TextInputType.number,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: ipController,
                               hint: 'IP',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: portController,
                               hint: 'Port',
                               type: TextInputType.number,
@@ -792,37 +791,37 @@ class VesselPage{
                             SizedBox(
                               height: 5,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: callsignController,
                               hint: 'Call Sign',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: flagController,
                               hint: 'Bendera',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: classController,
                               hint: 'Kelas',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: builderController,
                               hint: 'Builder',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: yearbuiltController,
                               hint: 'Tahun Pembuatan',
                               type: TextInputType.number,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: ipController,
                               hint: 'IP',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: portController,
                               hint: 'Port',
                               type: TextInputType.number,

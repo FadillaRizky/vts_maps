@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'dart:js';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -108,14 +106,14 @@ class Notifier extends ChangeNotifier {
           }
           if (value.message == "Data berhasil masuk database") {
             Navigator.pop(context);
-            EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
+            EasyLoading.showSuccess("Berhasil Menambahkan Data");
             Navigator.pop(context);
             initVesselCoor();
             return;
           }
           if (value.message != "Data berhasil masuk database") {
             Navigator.pop(context);
-            EasyLoading.showError("Gagal Menambahkan Kapal, Coba Lagi...");
+            EasyLoading.showError("Gagal Menambahkan Data, Coba Lagi...");
             return;
           }
           return;
@@ -246,14 +244,14 @@ class Notifier extends ChangeNotifier {
       // }
       if (value.message == "Data berhasil masuk database") {
         Navigator.pop(context);
-        EasyLoading.showSuccess("Berhasil Menambahkan Kapal");
+        EasyLoading.showSuccess("Berhasil Menambahkan Data");
         Navigator.pop(context);
         initPipeline(context);
         return;
       }
       if (value.message != "Data berhasil masuk database") {
         Navigator.pop(context);
-        EasyLoading.showError("Gagal Menambahkan Kapal, Coba Lagi...");
+        EasyLoading.showError("Gagal Menambahkan Data, Coba Lagi...");
         return;
       }
       return;
@@ -261,7 +259,7 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void editPipeline(id,String name,bool onOff,BuildContext context,file)async{
+  void editPipeline(String id,String name,bool onOff,BuildContext context,file)async{
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -330,6 +328,14 @@ class Notifier extends ChangeNotifier {
   int _totalClient = 0;
   int get totalClient => _totalClient;
 
+  bool _isSwitched = false;
+  bool get isSwitched => _isSwitched;
+
+  void switchControl(bool value)async{
+    _isSwitched = value;
+    notifyListeners();
+  }
+
   void initClientList() async{
     _isLoading = true;
     await Api.getClientList().then((value){
@@ -343,6 +349,111 @@ class Notifier extends ChangeNotifier {
         _getClientResult.addAll(value.data!);
         _isLoading = false;
         _totalClient = value.total!.toInt();
+      }
+    });
+    notifyListeners();
+  }
+
+  void submitClient(BuildContext context,Map<String,String> data)async{
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    await Api.createClient(data).then((value){
+      print(value.message);
+      if (value.message == "Data berhasil masuk database") {
+        Navigator.pop(context);
+        EasyLoading.showSuccess("Berhasil Menambahkan Data");
+        Navigator.pop(context);
+        initClientList();
+        return;
+      }
+      if (value.message != "Data berhasil masuk database") {
+        Navigator.pop(context);
+        EasyLoading.showError("Gagal Menambahkan Data, Coba Lagi...");
+        return;
+      }
+      return;
+    });
+    notifyListeners();
+  }
+
+  void editClient(Map <String,String> data,BuildContext context)async{
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    await Api.updateClient(data).then((value) {
+      print(value.message);
+      if (value.status == 200) {
+        Navigator.pop(context);
+        EasyLoading.showSuccess("Berhasil Edit Data");
+        Navigator.pop(context);
+        initClientList();
+      }else{
+        Navigator.pop(context);
+        EasyLoading.showError("Gagal Edit Data");
+      }
+      return;
+    });
+    notifyListeners();
+  }
+
+  void deleteClient(id,context){
+    Api.deleteClient(id).then((value) {
+      if (value.message == "Data berhasil di hapus database") {
+        EasyLoading.showSuccess("Data Terhapus..");
+        Navigator.pop(context);
+        initClientList();
+      // if (value.status == 200) {
+      //   EasyLoading.showSuccess("Data Terhapus..");
+      //   Navigator.pop(context);
+      //   initClientList();
+      } else {
+        EasyLoading.showError(
+            "Gagal Menghapus Data..");
       }
     });
     notifyListeners();
