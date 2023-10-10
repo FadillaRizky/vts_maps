@@ -10,14 +10,6 @@ import 'package:vts_maps/utils/text_field.dart';
 import 'package:vts_maps/api/GetKapalAndCoor.dart' as VesselCoor;
 
 class ClientPage{
-  // static TextEditingController callsignController = TextEditingController();
-  // static TextEditingController flagController = TextEditingController();
-  // static TextEditingController classController = TextEditingController();
-  // static TextEditingController builderController = TextEditingController();
-  // static TextEditingController yearbuiltController = TextEditingController();
-  // static TextEditingController ipController = TextEditingController();
-  // static TextEditingController portController = TextEditingController();
-  // static String? vesselSize;
 
   static clientList(BuildContext context,Notifier value, int _pageSize){
     showDialog(
