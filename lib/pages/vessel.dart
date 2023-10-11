@@ -110,7 +110,7 @@ class VesselPage {
                                               MaterialStateProperty.all(
                                                   Colors.blueAccent)),
                                       onPressed: () {
-                                        AddVesselAndCoor(context, value);
+                                        addVesselAndCoor(context, value);
                                       },
                                       child: Text(
                                         "Add Vessel",
@@ -360,27 +360,27 @@ class VesselPage {
                             SizedBox(
                               height: 10,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: callsignController,
                               hint: 'Call Sign',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: flagController,
                               hint: 'Bendera',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: classController,
                               hint: 'Kelas',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: builderController,
                               hint: 'Builder',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: yearbuiltController,
                               hint: 'Tahun Pembuatan',
                               type: TextInputType.number,
@@ -808,27 +808,27 @@ class VesselPage {
                             SizedBox(
                               height: 5,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: callsignController,
                               hint: 'Call Sign',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: flagController,
                               hint: 'Bendera',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: classController,
                               hint: 'Kelas',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: builderController,
                               hint: 'Builder',
                               type: TextInputType.text,
                             ),
-                            VesselTextField(
+                            CustomTextField(
                               controller: yearbuiltController,
                               hint: 'Tahun Pembuatan',
                               type: TextInputType.number,

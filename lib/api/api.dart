@@ -5,15 +5,18 @@ import 'dart:html' as html;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:vts_maps/api/EditClientResponse.dart';
 import 'package:vts_maps/api/EditVesselResponse.dart';
 import 'package:vts_maps/api/GetAllLatLangCoor.dart';
 import 'package:vts_maps/api/GetAllVessel.dart';
 import 'package:vts_maps/api/GetClientListResponse.dart';
 import 'package:vts_maps/api/GetKapalAndCoor.dart';
+import 'package:vts_maps/api/SubmitClientResponse.dart';
 import 'package:vts_maps/api/SubmitPipelineResponse.dart';
 import 'package:vts_maps/api/SubmitVesselResponse.dart';
 
 import '../utils/shared_pref.dart';
+import 'DeleteClientResponse.dart';
 import 'DeletePipelineResponse.dart';
 import 'DeleteVesselResponse.dart';
 import 'EditPipelineResponse.dart';
@@ -363,6 +366,59 @@ class Api{
     }
     //jika tidak,muncul pesan error
     throw "Gagal request client list:\n${response.body}";
+  }
+
+  static Future<SubmitClientResponse>createClient(Map<String,String> data) async {
+    try{
+      var url = "$BASE_URL/insert_client";
+      // var datatoken = await LoginPref.getPref();
+      // var token = datatoken.token!;
+      var response = await http.post(
+        Uri.parse(url),
+        body: data,
+        headers: {
+          // 'Content-type': 'application/json',
+          // 'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        return SubmitClientResponse.fromJson(jsonDecode(response.body));
+      }
+      if (response.statusCode == 400) {
+        return SubmitClientResponse.fromJson(jsonDecode(response.body));
+      }
+      else {
+        throw "Gagal create Client:\n${response.body}";
+      }
+    }catch(e){
+      print("error nya $e");
+      rethrow;
+    }
+  }
+
+  static Future<DeleteClientResponse> deleteClient(String id) async {
+    var url = "$BASE_URL/delete_client/$id";
+    var response = await http.post(
+      Uri.parse(url),
+    );
+    if (response.statusCode == 200) {
+      return DeleteClientResponse.fromJson(jsonDecode(response.body));
+    }
+    throw "Gagal delete vessel:\n${response.body}";
+
+  }
+
+  static Future<EditClientResponse> updateClient(Map <String,String> data ) async {
+    var url = "$BASE_URL/update_client";
+    var response = await http.post(
+      Uri.parse(url),
+      body: data
+    );
+    if (response.statusCode == 200) {
+      return EditClientResponse.fromJson(jsonDecode(response.body));
+    }
+    throw "Gagal Update Data:\n${response.body}";
+
   }
 
 

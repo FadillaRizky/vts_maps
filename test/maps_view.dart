@@ -718,49 +718,49 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                               8),
                                                                   child: Column(
                                                                     children: [
-                                                                      VesselTextField(
+                                                                      CustomTextField(
                                                                         controller:
                                                                             callsignController,
                                                                         hint:
                                                                             'Call Sign',
                                                                             type: TextInputType.text,
                                                                       ),
-                                                                      VesselTextField(
+                                                                      CustomTextField(
                                                                         controller:
                                                                             flagController,
                                                                         hint:
                                                                             'Bendera',
                                                                             type: TextInputType.text,
                                                                       ),
-                                                                      VesselTextField(
+                                                                      CustomTextField(
                                                                         controller:
                                                                             classController,
                                                                         hint:
                                                                             'Kelas',
                                                                             type: TextInputType.text,
                                                                       ),
-                                                                      VesselTextField(
+                                                                      CustomTextField(
                                                                         controller:
                                                                             builderController,
                                                                         hint:
                                                                             'Builder',
                                                                             type: TextInputType.text,
                                                                       ),
-                                                                      VesselTextField(
+                                                                      CustomTextField(
                                                                         controller:
                                                                             yearbuiltController,
                                                                         hint:
                                                                             'Tahun Pembuatan',
                                                                             type: TextInputType.number,
                                                                       ),
-                                                                      VesselTextField(
+                                                                      CustomTextField(
                                                                         controller:
                                                                             ipController,
                                                                         hint:
                                                                             'IP',
                                                                             type: TextInputType.text,
                                                                       ),
-                                                                      VesselTextField(
+                                                                      CustomTextField(
                                                                         controller:
                                                                             portController,
                                                                         hint:
