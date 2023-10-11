@@ -25,8 +25,8 @@ const BASE_URL = "https://api.binav-avts.id/api";
 
 class Api{
 
-  static Future<GetAllVessel> getAllVessel({int page = 1,int perpage = 10}) async {
-    var url = "$BASE_URL/kapal?page=$page&perpage=$perpage";
+  static Future<GetAllVessel> getAllVessel({int page = 1,int perpage = 10,String call_sign = "",String id_client = ""}) async {
+    var url = "$BASE_URL/kapal?page=$page&perpage=$perpage&call_sign=${call_sign}&id_client=${id_client}";
     var response = await http.get(
       Uri.parse(url),
     );
@@ -140,7 +140,7 @@ class Api{
 
 
   /// CRUD VESSEL
-  static Future<SubmitVesselResponse> submitCreateVessel(List<String> data,html.File file) async {
+  static Future<SubmitVesselResponse> submitCreateVessel(List<String> data,bool onOff,html.File file) async {
     try{
       ///jangan di hapus
       // var datatoken = await LoginPref.getPref();
@@ -151,14 +151,15 @@ class Api{
 
       final formData = html.FormData();
       formData.appendBlob('xml_file', file);
-      formData.append("call_sign", data[0]);
-      formData.append("flag", data[1]);
-      formData.append("class", data[2]);
-      formData.append("builder", data[3]);
-      formData.append("year_built", data[4]);
-      formData.append("ip", data[5]);
-      formData.append("port", data[6]);
-      formData.append("size", data[7]);
+      print(data);
+      formData.append("id_client", data[0]);
+      formData.append("call_sign", data[1]);
+      formData.append("flag", data[2]);
+      formData.append("class", data[3]);
+      formData.append("builder", data[4]);
+      formData.append("year_built", data[5]);
+      formData.append("size", data[6]);
+      formData.append("status", onOff ? "1" : "0");
 
       final request = html.HttpRequest();
       request.open('POST', url.toString());
@@ -194,7 +195,7 @@ class Api{
     throw "Gagal request all vessel:\n${response.body}";
   }
 
-  static Future<EditVesselResponse>editVessel(List<String> data,html.File? file) async {
+  static Future<EditVesselResponse>editVessel(List<String> data,bool onOff,html.File? file) async {
     try{
       ///jangan di hapus
       // var datatoken = await LoginPref.getPref();
@@ -213,9 +214,8 @@ class Api{
       formData.append("class", data[3]);
       formData.append("builder", data[4]);
       formData.append("year_built", data[5]);
-      formData.append("ip", data[6]);
-      formData.append("port", data[7]);
-      formData.append("size", data[8]);
+      formData.append("size", data[6]);
+      formData.append("status", onOff ? "1" : "0");
 
       final request = html.HttpRequest();
       request.open('POST', url.toString());
@@ -265,7 +265,7 @@ class Api{
       final formData = html.FormData();
       formData.appendBlob('file', file);
       formData.append("name", name);
-      formData.append("switch", onOff ? "1" : "0");
+      formData.append("status", onOff ? "1" : "0");
 
       final request = html.HttpRequest();
       request.open('POST', url.toString());
@@ -316,7 +316,7 @@ class Api{
       }
       formData.append("id_mapping", id);
       formData.append("name", name);
-      formData.append("switch", onOff ? "1" : "0");
+      formData.append("status", onOff ? "1" : "0");
 
       final request = html.HttpRequest();
       request.open('POST', url.toString());

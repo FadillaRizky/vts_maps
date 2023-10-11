@@ -8,222 +8,192 @@ import 'package:vts_maps/utils/alerts.dart';
 import 'package:vts_maps/utils/constants.dart';
 import 'package:vts_maps/utils/text_field.dart';
 import 'package:vts_maps/api/GetKapalAndCoor.dart' as VesselCoor;
+import 'package:vts_maps/api/GetAllVessel.dart' as Vessel;
+import 'package:dropdown_textfield/dropdown_textfield.dart';
 
-class VesselPage{
+class VesselPage {
+  static SingleValueDropDownController clientController =
+      SingleValueDropDownController();
+  static String? idClientValue;
   static TextEditingController callsignController = TextEditingController();
   static TextEditingController flagController = TextEditingController();
   static TextEditingController classController = TextEditingController();
   static TextEditingController builderController = TextEditingController();
   static TextEditingController yearbuiltController = TextEditingController();
-  static TextEditingController ipController = TextEditingController();
-  static TextEditingController portController = TextEditingController();
   static String? vesselSize;
+  static bool isSwitched = false;
 
-  static vesselList(BuildContext context,Notifier value, int _pageSize){
+
+  static vesselList(BuildContext context, Notifier value, int _pageSize) {
     showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      var height = MediaQuery.of(context).size.height;
-      var width = MediaQuery.of(context).size.width;
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          var height = MediaQuery.of(context).size.height;
+          var width = MediaQuery.of(context).size.width;
 
-      return Dialog(
-          shape: const RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.all(Radius.circular(5))),
-          child: SizedBox(
-              width: width / 1.5,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    color: Colors.black12,
-                    padding: const EdgeInsets.all(10),
-                    child: Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment
-                              .spaceBetween,
-                      children: [
-                        Text(
-                          " Vessel List",
-                          style: GoogleFonts.openSans(
-                              fontSize: 20,fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment
-                              .spaceBetween,
-                      children: [
-                        Text(
-                            "Page ${value.currentPage} of ${(value.totalVessel / 10).ceil()}"),
-
-                        ///
-                        Row(
+          return Dialog(
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5))),
+              child: SizedBox(
+                  width: width / 1.5,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        color: Colors.black12,
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            SizedBox(
-                              height: 40,
-                              width: 40,
-                              child: IconButton(
-                                style: ButtonStyle(
-                                    shape: MaterialStateProperty.all(
-                                        RoundedRectangleBorder(
-                                            borderRadius:
-                                            BorderRadius
-                                                .circular(
-                                                5))),
-                                    backgroundColor:
-                                    MaterialStateProperty
-                                        .all(Colors
-                                        .blueAccent)),
-                                onPressed: (){
-                                value.initVesselCoor();
-                              }, icon: Icon(Icons.refresh,color: Colors.white,),),
+                            Text(
+                              " Vessel List",
+                              style: GoogleFonts.openSans(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
                             ),
-                            SizedBox(width: 5,),
-                            SizedBox(
-                              height: 40,
-                              child: ElevatedButton(
-                                  style: ButtonStyle(
-                                      shape: MaterialStateProperty.all(
-                                          RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius
-                                                      .circular(
-                                                          5))),
-                                      backgroundColor:
-                                          MaterialStateProperty
-                                              .all(Colors
-                                                  .blueAccent)),
-                                  onPressed: () {
-                                    AddVesselAndCoor(
-                                        context, value);
-                                  },
-                                  child: Text(
-                                    "Add Vessel",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                    ),
-                                  )),
+                            IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                value.incrementPage(1);
+                              },
+                              icon: const Icon(Icons.close),
                             ),
                           ],
-                        )
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                                "Page ${value.currentPage} of ${(value.totalVessel / 10).ceil()}"),
 
-                        ///
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: 380,
-                    child: SingleChildScrollView(
-                      child: SingleChildScrollView(
-                          scrollDirection:
-                              Axis.horizontal,
-                          child: value.isLoading
-                              ? const Center(
-                                  child:
-                                      CircularProgressIndicator())
-                              : DataTable(
-                                  headingRowColor:
-                                      MaterialStateProperty
-                                          .all(Color(
-                                          0xffd3d3d3)),
-                                  columns: [
-                                    const DataColumn(
-                                        label: Text(
-                                            "CallSign")),
-                                    const DataColumn(
-                                        label: Text(
-                                            "Flag")),
-                                    const DataColumn(
-                                        label: Text(
-                                            "Kelas")),
-                                    const DataColumn(
-                                        label: Text(
-                                            "Builder")),
-                                    const DataColumn(
-                                        label: Text(
-                                            "Year Built")),
-                                    const DataColumn(
-                                        label: Text(
-                                            "Size")),
-                                    const DataColumn(
-                                        label: Text(
-                                            "File XML")),
-                                    const DataColumn(
-                                        label: Text(
-                                            "Action")),
-                                  ],
-                                  rows: value
-                                      .vesselCoorResult
-                                      .map((data) {
-                                    return DataRow(
-                                        cells: [
-                                          DataCell(Text(data
-                                              .kapal!
-                                              .callSign!)),
-                                          DataCell(Text(data
-                                              .kapal!
-                                              .flag!)),
-                                          DataCell(Text(data
-                                              .kapal!
-                                              .kelas!)),
-                                          DataCell(Text(data
-                                              .kapal!
-                                              .builder!)),
-                                          DataCell(Text(data
-                                              .kapal!
-                                              .yearBuilt!)),
-                                          DataCell(Text(data
-                                              .kapal!
-                                              .size!)),
-                                          DataCell(Text(data
-                                              .kapal!
-                                              .xmlFile!)),
+                            ///
+                            Row(
+                              children: [
+                                SizedBox(
+                                  height: 40,
+                                  width: 40,
+                                  child: IconButton(
+                                    style: ButtonStyle(
+                                        shape: MaterialStateProperty.all(
+                                            RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5))),
+                                        backgroundColor:
+                                            MaterialStateProperty.all(
+                                                Colors.blueAccent)),
+                                    onPressed: () {
+                                      value.initVessel();
+                                    },
+                                    icon: Icon(
+                                      Icons.refresh,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                SizedBox(
+                                  height: 40,
+                                  child: ElevatedButton(
+                                      style: ButtonStyle(
+                                          shape: MaterialStateProperty.all(
+                                              RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5))),
+                                          backgroundColor:
+                                              MaterialStateProperty.all(
+                                                  Colors.blueAccent)),
+                                      onPressed: () {
+                                        AddVesselAndCoor(context, value);
+                                      },
+                                      child: Text(
+                                        "Add Vessel",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      )),
+                                ),
+                              ],
+                            )
+
+                            ///
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 380,
+                        child: SingleChildScrollView(
+                          child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: value.isLoading
+                                  ? const Center(
+                                      child: CircularProgressIndicator())
+                                  : DataTable(
+                                      headingRowColor:
+                                          MaterialStateProperty.all(
+                                              Color(0xffd3d3d3)),
+                                      columns: [
+                                        const DataColumn(
+                                            label: Text("CallSign")),
+                                        const DataColumn(label: Text("ID Client")),
+                                        const DataColumn(label: Text("Flag")),
+                                        const DataColumn(label: Text("Kelas")),
+                                        const DataColumn(
+                                            label: Text("Builder")),
+                                        const DataColumn(
+                                            label: Text("Year Built")),
+                                        const DataColumn(label: Text("Size")),
+                                        const DataColumn(
+                                            label: Text("File XML")),
+                                        const DataColumn(
+                                            label: Text("Status")),
+                                        const DataColumn(label: Text("Action")),
+                                      ],
+                                      rows: value.vesselResult.map((data) {
+                                        return DataRow(cells: [
+                                          DataCell(Text(data.callSign!)),
+                                          DataCell(Text(data.idClient.toString())),
+                                          DataCell(Text(data.flag!)),
+                                          DataCell(Text(data.kelas!)),
+                                          DataCell(Text(data.builder!)),
+                                          DataCell(
+                                              Text(data.yearBuilt!)),
+                                          DataCell(Text(data.size!)),
+                                          DataCell(Text(data.xmlFile!.replaceAll("https://api.binav-avts.id/storage/xml/",""))),
+                                          DataCell(Text(data.status!
+                                                  ? "Active"
+                                                  : "Inactive")),
                                           DataCell(Row(
                                             children: [
                                               IconButton(
-                                                icon:
-                                                    const Icon(
-                                                  Icons
-                                                      .edit,
-                                                  color:
-                                                      Colors.blue,
+                                                icon: const Icon(
+                                                  Icons.edit,
+                                                  color: Colors.blue,
                                                 ),
-                                                onPressed:
-                                                    () {
+                                                onPressed: () {
                                                   editVesselAndCoor(
-                                                      data,
-                                                      context,
-                                                      value);
+                                                      data, context, value);
                                                 },
                                               ),
                                               IconButton(
-                                                icon:
-                                                    const Icon(
-                                                  Icons
-                                                      .delete,
-                                                  color:
-                                                      Colors.red,
+                                                icon: const Icon(
+                                                  Icons.delete,
+                                                  color: Colors.red,
                                                 ),
-                                                onPressed:
-                                                    () {
+                                                onPressed: () {
                                                   Alerts.showAlertYesNo(
-                                                      title: "Are you sure you want to delete this data?",
+                                                      title:
+                                                          "Are you sure you want to delete this data?",
                                                       onPressYes: () {
-                                                        value.deleteVessel(data.kapal!.callSign, context);
+                                                        value.deleteVessel(
+                                                            data.callSign,
+                                                            context);
                                                       },
                                                       onPressNo: () {
                                                         Navigator.pop(context);
@@ -234,60 +204,57 @@ class VesselPage{
                                             ],
                                           )),
                                         ]);
-                                  }).toList())),
-                    ),
-                  ),
-                  Pagination(
-                    numOfPages:
-                        (value.totalVessel / 10).ceil(),
-                    selectedPage: value.currentPage,
-                    pagesVisible: 7,
-                    onPageChanged: (page) {
-                      value.incrementPage(page);
-                      value.initVesselCoor();
-                    },
-                    nextIcon: const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.blue,
-                      size: 14,
-                    ),
-                    previousIcon: const Icon(
-                      Icons.arrow_back_ios,
-                      color: Colors.blue,
-                      size: 14,
-                    ),
-                    activeTextStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    activeBtnStyle: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.all(
-                              Colors.blue),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(38),
+                                      }).toList())),
                         ),
                       ),
-                    ),
-                    inactiveBtnStyle: ButtonStyle(
-                      shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(38),
-                      )),
-                    ),
-                    inactiveTextStyle: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              )));
-    });
+                      Pagination(
+                        numOfPages: (value.totalVessel / 10).ceil(),
+                        selectedPage: value.currentPage,
+                        pagesVisible: 7,
+                        onPageChanged: (page) {
+                          value.incrementPage(page);
+                          value.initVessel();
+                        },
+                        nextIcon: const Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.blue,
+                          size: 14,
+                        ),
+                        previousIcon: const Icon(
+                          Icons.arrow_back_ios,
+                          color: Colors.blue,
+                          size: 14,
+                        ),
+                        activeTextStyle: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        activeBtnStyle: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.blue),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(38),
+                            ),
+                          ),
+                        ),
+                        inactiveBtnStyle: ButtonStyle(
+                          shape:
+                              MaterialStateProperty.all(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(38),
+                          )),
+                        ),
+                        inactiveTextStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  )));
+        });
   }
+
   static AddVesselAndCoor(BuildContext context, Notifier value) {
     showDialog(
         context: context,
@@ -318,13 +285,12 @@ class VesselPage{
                         ),
                         IconButton(
                           onPressed: () {
+                            clientController.clearDropDown();
                             callsignController.clear();
                             flagController.clear();
                             classController.clear();
                             builderController.clear();
                             yearbuiltController.clear();
-                            ipController.clear();
-                            portController.clear();
                             vesselSize = null;
                             value.clearFile();
                             Navigator.pop(context);
@@ -344,6 +310,55 @@ class VesselPage{
                           children: [
                             SizedBox(
                               height: 5,
+                            ),
+                            SizedBox(
+                              height: 35,
+                              width: double.infinity,
+                              child: DropDownTextField(
+                                controller: clientController,
+                                dropDownList: [
+                                  for (var x in value.getClientResult)
+                                    DropDownValueModel(
+                                        name: '${x.clientName} - ${x.idClient}',
+                                        value: "${x.idClient}"),
+                                ],
+                                clearOption: false,
+                                enableSearch: true,
+                                textStyle: TextStyle(color: Colors.black),
+                                searchDecoration: const InputDecoration(
+                                    hintText:
+                                        "enter your custom hint text here"),
+                                validator: (value) {
+                                  if (value == null) {
+                                    return "Required field";
+                                  } else {
+                                    return null;
+                                  }
+                                },
+                                onChanged: (value) {
+                                  idClientValue =
+                                      clientController.dropDownValue!.value.toString();
+                                  // SingleValueDropDownController(data: DropDownValueModel(value: "${data['role']}", name: "${data['role']}"))
+                                },
+                                textFieldDecoration: InputDecoration(
+                                  labelText: "Pilih Client",
+                                  labelStyle: Constants.labelstyle,
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        width: 1, color: Colors.blueAccent),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          width: 1, color: Colors.black38)),
+                                  contentPadding:
+                                      const EdgeInsets.fromLTRB(8, 3, 1, 3),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 10,
                             ),
                             VesselTextField(
                               controller: callsignController,
@@ -368,16 +383,6 @@ class VesselPage{
                             VesselTextField(
                               controller: yearbuiltController,
                               hint: 'Tahun Pembuatan',
-                              type: TextInputType.number,
-                            ),
-                            VesselTextField(
-                              controller: ipController,
-                              hint: 'IP',
-                              type: TextInputType.text,
-                            ),
-                            VesselTextField(
-                              controller: portController,
-                              hint: 'Port',
                               type: TextInputType.number,
                             ),
                             SizedBox(
@@ -430,6 +435,23 @@ class VesselPage{
                                 onChanged: (value) {
                                   vesselSize = value;
                                 },
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            SizedBox(
+                              height: 40,
+                              child: FittedBox(
+                                fit: BoxFit.fill,
+                                child: Switch(
+                                  value: isSwitched,
+                                  onChanged: (bool value) {
+                                    isSwitched = value;
+                                  },
+                                  activeTrackColor: Colors.lightGreen,
+                                  activeColor: Colors.green,
+                                ),
                               ),
                             ),
                             const SizedBox(
@@ -532,6 +554,11 @@ class VesselPage{
                                     ),
                                   ),
                                   onPressed: () {
+                                    if (idClientValue!.isEmpty) {
+                                      EasyLoading.showError(
+                                          "Kolom Client Masih Kosong...");
+                                      return;
+                                    }
                                     if (callsignController.text.isEmpty) {
                                       EasyLoading.showError(
                                           "Kolom Call Sign Masih Kosong...");
@@ -557,16 +584,6 @@ class VesselPage{
                                           "Kolom Tahun Pembuatan Masih Kosong...");
                                       return;
                                     }
-                                    if (ipController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom IP Pembuatan Masih Kosong...");
-                                      return;
-                                    }
-                                    if (portController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Port Masih Kosong...");
-                                      return;
-                                    }
                                     if (vesselSize == null) {
                                       EasyLoading.showError(
                                           "Kolom Ukuran Kapal Masih Kosong...");
@@ -578,24 +595,23 @@ class VesselPage{
                                       return;
                                     }
                                     List<String> data = [
+                                      idClientValue!,
                                       callsignController.text,
                                       flagController.text,
                                       classController.text,
                                       builderController.text,
                                       yearbuiltController.text,
-                                      ipController.text,
-                                      portController.text,
                                       vesselSize!,
                                     ];
                                     value.submitVessel(
-                                        data, context, value.file);
+                                        data, context,isSwitched, value.file);
+                                    idClientValue = null;
+                                    clientController.clearDropDown();
                                     callsignController.clear();
                                     flagController.clear();
                                     classController.clear();
                                     builderController.clear();
                                     yearbuiltController.clear();
-                                    ipController.clear();
-                                    portController.clear();
                                     vesselSize = null;
                                     value.clearFile();
                                   },
@@ -623,10 +639,9 @@ class VesselPage{
                                     classController.clear();
                                     builderController.clear();
                                     yearbuiltController.clear();
-                                    ipController.clear();
-                                    portController.clear();
                                     vesselSize = null;
                                     value.clearFile();
+                                    isSwitched = false;
                                     Navigator.pop(context);
                                   },
                                   child: Text(
@@ -731,13 +746,16 @@ class VesselPage{
         });
   }
 
-  static editVesselAndCoor(VesselCoor.Data data, BuildContext context, Notifier value) {
-    callsignController.text = data.kapal!.callSign!;
-    flagController.text = data.kapal!.flag!;
-    classController.text = data.kapal!.kelas!;
-    builderController.text = data.kapal!.builder!;
-    yearbuiltController.text = data.kapal!.yearBuilt!;
-    vesselSize = data.kapal!.size!;
+  static editVesselAndCoor(
+      Vessel.Data data, BuildContext context, Notifier value) {
+    callsignController.text = data.callSign!;
+    flagController.text = data.flag!;
+    classController.text = data.kelas!;
+    builderController.text = data.builder!;
+    yearbuiltController.text = data.yearBuilt!;
+    vesselSize = data.size!;
+    isSwitched = data.status!;
+
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -770,8 +788,6 @@ class VesselPage{
                             classController.clear();
                             builderController.clear();
                             yearbuiltController.clear();
-                            ipController.clear();
-                            portController.clear();
                             vesselSize = null;
                             value.clearFile();
                             Navigator.pop(context);
@@ -817,21 +833,11 @@ class VesselPage{
                               hint: 'Tahun Pembuatan',
                               type: TextInputType.number,
                             ),
-                            VesselTextField(
-                              controller: ipController,
-                              hint: 'IP',
-                              type: TextInputType.text,
-                            ),
-                            VesselTextField(
-                              controller: portController,
-                              hint: 'Port',
-                              type: TextInputType.number,
-                            ),
                             SizedBox(
                               height: 35,
                               width: double.infinity,
                               child: DropdownSearch<String>(
-                                selectedItem: data.kapal!.size ?? "",
+                                selectedItem: data.size ?? "",
                                 dropdownBuilder: (context, selectedItem) =>
                                     Text(
                                   selectedItem ?? "",
@@ -880,6 +886,24 @@ class VesselPage{
                             const SizedBox(
                               height: 5,
                             ),
+                            SizedBox(
+                              height: 40,
+                              child: FittedBox(
+                                fit: BoxFit.fill,
+                                child: Switch(
+                                  value: isSwitched,
+                                  onChanged: (bool value) {
+                                    isSwitched = value;
+                                    print(value);
+                                  },
+                                  activeTrackColor: Colors.lightGreen,
+                                  activeColor: Colors.green,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
                             GestureDetector(
                               onTap: () {
                                 value.selectFile("XML");
@@ -922,9 +946,9 @@ class VesselPage{
                                                   //     : ""
                                                   value.nameFile != ""
                                                       ? value.nameFile!
-                                                      : data.kapal!.xmlFile !=
+                                                      : data.xmlFile !=
                                                               null
-                                                          ? data.kapal!.xmlFile!
+                                                          ? data.xmlFile!
                                                           : "",
                                                   style: const TextStyle(
                                                       fontSize: 10,
@@ -1088,42 +1112,29 @@ class VesselPage{
                                           "Kolom Tahun Pembuatan Masih Kosong...");
                                       return;
                                     }
-                                    if (ipController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom IP Pembuatan Masih Kosong...");
-                                      return;
-                                    }
-                                    if (portController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Port Masih Kosong...");
-                                      return;
-                                    }
                                     if (vesselSize == null) {
                                       EasyLoading.showError(
                                           "Kolom Ukuran Kapal Masih Kosong...");
                                       return;
                                     }
                                     List<String> dataEdit = [
-                                      data.kapal!.callSign!,
+                                      data.callSign!,
                                       callsignController.text,
                                       flagController.text,
                                       classController.text,
                                       builderController.text,
                                       yearbuiltController.text,
-                                      ipController.text,
-                                      portController.text,
                                       vesselSize!,
                                     ];
-                                    value.editVessel(dataEdit,
-                                        context, value.file);
+                                    value.editVessel(
+                                        dataEdit, context,isSwitched, value.file);
                                     callsignController.clear();
                                     flagController.clear();
                                     classController.clear();
                                     builderController.clear();
                                     yearbuiltController.clear();
-                                    ipController.clear();
-                                    portController.clear();
                                     vesselSize = null;
+                                    isSwitched = false;
                                     value.clearFile();
                                   },
                                   child: Text(
@@ -1150,8 +1161,6 @@ class VesselPage{
                                     classController.clear();
                                     builderController.clear();
                                     yearbuiltController.clear();
-                                    ipController.clear();
-                                    portController.clear();
                                     vesselSize = null;
                                     value.clearFile();
                                     Navigator.pop(context);
