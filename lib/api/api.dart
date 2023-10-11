@@ -211,6 +211,7 @@ class Api{
       if (file != null) {
         formData.appendBlob('xml_file', file);
       }
+      print(onOff);
       formData.append("old_call_sign", data[0]);
       formData.append("call_sign", data[1]);
       formData.append("flag", data[2]);
@@ -256,7 +257,7 @@ class Api{
 
   /// CRUD PIPELINE
 
-  static Future<SubmitPipelineResponse> submitPipeline(String name,bool onOff,html.File file) async {
+  static Future<SubmitPipelineResponse> submitPipeline(String idClientValue,String name,bool onOff,html.File file) async {
     try{
       ///jangan di hapus
       // var datatoken = await LoginPref.getPref();
@@ -267,8 +268,9 @@ class Api{
 
       final formData = html.FormData();
       formData.appendBlob('file', file);
+      formData.append("id_client", idClientValue);
       formData.append("name", name);
-      formData.append("status", onOff ? "1" : "0");
+      formData.append("switch", onOff ? "1" : "0");
 
       final request = html.HttpRequest();
       request.open('POST', url.toString());
@@ -319,7 +321,7 @@ class Api{
       }
       formData.append("id_mapping", id);
       formData.append("name", name);
-      formData.append("status", onOff ? "1" : "0");
+      formData.append("switch", onOff ? "1" : "0");
 
       final request = html.HttpRequest();
       request.open('POST', url.toString());

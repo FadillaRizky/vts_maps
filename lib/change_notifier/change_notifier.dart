@@ -234,7 +234,7 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void submitPipeline(String name,bool onOff,context,file)async{
+  void submitPipeline(String idClientValue,String name,bool onOff,context,file)async{
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -260,7 +260,7 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-    await Api.submitPipeline(name,onOff,file).then((value){
+    await Api.submitPipeline(idClientValue,name,onOff,file).then((value){
       print(value.message);
       // if (value.message == "Validator Fails") {
       //   Navigator.pop(context);

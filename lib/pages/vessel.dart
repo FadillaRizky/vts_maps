@@ -255,7 +255,7 @@ class VesselPage {
         });
   }
 
-  static AddVesselAndCoor(BuildContext context, Notifier value) {
+  static addVesselAndCoor(BuildContext context, Notifier value) {
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -612,6 +612,7 @@ class VesselPage {
                                     classController.clear();
                                     builderController.clear();
                                     yearbuiltController.clear();
+                                    isSwitched = false;
                                     vesselSize = null;
                                     value.clearFile();
                                   },
@@ -1162,7 +1163,8 @@ class VesselPage {
                                     builderController.clear();
                                     yearbuiltController.clear();
                                     vesselSize = null;
-                                    value.clearFile();
+                                    isSwitched = false;
+                                    value.clearFile(); 
                                     Navigator.pop(context);
                                   },
                                   child: Text(
