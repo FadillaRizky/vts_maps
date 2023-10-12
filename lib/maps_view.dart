@@ -24,6 +24,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:vts_maps/change_notifier/change_notifier.dart';
 import 'package:vts_maps/draw/vessel_draw.dart';
 import 'package:vts_maps/pages/client_page.dart';
+import 'package:vts_maps/pages/example.dart';
 import 'package:vts_maps/pages/pipeline_page.dart';
 import 'package:vts_maps/pages/vessel.dart';
 import 'package:vts_maps/utils/alerts.dart';
@@ -304,256 +305,256 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   onSelected: (item) {
                     switch (item) {
                       case "vesselList":
-                        VesselPage.vesselList(context,value);
+                        VesselPage.vesselList(context, value);
                       case "pipelineList":
                         PipelinePage.PipelineList(context, value);
-                        // showDialog(
-                        //     context: context,
-                        //     barrierDismissible: false,
-                        //     builder: (BuildContext context) {
-                        //       var width = MediaQuery.of(context).size.width;
-                        //       return Dialog(
-                        //           shape: const RoundedRectangleBorder(
-                        //               borderRadius:
-                        //                   BorderRadius.all(Radius.circular(5))),
-                        //           child: SizedBox(
-                        //               width: width / 1.5,
-                        //               child: Column(
-                        //                   mainAxisSize: MainAxisSize.min,
-                        //                   crossAxisAlignment:
-                        //                       CrossAxisAlignment.start,
-                        //                   children: [
-                        //                     Container(
-                        //                       color: Colors.black12,
-                        //                       padding: const EdgeInsets.all(10),
-                        //                       child: Row(
-                        //                         mainAxisAlignment:
-                        //                             MainAxisAlignment
-                        //                                 .spaceBetween,
-                        //                         children: [
-                        //                           Text(
-                        //                             " Pipeline List",
-                        //                             style: GoogleFonts.openSans(
-                        //                                 fontSize: 20,fontWeight: FontWeight.bold),
-                        //                           ),
-                        //                           IconButton(
-                        //                             onPressed: () {
-                        //                               Navigator.pop(context);
-                        //                             },
-                        //                             icon:
-                        //                                 const Icon(Icons.close),
-                        //                           ),
-                        //                         ],
-                        //                       ),
-                        //                     ),
-                        //                     Padding(
-                        //                       padding: const EdgeInsets.all(10),
-                        //                       child: Row(
-                        //                         mainAxisAlignment:
-                        //                             MainAxisAlignment
-                        //                                 .spaceBetween,
-                        //                         children: [
-                        //                           Text(
-                        //                               "Page ${value.currentPage} of ${(value.totalPipeline / 10).ceil()}"),
-                        //                           Row(
-                        //                             children: [
-                        //                               SizedBox(
-                        //                                 height: 40,
-                        //                                 width: 40,
-                        //                                 child: IconButton(
-                        //                                   style: ButtonStyle(
-                        //                                       shape: MaterialStateProperty.all(
-                        //                                           RoundedRectangleBorder(
-                        //                                               borderRadius:
-                        //                                               BorderRadius
-                        //                                                   .circular(
-                        //                                                   5))),
-                        //                                       backgroundColor:
-                        //                                       MaterialStateProperty
-                        //                                           .all(Colors
-                        //                                           .blueAccent)),
-                        //                                   onPressed: (){
-                        //                                     value.initPipeline(context);
-                        //                                   }, icon: Icon(Icons.refresh,color: Colors.white,),),
-                        //                               ),
-                        //                               SizedBox(width: 5,),
-                        //                               SizedBox(
-                        //                                 height: 40,
-                        //                                 child: ElevatedButton(
-                        //                                     style: ButtonStyle(
-                        //                                         shape: MaterialStateProperty.all(
-                        //                                             RoundedRectangleBorder(
-                        //                                                 borderRadius:
-                        //                                                 BorderRadius
-                        //                                                     .circular(
-                        //                                                     5))),
-                        //                                         backgroundColor:
-                        //                                         MaterialStateProperty
-                        //                                             .all(Colors
-                        //                                             .blueAccent)),
-                        //                                     onPressed: () {
-                        //                                       addPipeline(
-                        //                                         context,
-                        //                                         value,
-                        //                                       );
-                        //                                     },
-                        //                                     child: Text(
-                        //                                       "Add Pipeline",
-                        //                                       style: TextStyle(
-                        //                                         color: Colors.white,
-                        //                                       ),
-                        //                                     )),
-                        //                               ),
-                        //                             ],
-                        //                           )
-                        //                         ],
-                        //                       ),
-                        //                     ),
-                        //                     SizedBox(
-                        //                       height: 380,
-                        //                       width: double.infinity,
-                        //                       child: SingleChildScrollView(
-                        //                         child: SingleChildScrollView(
-                        //                             scrollDirection:
-                        //                                 Axis.horizontal,
-                        //                             child: value.isLoading
-                        //                                 ? const Center(
-                        //                                     child:
-                        //                                         CircularProgressIndicator())
-                        //                                 : SizedBox(
-                        //                                     width: 900,
-                        //                                     child: DataTable(
-                        //                                         headingRowColor:
-                        //                                         MaterialStateProperty
-                        //                                             .all(Color(
-                        //                                             0xffd3d3d3)),
-                        //                                         columns: [
-                        //                                           const DataColumn(
-                        //                                               label: Text(
-                        //                                                   "Name")),
-                        //                                           const DataColumn(
-                        //                                               label: Text(
-                        //                                                   "File")),
-                        //                                           const DataColumn(
-                        //                                               label: Text(
-                        //                                                   "Switch")),
-                        //                                           const DataColumn(
-                        //                                               label: Text(
-                        //                                                   "Action")),
-                        //                                         ],
-                        //                                         rows: value
-                        //                                             .getPipelineResult
-                        //                                             .map(
-                        //                                                 (data) {
-                        //                                           return DataRow(
-                        //                                             cells: [
-                        //                                               DataCell(
-                        //                                                   Text(data
-                        //                                                       .name!)),
-                        //                                               DataCell(
-                        //                                                   Text(data
-                        //                                                       .file!)),
-                        //                                               DataCell(Text(data
-                        //                                                       .onOff!
-                        //                                                   ? "ON"
-                        //                                                   : "OFF")),
-                        //                                               DataCell(
-                        //                                                   Row(
-                        //                                                 children: [
-                        //                                                   IconButton(
-                        //                                                     icon:
-                        //                                                         const Icon(
-                        //                                                       Icons.edit,
-                        //                                                       color: Colors.blue,
-                        //                                                     ),
-                        //                                                     onPressed:
-                        //                                                         () {
-                        //                                                       editPipeline(data, context, value);
-                        //                                                     },
-                        //                                                   ),
-                        //                                                   IconButton(
-                        //                                                     icon:
-                        //                                                         const Icon(
-                        //                                                       Icons.delete,
-                        //                                                       color: Colors.red,
-                        //                                                     ),
-                        //                                                     onPressed:
-                        //                                                         () {
-                        //                                                       Alerts.showAlertYesNo(
-                        //                                                           title: "Are you sure you want to delete this data?",
-                        //                                                           onPressYes: () {
-                        //                                                             value.deletePipeline(data.idMapping.toString(), context);
-                        //                                                           },
-                        //                                                           onPressNo: () {
-                        //                                                             Navigator.pop(context);
-                        //                                                           },
-                        //                                                           context: context);
-                        //                                                     },
-                        //                                                   ),
-                        //                                                 ],
-                        //                                               )),
-                        //                                             ],
-                        //                                           );
-                        //                                         }).toList()),
-                        //                                   )),
-                        //                       ),
-                        //                     ),
-                        //                     Pagination(
-                        //                       numOfPages:
-                        //                           (value.totalPipeline / 10)
-                        //                               .ceil(),
-                        //                       selectedPage: value.currentPage,
-                        //                       pagesVisible: 7,
-                        //                       onPageChanged: (page) {
-                        //                         value.incrementPage(page);
-                        //                         value.initPipeline(context);
-                        //                       },
-                        //                       nextIcon: const Icon(
-                        //                         Icons.arrow_forward_ios,
-                        //                         color: Colors.blue,
-                        //                         size: 14,
-                        //                       ),
-                        //                       previousIcon: const Icon(
-                        //                         Icons.arrow_back_ios,
-                        //                         color: Colors.blue,
-                        //                         size: 14,
-                        //                       ),
-                        //                       activeTextStyle: const TextStyle(
-                        //                         color: Colors.white,
-                        //                         fontSize: 14,
-                        //                         fontWeight: FontWeight.w700,
-                        //                       ),
-                        //                       activeBtnStyle: ButtonStyle(
-                        //                         backgroundColor:
-                        //                             MaterialStateProperty.all(
-                        //                                 Colors.blue),
-                        //                         shape:
-                        //                             MaterialStateProperty.all(
-                        //                           RoundedRectangleBorder(
-                        //                             borderRadius:
-                        //                                 BorderRadius.circular(
-                        //                                     38),
-                        //                           ),
-                        //                         ),
-                        //                       ),
-                        //                       inactiveBtnStyle: ButtonStyle(
-                        //                         shape:
-                        //                             MaterialStateProperty.all(
-                        //                                 RoundedRectangleBorder(
-                        //                           borderRadius:
-                        //                               BorderRadius.circular(38),
-                        //                         )),
-                        //                       ),
-                        //                       inactiveTextStyle:
-                        //                           const TextStyle(
-                        //                         fontSize: 14,
-                        //                         fontWeight: FontWeight.w700,
-                        //                       ),
-                        //                     ),
-                        //                   ])));
-                        //     });
+                      // showDialog(
+                      //     context: context,
+                      //     barrierDismissible: false,
+                      //     builder: (BuildContext context) {
+                      //       var width = MediaQuery.of(context).size.width;
+                      //       return Dialog(
+                      //           shape: const RoundedRectangleBorder(
+                      //               borderRadius:
+                      //                   BorderRadius.all(Radius.circular(5))),
+                      //           child: SizedBox(
+                      //               width: width / 1.5,
+                      //               child: Column(
+                      //                   mainAxisSize: MainAxisSize.min,
+                      //                   crossAxisAlignment:
+                      //                       CrossAxisAlignment.start,
+                      //                   children: [
+                      //                     Container(
+                      //                       color: Colors.black12,
+                      //                       padding: const EdgeInsets.all(10),
+                      //                       child: Row(
+                      //                         mainAxisAlignment:
+                      //                             MainAxisAlignment
+                      //                                 .spaceBetween,
+                      //                         children: [
+                      //                           Text(
+                      //                             " Pipeline List",
+                      //                             style: GoogleFonts.openSans(
+                      //                                 fontSize: 20,fontWeight: FontWeight.bold),
+                      //                           ),
+                      //                           IconButton(
+                      //                             onPressed: () {
+                      //                               Navigator.pop(context);
+                      //                             },
+                      //                             icon:
+                      //                                 const Icon(Icons.close),
+                      //                           ),
+                      //                         ],
+                      //                       ),
+                      //                     ),
+                      //                     Padding(
+                      //                       padding: const EdgeInsets.all(10),
+                      //                       child: Row(
+                      //                         mainAxisAlignment:
+                      //                             MainAxisAlignment
+                      //                                 .spaceBetween,
+                      //                         children: [
+                      //                           Text(
+                      //                               "Page ${value.currentPage} of ${(value.totalPipeline / 10).ceil()}"),
+                      //                           Row(
+                      //                             children: [
+                      //                               SizedBox(
+                      //                                 height: 40,
+                      //                                 width: 40,
+                      //                                 child: IconButton(
+                      //                                   style: ButtonStyle(
+                      //                                       shape: MaterialStateProperty.all(
+                      //                                           RoundedRectangleBorder(
+                      //                                               borderRadius:
+                      //                                               BorderRadius
+                      //                                                   .circular(
+                      //                                                   5))),
+                      //                                       backgroundColor:
+                      //                                       MaterialStateProperty
+                      //                                           .all(Colors
+                      //                                           .blueAccent)),
+                      //                                   onPressed: (){
+                      //                                     value.initPipeline(context);
+                      //                                   }, icon: Icon(Icons.refresh,color: Colors.white,),),
+                      //                               ),
+                      //                               SizedBox(width: 5,),
+                      //                               SizedBox(
+                      //                                 height: 40,
+                      //                                 child: ElevatedButton(
+                      //                                     style: ButtonStyle(
+                      //                                         shape: MaterialStateProperty.all(
+                      //                                             RoundedRectangleBorder(
+                      //                                                 borderRadius:
+                      //                                                 BorderRadius
+                      //                                                     .circular(
+                      //                                                     5))),
+                      //                                         backgroundColor:
+                      //                                         MaterialStateProperty
+                      //                                             .all(Colors
+                      //                                             .blueAccent)),
+                      //                                     onPressed: () {
+                      //                                       addPipeline(
+                      //                                         context,
+                      //                                         value,
+                      //                                       );
+                      //                                     },
+                      //                                     child: Text(
+                      //                                       "Add Pipeline",
+                      //                                       style: TextStyle(
+                      //                                         color: Colors.white,
+                      //                                       ),
+                      //                                     )),
+                      //                               ),
+                      //                             ],
+                      //                           )
+                      //                         ],
+                      //                       ),
+                      //                     ),
+                      //                     SizedBox(
+                      //                       height: 380,
+                      //                       width: double.infinity,
+                      //                       child: SingleChildScrollView(
+                      //                         child: SingleChildScrollView(
+                      //                             scrollDirection:
+                      //                                 Axis.horizontal,
+                      //                             child: value.isLoading
+                      //                                 ? const Center(
+                      //                                     child:
+                      //                                         CircularProgressIndicator())
+                      //                                 : SizedBox(
+                      //                                     width: 900,
+                      //                                     child: DataTable(
+                      //                                         headingRowColor:
+                      //                                         MaterialStateProperty
+                      //                                             .all(Color(
+                      //                                             0xffd3d3d3)),
+                      //                                         columns: [
+                      //                                           const DataColumn(
+                      //                                               label: Text(
+                      //                                                   "Name")),
+                      //                                           const DataColumn(
+                      //                                               label: Text(
+                      //                                                   "File")),
+                      //                                           const DataColumn(
+                      //                                               label: Text(
+                      //                                                   "Switch")),
+                      //                                           const DataColumn(
+                      //                                               label: Text(
+                      //                                                   "Action")),
+                      //                                         ],
+                      //                                         rows: value
+                      //                                             .getPipelineResult
+                      //                                             .map(
+                      //                                                 (data) {
+                      //                                           return DataRow(
+                      //                                             cells: [
+                      //                                               DataCell(
+                      //                                                   Text(data
+                      //                                                       .name!)),
+                      //                                               DataCell(
+                      //                                                   Text(data
+                      //                                                       .file!)),
+                      //                                               DataCell(Text(data
+                      //                                                       .onOff!
+                      //                                                   ? "ON"
+                      //                                                   : "OFF")),
+                      //                                               DataCell(
+                      //                                                   Row(
+                      //                                                 children: [
+                      //                                                   IconButton(
+                      //                                                     icon:
+                      //                                                         const Icon(
+                      //                                                       Icons.edit,
+                      //                                                       color: Colors.blue,
+                      //                                                     ),
+                      //                                                     onPressed:
+                      //                                                         () {
+                      //                                                       editPipeline(data, context, value);
+                      //                                                     },
+                      //                                                   ),
+                      //                                                   IconButton(
+                      //                                                     icon:
+                      //                                                         const Icon(
+                      //                                                       Icons.delete,
+                      //                                                       color: Colors.red,
+                      //                                                     ),
+                      //                                                     onPressed:
+                      //                                                         () {
+                      //                                                       Alerts.showAlertYesNo(
+                      //                                                           title: "Are you sure you want to delete this data?",
+                      //                                                           onPressYes: () {
+                      //                                                             value.deletePipeline(data.idMapping.toString(), context);
+                      //                                                           },
+                      //                                                           onPressNo: () {
+                      //                                                             Navigator.pop(context);
+                      //                                                           },
+                      //                                                           context: context);
+                      //                                                     },
+                      //                                                   ),
+                      //                                                 ],
+                      //                                               )),
+                      //                                             ],
+                      //                                           );
+                      //                                         }).toList()),
+                      //                                   )),
+                      //                       ),
+                      //                     ),
+                      //                     Pagination(
+                      //                       numOfPages:
+                      //                           (value.totalPipeline / 10)
+                      //                               .ceil(),
+                      //                       selectedPage: value.currentPage,
+                      //                       pagesVisible: 7,
+                      //                       onPageChanged: (page) {
+                      //                         value.incrementPage(page);
+                      //                         value.initPipeline(context);
+                      //                       },
+                      //                       nextIcon: const Icon(
+                      //                         Icons.arrow_forward_ios,
+                      //                         color: Colors.blue,
+                      //                         size: 14,
+                      //                       ),
+                      //                       previousIcon: const Icon(
+                      //                         Icons.arrow_back_ios,
+                      //                         color: Colors.blue,
+                      //                         size: 14,
+                      //                       ),
+                      //                       activeTextStyle: const TextStyle(
+                      //                         color: Colors.white,
+                      //                         fontSize: 14,
+                      //                         fontWeight: FontWeight.w700,
+                      //                       ),
+                      //                       activeBtnStyle: ButtonStyle(
+                      //                         backgroundColor:
+                      //                             MaterialStateProperty.all(
+                      //                                 Colors.blue),
+                      //                         shape:
+                      //                             MaterialStateProperty.all(
+                      //                           RoundedRectangleBorder(
+                      //                             borderRadius:
+                      //                                 BorderRadius.circular(
+                      //                                     38),
+                      //                           ),
+                      //                         ),
+                      //                       ),
+                      //                       inactiveBtnStyle: ButtonStyle(
+                      //                         shape:
+                      //                             MaterialStateProperty.all(
+                      //                                 RoundedRectangleBorder(
+                      //                           borderRadius:
+                      //                               BorderRadius.circular(38),
+                      //                         )),
+                      //                       ),
+                      //                       inactiveTextStyle:
+                      //                           const TextStyle(
+                      //                         fontSize: 14,
+                      //                         fontWeight: FontWeight.w700,
+                      //                       ),
+                      //                     ),
+                      //                   ])));
+                      //     });
                       case "clientList":
-                        ClientPage.clientList(context,value);
+                        ClientPage.clientList(context, value);
                     }
                   },
                 ),
@@ -653,6 +654,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               const SizedBox(
                 width: 10,
               ),
+              // ElevatedButton(
+              //   onPressed: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (ctx) => Example(),
+              //       ),
+              //     );
+              //   },
+              //   child: Text("Example"),
+              // ),
             ],
           ),
           body: Padding(

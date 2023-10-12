@@ -15,9 +15,11 @@ class VesselPage{
   static TextEditingController classController = TextEditingController();
   static TextEditingController builderController = TextEditingController();
   static TextEditingController yearbuiltController = TextEditingController();
+  ////-----------------------------------------------------/////
   static TextEditingController ipController = TextEditingController();
   static TextEditingController portController = TextEditingController();
   static String? vesselSize;
+  static String? type;
 
   static vesselList(BuildContext context,Notifier value,){
     showDialog(
@@ -148,7 +150,7 @@ class VesselPage{
                                             "Flag")),
                                     const DataColumn(
                                         label: Text(
-                                            "Kelas")),
+                                            "Class")),
                                     const DataColumn(
                                         label: Text(
                                             "Builder")),
@@ -161,6 +163,9 @@ class VesselPage{
                                     const DataColumn(
                                         label: Text(
                                             "File XML")),
+                                    const DataColumn(
+                                        label: Text(
+                                            "Upload IP ")),
                                     const DataColumn(
                                         label: Text(
                                             "Action")),
@@ -188,9 +193,18 @@ class VesselPage{
                                           DataCell(Text(data
                                               .kapal!
                                               .size!)),
-                                          DataCell(Text(data
-                                              .kapal!
-                                              .xmlFile!)),
+                                          DataCell(
+                                              SizedBox(
+                                                width: 100,
+                                                child: Text(data
+                                                .kapal!
+                                                .xmlFile!,overflow: TextOverflow.ellipsis,maxLines: 2,),
+                                              )),
+                                          DataCell(
+                                              IconButton(onPressed: (){
+                                                value.initIpList(data.kapal!.callSign!);
+                                            uploadIpAndPort(context, value,data.kapal!.callSign!);
+                                          }, icon:Icon(Icons.edit_location_alt_outlined) )),
                                           DataCell(Row(
                                             children: [
                                               IconButton(
@@ -322,8 +336,8 @@ class VesselPage{
                             classController.clear();
                             builderController.clear();
                             yearbuiltController.clear();
-                            ipController.clear();
-                            portController.clear();
+                            // ipController.clear();
+                            // portController.clear();
                             vesselSize = null;
                             value.clearFile();
                             Navigator.pop(context);
@@ -369,16 +383,16 @@ class VesselPage{
                               hint: 'Tahun Pembuatan',
                               type: TextInputType.number,
                             ),
-                            CustomTextField(
-                              controller: ipController,
-                              hint: 'IP',
-                              type: TextInputType.text,
-                            ),
-                            CustomTextField(
-                              controller: portController,
-                              hint: 'Port',
-                              type: TextInputType.number,
-                            ),
+                            // CustomTextField(
+                            //   controller: ipController,
+                            //   hint: 'IP',
+                            //   type: TextInputType.text,
+                            // ),
+                            // CustomTextField(
+                            //   controller: portController,
+                            //   hint: 'Port',
+                            //   type: TextInputType.number,
+                            // ),
                             SizedBox(
                               height: 35,
                               width: double.infinity,
@@ -434,6 +448,8 @@ class VesselPage{
                             const SizedBox(
                               height: 5,
                             ),
+                            Text(" Upload File",style: GoogleFonts.openSans(fontSize: 17,fontWeight: FontWeight.bold),),
+                            Divider(),
 
                             ///file xml
                             GestureDetector(
@@ -556,16 +572,16 @@ class VesselPage{
                                           "Kolom Tahun Pembuatan Masih Kosong...");
                                       return;
                                     }
-                                    if (ipController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom IP Pembuatan Masih Kosong...");
-                                      return;
-                                    }
-                                    if (portController.text.isEmpty) {
-                                      EasyLoading.showError(
-                                          "Kolom Port Masih Kosong...");
-                                      return;
-                                    }
+                                    // if (ipController.text.isEmpty) {
+                                    //   EasyLoading.showError(
+                                    //       "Kolom IP Pembuatan Masih Kosong...");
+                                    //   return;
+                                    // }
+                                    // if (portController.text.isEmpty) {
+                                    //   EasyLoading.showError(
+                                    //       "Kolom Port Masih Kosong...");
+                                    //   return;
+                                    // }
                                     if (vesselSize == null) {
                                       EasyLoading.showError(
                                           "Kolom Ukuran Kapal Masih Kosong...");
@@ -582,9 +598,10 @@ class VesselPage{
                                       classController.text,
                                       builderController.text,
                                       yearbuiltController.text,
-                                      ipController.text,
-                                      portController.text,
                                       vesselSize!,
+                                      // ipController.text,
+                                      // portController.text,
+
                                     ];
                                     value.submitVessel(
                                         data, context, value.file);
@@ -593,8 +610,8 @@ class VesselPage{
                                     classController.clear();
                                     builderController.clear();
                                     yearbuiltController.clear();
-                                    ipController.clear();
-                                    portController.clear();
+                                    // ipController.clear();
+                                    // portController.clear();
                                     vesselSize = null;
                                     value.clearFile();
                                   },
@@ -622,8 +639,8 @@ class VesselPage{
                                     classController.clear();
                                     builderController.clear();
                                     yearbuiltController.clear();
-                                    ipController.clear();
-                                    portController.clear();
+                                    // ipController.clear();
+                                    // portController.clear();
                                     vesselSize = null;
                                     value.clearFile();
                                     Navigator.pop(context);
@@ -718,6 +735,264 @@ class VesselPage{
                                 // )
                               ],
                             )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  static uploadIpAndPort(BuildContext context, Notifier value,String callSign) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          var width = MediaQuery.of(context).size.width;
+
+          return Dialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5))),
+            child: Container(
+              color: Colors.white,
+              width: width / 3,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    color: Colors.black12,
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          " Upload Ip & Port",
+                          style: GoogleFonts.openSans(
+                              fontSize: 15, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            ipController.clear();
+                            portController.clear();
+                            type = null;
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 480,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              height: 5,
+                            ),
+                            CustomTextField(
+                              controller: ipController,
+                              hint: 'IP',
+                              type: TextInputType.text,
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 35,
+                                    child: TextFormField(
+                                      style: TextStyle(fontSize: 14),
+                                      controller: portController,
+                                      keyboardType: TextInputType.text,
+                                      decoration: InputDecoration(
+                                          contentPadding: EdgeInsets.fromLTRB(8, 3, 1, 3),
+                                          labelText: "Port",
+                                          labelStyle: Constants.labelstyle,
+                                          floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1,color: Colors.blueAccent),),
+                                          enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(width: 1,color: Colors.black38)
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.white
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 5,),
+                                SizedBox(
+                                  height: 35,
+                                  width: 150,
+                                  child: DropdownSearch<String>(
+                                    dropdownBuilder: (context, selectedItem) =>
+                                        Text(
+                                          selectedItem ?? "",
+                                          style: const TextStyle(
+                                              fontSize: 15, color: Colors.black54),
+                                        ),
+                                    popupProps: PopupPropsMultiSelection.dialog(
+                                      fit: FlexFit.loose,
+                                      itemBuilder: (context, item, isSelected) =>
+                                          ListTile(
+                                            title: Text(
+                                              item,
+                                              style: const TextStyle(
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                          ),
+                                    ),
+                                    dropdownDecoratorProps: DropDownDecoratorProps(
+                                      dropdownSearchDecoration: InputDecoration(
+                                        labelText: "Type",
+                                        labelStyle: Constants.labelstyle,
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: 1, color: Colors.blueAccent),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: 1, color: Colors.black38)),
+                                        contentPadding:
+                                        const EdgeInsets.fromLTRB(8, 3, 1, 3),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                      ),
+                                    ),
+                                    items: [
+                                      "all",
+                                      "gga",
+                                      "hdt",
+                                      "vtg",
+                                    ],
+                                    onChanged: (value) {
+                                      type = value;
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                ElevatedButton(
+                                  style: ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all(
+                                        Colors.blueAccent),
+                                    shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    if (ipController.text.isEmpty) {
+                                      EasyLoading.showError(
+                                          "Kolom IP Masih Kosong...");
+                                      return;
+                                    }
+                                    if (portController.text.isEmpty) {
+                                      EasyLoading.showError(
+                                          "Kolom Port Masih Kosong...");
+                                      return;
+                                    }
+                                    if (type == null) {
+                                      EasyLoading.showError(
+                                          "Kolom Type Masih Kosong...");
+                                      return;
+                                    }
+                                    Map<String,String> data = {
+                                      "call_sign" : callSign,
+                                     "ip" : ipController.text,
+                                     "port" : portController.text,
+                                      "type_ip" : type!,
+                                  };
+                                     value.uploadIP(data, context,callSign);
+                                    ipController.clear();
+                                    portController.clear();
+                                    type = null;
+                                  },
+                                  child: Text(
+                                    "Save",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 5,),
+                            SizedBox(
+                              height: 380,
+                              child: SingleChildScrollView(
+                                child: SingleChildScrollView(
+                                    scrollDirection:
+                                    Axis.horizontal,
+                                    child: value.isLoadingIp
+                                        ? const Center(
+                                        child:
+                                        CircularProgressIndicator())
+                                        : DataTable(
+                                        headingRowColor:
+                                        MaterialStateProperty
+                                            .all(Color(
+                                            0xffd3d3d3)),
+                                        columns: [
+                                          const DataColumn(
+                                              label: Text(
+                                                  "No")),
+                                          const DataColumn(
+                                              label: Text(
+                                                  "IP")),
+                                          const DataColumn(
+                                              label: Text(
+                                                  "Port")),
+                                          const DataColumn(
+                                              label: Text(
+                                                  "Type")),
+                                          const DataColumn(
+                                              label: Text(
+                                                  "Delete")),
+                                        ],
+                                        rows: value
+                                            .ipPortResult
+                                            .map((data) {
+                                          return DataRow(
+                                              cells: [
+                                                DataCell(SizedBox(
+                                                    width: 10,
+                                                    child: Text(""))),
+                                                DataCell(Text(data.ip!)),
+                                                DataCell(Text(data.port!)),
+                                                DataCell(Text(data.typeIp!)),
+                                                DataCell(IconButton(onPressed: (){
+                                                  Alerts.showAlertYesNo(
+                                                      title: "Are you sure you want to delete this data?",
+                                                      onPressYes: () {
+                                                        value.deleteIP(data.idIpKapal!,data.callSign!, context);
+                                                      },
+                                                      onPressNo: () {
+                                                        Navigator.pop(context);
+                                                      },
+                                                      context: context);
+                                                },icon: Icon(Icons.delete),)),
+                                              ]);
+                                        }).toList())),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -879,6 +1154,8 @@ class VesselPage{
                             const SizedBox(
                               height: 5,
                             ),
+                            Text(" Upload File",style: GoogleFonts.openSans(fontSize: 17,fontWeight: FontWeight.bold),),
+                            Divider(),
                             GestureDetector(
                               onTap: () {
                                 value.selectFile("XML");
@@ -945,6 +1222,7 @@ class VesselPage{
                             const SizedBox(
                               height: 5,
                             ),
+
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [

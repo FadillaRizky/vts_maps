@@ -17,11 +17,14 @@ import 'package:vts_maps/api/SubmitVesselResponse.dart';
 
 import '../utils/shared_pref.dart';
 import 'DeleteClientResponse.dart';
+import 'DeleteIpAndPortResponse.dart';
 import 'DeletePipelineResponse.dart';
 import 'DeleteVesselResponse.dart';
 import 'EditPipelineResponse.dart';
 import 'GetAllVesselCoor.dart';
+import 'GetIpListResponse.dart';
 import 'GetPipelineResponse.dart';
+import 'UploadIpAndPortResponse.dart';
 
 const BASE_URL = "https://api.binav-avts.id/api";
 // const BASE_URL = "http://127.0.0.1:8000/api";
@@ -159,9 +162,10 @@ class Api{
       formData.append("class", data[2]);
       formData.append("builder", data[3]);
       formData.append("year_built", data[4]);
-      formData.append("ip", data[5]);
-      formData.append("port", data[6]);
-      formData.append("size", data[7]);
+      formData.append("size", data[5]);
+      // formData.append("ip", data[5]);
+      // formData.append("port", data[6]);
+
 
       final request = html.HttpRequest();
       request.open('POST', url.toString());
@@ -254,6 +258,46 @@ class Api{
 
   }
 
+  /// CRUD IP AND PORT
+
+  static Future<UploadIpAndPortResponse> uploadIP(Map <String,String> data) async {
+    var url = "$BASE_URL/insert_kapal_ip";
+    var response = await http.post(
+      Uri.parse(url),
+      body : data
+    );
+    if (response.statusCode == 200) {
+      return UploadIpAndPortResponse.fromJson(jsonDecode(response.body));
+    }
+    throw "Gagal upload ip and port:\n${response.body}";
+
+  }
+
+  static Future<GetIpListResponse> getIpList(String callSign)async{
+    var url = "$BASE_URL/get_kapal_ip?call_sign=$callSign";
+    var response = await http.get(
+      Uri.parse(url),
+    );
+    if (response.statusCode == 200) {
+      return GetIpListResponse.fromJson(jsonDecode(response.body));
+    }
+    //jika tidak,muncul pesan error
+    throw "Gagal request ip list:\n${response.body}";
+  }
+
+  static Future<DeleteIpAndPortResponse> deleteIP(String id) async {
+    var url = "$BASE_URL/delete_kapal_ip/$id";
+    var response = await http.post(
+      Uri.parse(url),
+    );
+    if (response.statusCode == 200) {
+      return DeleteIpAndPortResponse.fromJson(jsonDecode(response.body));
+    }
+    throw "Gagal delete IP:\n${response.body}";
+
+  }
+
+
   /// CRUD PIPELINE
 
   static Future<SubmitPipelineResponse> submitPipeline(String name,bool onOff,html.File file) async {
@@ -304,7 +348,7 @@ class Api{
     throw "Gagal request data pipeline:\n${response.body}";
   }
 
-  static Future<EditPipelineResponse>editPipeline(String id,String name,bool onOff,html.File? file) async {
+  static Future<EditPipelineResponse> editPipeline(String id,String name,bool onOff,html.File? file) async {
     try{
       ///jangan di hapus
       // var datatoken = await LoginPref.getPref();

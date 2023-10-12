@@ -9,6 +9,7 @@ import 'package:vts_maps/api/GetAllVesselCoor.dart' as LatestVesselCoor;
 import 'package:vts_maps/api/GetAllLatLangCoor.dart' as LatLangCoor;
 import 'package:vts_maps/api/GetAllVessel.dart' as Vessel;
 import 'package:vts_maps/api/GetKapalAndCoor.dart' as VesselCoor;
+import 'package:vts_maps/api/GetIpListResponse.dart' as IpList;
 import 'package:vts_maps/api/GetPipelineResponse.dart' as Pipeline;
 import 'package:vts_maps/api/GetClientListResponse.dart' as ClientResponse;
 import 'package:vts_maps/api/api.dart';
@@ -36,6 +37,11 @@ class Notifier extends ChangeNotifier {
   /// CRUD VESSEL
   List<VesselCoor.Data> _vesselCoorResult = [];
   List<VesselCoor.Data> get vesselCoorResult => _vesselCoorResult;
+
+
+
+  int _totalIp = 0;
+  int get totalIp => _totalIp;
 
   int _currentPage = 1;
   int get currentPage => _currentPage;
@@ -182,6 +188,92 @@ class Notifier extends ChangeNotifier {
     });
     notifyListeners();
   }
+
+/// CRUD IP
+  List<IpList.Data> _ipPortResult = [];
+  List<IpList.Data> get ipPortResult => _ipPortResult;
+
+
+  void uploadIP(Map<String,String> data,BuildContext context, String callSign)async{
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    await Api.uploadIP(data).then((value){
+      if (value.message == "Data berhasil masuk database") {
+        EasyLoading.showSuccess("Berhasil Menambahkan Data");
+        Navigator.pop(context);
+        initIpList(callSign);
+        return;
+      }
+      if (value.message != "Data berhasil masuk database") {
+        EasyLoading.showError("Gagal Menambahkan Data, Coba Lagi...");
+        return;
+      }
+      return;
+    });
+    notifyListeners();
+  }
+
+  bool _isLoadingIp = false;
+  bool get isLoadingIp => _isLoadingIp;
+
+  void initIpList(String callSign) async{
+    _isLoadingIp = true;
+    await Api.getIpList(callSign).then((value){
+      _ipPortResult.clear();
+      if (value.total! == 0) {
+        _isLoadingIp = false;
+        _ipPortResult = [];
+        _totalIp = value.total!.toInt();
+      }
+      if (value.total! > 0) {
+        _ipPortResult.addAll(value.data!);
+        _isLoadingIp = false;
+        _totalIp = value.total!.toInt();
+      }
+    });
+    notifyListeners();
+  }
+
+  void deleteIP(String id,callSign,context){
+    Api.deleteIP(id).then((value) {
+      if (value.message == "Data berhasil di hapus database") {
+        EasyLoading.showSuccess("Data Terhapus..");
+        Navigator.pop(context);
+        initIpList(callSign);
+      } else {
+        EasyLoading.showError(
+            "Gagal Menghapus Data..");
+      }
+    });
+    notifyListeners();
+  }
+
+
+
+
 
   /// CRUD PIPELINE
   List<Pipeline.Data> _getPipelineResult = [];
