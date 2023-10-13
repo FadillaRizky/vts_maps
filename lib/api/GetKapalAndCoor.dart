@@ -233,19 +233,24 @@ class CoorHdt {
 }
 
 class Kapal {
+  String? idClient;
   String? callSign;
   String? flag;
   String? kelas;
   String? builder;
   String? size;
+  bool? status;
   String? yearBuilt;
   String? createdAt;
   String? updatedAt;
   String? xmlFile;
 
-  Kapal({this.callSign, this.flag, this.kelas, this.builder, this.size, this.yearBuilt, this.createdAt, this.updatedAt, this.xmlFile});
+  Kapal({this.idClient, this.callSign, this.flag, this.kelas, this.builder, this.size, this.status, this.yearBuilt, this.createdAt, this.updatedAt, this.xmlFile});
 
   Kapal.fromJson(Map<String, dynamic> json) {
+    if(json["id_client"] is String) {
+      idClient = json["id_client"];
+    }
     if(json["call_sign"] is String) {
       callSign = json["call_sign"];
     }
@@ -260,6 +265,9 @@ class Kapal {
     }
     if(json["size"] is String) {
       size = json["size"];
+    }
+    if(json["status"] is bool) {
+      status = json["status"];
     }
     if(json["year_built"] is String) {
       yearBuilt = json["year_built"];
@@ -277,11 +285,13 @@ class Kapal {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["id_client"] = idClient;
     _data["call_sign"] = callSign;
     _data["flag"] = flag;
     _data["kelas"] = kelas;
     _data["builder"] = builder;
     _data["size"] = size;
+    _data["status"] = status;
     _data["year_built"] = yearBuilt;
     _data["created_at"] = createdAt;
     _data["updated_at"] = updatedAt;

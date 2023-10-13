@@ -78,7 +78,29 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void submitVessel(data,context,file)async{
+  List<Vessel.Data> _vesselResult = [];
+  List<Vessel.Data> get vesselResult => _vesselResult;
+
+  void initVessel() async{
+    _isLoading = true;
+    await Api.getAllVessel(page:_currentPage).then((value){
+      _vesselResult.clear();
+      if (value.total! == 0) {
+        _isLoading = false;
+        _vesselResult = [];
+        _totalVessel = value.total!.toInt();
+      }
+      if (value.total! > 0) {
+        _vesselResult.addAll(value.data!);
+        _isLoading = false;
+        _totalVessel = value.total!.toInt();
+      }
+      // print(value.data!.first.kapal!.callSign);
+    });
+    notifyListeners();
+  }
+
+  void submitVessel(data,context,onOff,file)async{
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -104,7 +126,7 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-    await Api.submitCreateVessel(data, file).then((value){
+    await Api.submitCreateVessel(data,onOff, file).then((value){
           if (value.message == "Validator Fails") {
             Navigator.pop(context);
             EasyLoading.showError("Call Sign sudah Terdaftar");
@@ -114,12 +136,13 @@ class Notifier extends ChangeNotifier {
             Navigator.pop(context);
             EasyLoading.showSuccess("Berhasil Menambahkan Data");
             Navigator.pop(context);
+            initVessel();
             initVesselCoor();
             return;
           }
           if (value.message != "Data berhasil masuk database") {
             Navigator.pop(context);
-            EasyLoading.showError("Gagal Menambahkan Data, Coba Lagi...");
+            EasyLoading.showError("Gagal Menambahkan Kapal Karena : ${value.message}. Coba Lagi...");
             return;
           }
           return;
@@ -127,7 +150,7 @@ class Notifier extends ChangeNotifier {
      notifyListeners();
   }
 
-  void editVessel(data,context,file)async{
+  void editVessel(data,context,onOff,file)async{
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -153,7 +176,7 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-    await Api.editVessel(data,file).then((value) {
+    await Api.editVessel(data,onOff,file).then((value) {
       print(value.message);
       if (value.message != "Data berhasil di ubah database") {
         Navigator.pop(context);
@@ -163,6 +186,7 @@ class Notifier extends ChangeNotifier {
         Navigator.pop(context);
         EasyLoading.showSuccess("Berhasil Edit Kapal");
         Navigator.pop(context);
+        initVessel();
         initVesselCoor();
       }
       if (value.message == "Validator Fails") {
@@ -180,6 +204,7 @@ class Notifier extends ChangeNotifier {
       if (value.status == 200) {
         EasyLoading.showSuccess("Kapal Terhapus..");
         Navigator.pop(context);
+        initVessel();
         initVesselCoor();
       } else {
         EasyLoading.showError(
@@ -301,7 +326,7 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void submitPipeline(String name,bool onOff,context,file)async{
+  void submitPipeline(String idClientValue,String name,bool onOff,context,file)async{
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -327,7 +352,7 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-    await Api.submitPipeline(name,onOff,file).then((value){
+    await Api.submitPipeline(idClientValue,name,onOff,file).then((value){
       print(value.message);
       // if (value.message == "Validator Fails") {
       //   Navigator.pop(context);
@@ -382,6 +407,7 @@ class Notifier extends ChangeNotifier {
       if (value.message != "Data berhasil di ubah database") {
         Navigator.pop(context);
         EasyLoading.showError("Gagal Edit Data");
+        Navigator.pop(context);
       }
       if (value.message == "Data berhasil di ubah database") {
         Navigator.pop(context);

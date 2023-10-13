@@ -1,18 +1,24 @@
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:pagination_flutter/pagination.dart';
-import 'package:vts_maps/change_notifier/change_notifier.dart';
-import 'package:vts_maps/utils/alerts.dart';
-import 'package:vts_maps/utils/constants.dart';
-import 'package:vts_maps/utils/text_field.dart';
+import "package:dropdown_textfield/dropdown_textfield.dart";
+import "package:flutter/material.dart";
+import "package:flutter_easyloading/flutter_easyloading.dart";
+import "package:google_fonts/google_fonts.dart";
+import "package:pagination_flutter/pagination.dart";
+import "package:vts_maps/change_notifier/change_notifier.dart";
+import "package:vts_maps/utils/alerts.dart";
+
 import 'package:vts_maps/api/GetPipelineResponse.dart' as PipelineResponse;
+import "package:vts_maps/utils/constants.dart";
+import "package:vts_maps/utils/text_field.dart";
+
 
 class PipelinePage{
+  static SingleValueDropDownController clientController =
+      SingleValueDropDownController();
+  static String? idClientValue;
+  static bool isSwitched = false;
   static TextEditingController nameController = TextEditingController();
-
-  static PipelineList(BuildContext context,Notifier value){
+  
+  static pipelineList(BuildContext context,Notifier value, int pageSize,){
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -123,82 +129,79 @@ class PipelinePage{
                                     ? const Center(
                                     child:
                                     CircularProgressIndicator())
-                                    : SizedBox(
-                                  width: 900,
-                                  child: DataTable(
-                                      headingRowColor:
-                                      MaterialStateProperty
-                                          .all(Color(
-                                          0xffd3d3d3)),
-                                      columns: [
-                                        const DataColumn(
-                                            label: Text(
-                                                "Name")),
-                                        const DataColumn(
-                                            label: Text(
-                                                "File")),
-                                        const DataColumn(
-                                            label: Text(
-                                                "Switch")),
-                                        const DataColumn(
-                                            label: Text(
-                                                "Action")),
-                                      ],
-                                      rows: value
-                                          .getPipelineResult
-                                          .map(
-                                              (data) {
-                                            return DataRow(
-                                              cells: [
-                                                DataCell(
-                                                    Text(data
-                                                        .name!)),
-                                                DataCell(
-                                                    Text(data
-                                                        .file!)),
-                                                DataCell(Text(data
-                                                    .onOff!
-                                                    ? "ON"
-                                                    : "OFF")),
-                                                DataCell(
-                                                    Row(
-                                                      children: [
-                                                        IconButton(
-                                                          icon:
-                                                          const Icon(
-                                                            Icons.edit,
-                                                            color: Colors.blue,
+                                    : DataTable(
+                                        headingRowColor:
+                                        MaterialStateProperty
+                                            .all(Color(
+                                            0xffd3d3d3)),
+                                        columns: [
+                                          const DataColumn(
+                                              label: Text(
+                                                  "Name")),
+                                          const DataColumn(
+                                              label: Text(
+                                                  "File")),
+                                          const DataColumn(
+                                              label: Text(
+                                                  "Switch")),
+                                          const DataColumn(
+                                              label: Text(
+                                                  "Action")),
+                                        ],
+                                        rows: value
+                                            .getPipelineResult
+                                            .map(
+                                                (data) {
+                                              return DataRow(
+                                                cells: [
+                                                  DataCell(
+                                                      Text(data
+                                                          .name!)),
+                                                  DataCell(
+                                                      Text(data
+                                                          .file!.replaceAll("https://api.binav-avts.id/storage/mapping/",""))),
+                                                  DataCell(Text(data
+                                                      .onOff!
+                                                      ? "ON"
+                                                      : "OFF")),
+                                                  DataCell(
+                                                      Row(
+                                                        children: [
+                                                          IconButton(
+                                                            icon:
+                                                            const Icon(
+                                                              Icons.edit,
+                                                              color: Colors.blue,
+                                                            ),
+                                                            onPressed:
+                                                                () {
+                                                              editPipeline(data, context, value);
+                                                            },
                                                           ),
-                                                          onPressed:
-                                                              () {
-                                                            editPipeline(data, context, value);
-                                                          },
-                                                        ),
-                                                        IconButton(
-                                                          icon:
-                                                          const Icon(
-                                                            Icons.delete,
-                                                            color: Colors.red,
+                                                          IconButton(
+                                                            icon:
+                                                            const Icon(
+                                                              Icons.delete,
+                                                              color: Colors.red,
+                                                            ),
+                                                            onPressed:
+                                                                () {
+                                                              Alerts.showAlertYesNo(
+                                                                  title: "Are you sure you want to delete this data?",
+                                                                  onPressYes: () {
+                                                                    value.deletePipeline(data.idMapping.toString(), context);
+                                                                  },
+                                                                  onPressNo: () {
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                  context: context);
+                                                            },
                                                           ),
-                                                          onPressed:
-                                                              () {
-                                                            Alerts.showAlertYesNo(
-                                                                title: "Are you sure you want to delete this data?",
-                                                                onPressYes: () {
-                                                                  value.deletePipeline(data.idMapping.toString(), context);
-                                                                },
-                                                                onPressNo: () {
-                                                                  Navigator.pop(context);
-                                                                },
-                                                                context: context);
-                                                          },
-                                                        ),
-                                                      ],
-                                                    )),
-                                              ],
-                                            );
-                                          }).toList()),
-                                )),
+                                                        ],
+                                                      )),
+                                                ],
+                                              );
+                                            }).toList())),
                           ),
                         ),
                         Pagination(
@@ -256,7 +259,8 @@ class PipelinePage{
                       ])));
         });
   }
-  static addPipeline(BuildContext context, Notifier readNotifier) {
+  /// function CRUD PIPELINE
+  static addPipeline(BuildContext context, Notifier value) {
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -285,8 +289,8 @@ class PipelinePage{
                         IconButton(
                           onPressed: () {
                             nameController.clear();
-                            readNotifier.switchControl(false);
-                            readNotifier.clearFile();
+                            isSwitched = false;
+                            value.clearFile();
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.close),
@@ -305,6 +309,55 @@ class PipelinePage{
                             SizedBox(
                               height: 5,
                             ),
+                            SizedBox(
+                              height: 35,
+                              width: double.infinity,
+                              child: DropDownTextField(
+                                controller: clientController,
+                                dropDownList: [
+                                  for (var x in value.getClientResult)
+                                    DropDownValueModel(
+                                        name: '${x.clientName} - ${x.idClient}',
+                                        value: "${x.idClient}"),
+                                ],
+                                clearOption: false,
+                                enableSearch: true,
+                                textStyle: TextStyle(color: Colors.black),
+                                searchDecoration: const InputDecoration(
+                                    hintText:
+                                        "enter your custom hint text here"),
+                                validator: (value) {
+                                  if (value == null) {
+                                    return "Required field";
+                                  } else {
+                                    return null;
+                                  }
+                                },
+                                onChanged: (value) {
+                                  idClientValue =
+                                      clientController.dropDownValue!.value.toString();
+                                  // SingleValueDropDownController(data: DropDownValueModel(value: "${data['role']}", name: "${data['role']}"))
+                                },
+                                textFieldDecoration: InputDecoration(
+                                  labelText: "Pilih Client",
+                                  labelStyle: Constants.labelstyle,
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        width: 1, color: Colors.blueAccent),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          width: 1, color: Colors.black38)),
+                                  contentPadding:
+                                      const EdgeInsets.fromLTRB(8, 3, 1, 3),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 5,
+                            ),
                             CustomTextField(
                               controller: nameController,
                               hint: 'Name',
@@ -315,7 +368,7 @@ class PipelinePage{
                             ),
                             GestureDetector(
                               onTap: () {
-                                readNotifier.selectFile("KMZ");
+                                value.selectFile("KMZ");
                               },
                               child: Card(
                                 color: Colors.black12,
@@ -348,13 +401,13 @@ class PipelinePage{
                                                 constraints: BoxConstraints(
                                                     maxWidth: 70),
                                                 child: Text(
-                                                  readNotifier.nameFile!,
+                                                  value.nameFile!,
                                                   style: const TextStyle(
                                                       fontSize: 10,
                                                       color: Colors.black),
                                                   maxLines: 3,
                                                   overflow:
-                                                  TextOverflow.ellipsis,
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               )
                                             ],
@@ -374,9 +427,9 @@ class PipelinePage{
                               child: FittedBox(
                                 fit: BoxFit.fill,
                                 child: Switch(
-                                  value: readNotifier.isSwitched,
+                                  value: isSwitched,
                                   onChanged: (bool value) {
-                                    readNotifier.switchControl(value);
+                                    isSwitched = value;
                                   },
                                   activeTrackColor: Colors.lightGreen,
                                   activeColor: Colors.green,
@@ -389,6 +442,58 @@ class PipelinePage{
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
+                                // InkWell(
+                                //   onTap: () {
+                                //     ///
+                                //     nameController.clear();
+                                //     isSwitched = false;
+                                //     value.clearFile();
+                                //     Navigator.pop(context);
+                                //
+                                //   },
+                                //   child: Container(
+                                //     decoration: BoxDecoration(
+                                //       borderRadius: BorderRadius.circular(10),
+                                //       color: const Color(0xFFFF0000),
+                                //     ),
+                                //     padding: const EdgeInsets.all(5),
+                                //     alignment: Alignment.center,
+                                //     height: 30,
+                                //     child: const Text("Batal"),
+                                //   ),
+                                // ),
+                                // const SizedBox(
+                                //   width: 5,
+                                // ),
+                                // InkWell(
+                                //   onTap: () {
+                                //     if (nameController.text.isEmpty) {
+                                //       EasyLoading.showError(
+                                //           "Kolom Name Sign Masih Kosong...");
+                                //       return;
+                                //     }
+                                //     if (value.file == null) {
+                                //       EasyLoading.showError(
+                                //           "Kolom File Masih Kosong...");
+                                //       return;
+                                //     }
+                                //     value.submitPipeline(nameController.text, isSwitched, context, value.file);
+                                //     nameController.clear();
+                                //     isSwitched = false;
+                                //     value.clearFile();
+                                //
+                                //   },
+                                //   child: Container(
+                                //     decoration: BoxDecoration(
+                                //       borderRadius: BorderRadius.circular(10),
+                                //       color: const Color(0xFF399D44),
+                                //     ),
+                                //     padding: const EdgeInsets.all(5),
+                                //     alignment: Alignment.center,
+                                //     height: 30,
+                                //     child: const Text("Simpan"),
+                                //   ),
+                                // )
                                 ElevatedButton(
                                   style: ButtonStyle(
                                     backgroundColor: MaterialStateProperty.all(
@@ -400,21 +505,28 @@ class PipelinePage{
                                     ),
                                   ),
                                   onPressed: () {
+                                    if (idClientValue!.isEmpty) {
+                                      EasyLoading.showError(
+                                          "Kolom Client Masih Kosong...");
+                                      return;
+                                    }
                                     if (nameController.text.isEmpty) {
                                       EasyLoading.showError(
                                           "Kolom Name Sign Masih Kosong...");
                                       return;
                                     }
-                                    if (readNotifier.file == null) {
+                                    if (value.file == null) {
                                       EasyLoading.showError(
                                           "Kolom File Masih Kosong...");
                                       return;
                                     }
-                                    readNotifier.submitPipeline(nameController.text,
-                                        readNotifier.isSwitched, context, readNotifier.file);
+                                    value.submitPipeline(idClientValue!,nameController.text,
+                                        isSwitched, context, value.file);
+                                    idClientValue = null;
+                                    clientController.clearDropDown();
                                     nameController.clear();
-                                    readNotifier.switchControl(false);
-                                    readNotifier.clearFile();
+                                    isSwitched = false;
+                                    value.clearFile();
                                   },
                                   child: Text(
                                     "Submit",
@@ -431,13 +543,15 @@ class PipelinePage{
                                       shape: MaterialStateProperty.all(
                                           RoundedRectangleBorder(
                                               borderRadius:
-                                              BorderRadius.circular(5),
+                                                  BorderRadius.circular(5),
                                               side: BorderSide(
                                                   color: Colors.blueAccent)))),
                                   onPressed: () {
+                                    idClientValue = null;
+                                    clientController.clearDropDown();
                                     nameController.clear();
-                                    readNotifier.switchControl(false);
-                                    readNotifier.clearFile();
+                                    isSwitched = false;
+                                    value.clearFile();
                                     Navigator.pop(context);
                                   },
                                   child: Text(
@@ -462,8 +576,8 @@ class PipelinePage{
   }
 
   static editPipeline(
-      PipelineResponse.Data data, BuildContext context, Notifier readNotifier) {
-    readNotifier.switchControl(data.onOff!);
+      PipelineResponse.Data data, BuildContext context, Notifier value) {
+    isSwitched = data.onOff!;
     nameController.text = data.name!;
     showDialog(
         context: context,
@@ -493,8 +607,8 @@ class PipelinePage{
                         IconButton(
                           onPressed: () {
                             nameController.clear();
-                            readNotifier.switchControl(false);
-                            readNotifier.clearFile();
+                            isSwitched = false;
+                            value.clearFile();
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.close),
@@ -523,7 +637,7 @@ class PipelinePage{
                             ),
                             GestureDetector(
                               onTap: () {
-                                readNotifier.selectFile("KMZ");
+                                value.selectFile("KMZ");
                               },
                               child: Card(
                                 color: Colors.black12,
@@ -556,17 +670,17 @@ class PipelinePage{
                                                 constraints: BoxConstraints(
                                                     maxWidth: 70),
                                                 child: Text(
-                                                  readNotifier.nameFile != ""
-                                                      ? readNotifier.nameFile!
+                                                  value.nameFile != ""
+                                                      ? value.nameFile!
                                                       : data.file != null
-                                                      ? data.file!
-                                                      : "",
+                                                          ? data.file!
+                                                          : "",
                                                   style: const TextStyle(
                                                       fontSize: 10,
                                                       color: Colors.black),
                                                   maxLines: 3,
                                                   overflow:
-                                                  TextOverflow.ellipsis,
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               )
                                             ],
@@ -586,9 +700,9 @@ class PipelinePage{
                               child: FittedBox(
                                 fit: BoxFit.fill,
                                 child: Switch(
-                                  value: readNotifier.isSwitched,
+                                  value: isSwitched,
                                   onChanged: (bool value) {
-                                    readNotifier.switchControl(value);
+                                    isSwitched = value;
                                   },
                                   activeTrackColor: Colors.lightGreen,
                                   activeColor: Colors.green,
@@ -601,6 +715,51 @@ class PipelinePage{
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
+                                // InkWell(
+                                //   onTap: () {
+                                //     ///
+                                //     nameController.clear();
+                                //     isSwitched = false;
+                                //     value.clearFile();
+                                //     Navigator.pop(context);
+                                //   },
+                                //   child: Container(
+                                //     decoration: BoxDecoration(
+                                //       borderRadius: BorderRadius.circular(10),
+                                //       color: const Color(0xFFFF0000),
+                                //     ),
+                                //     padding: const EdgeInsets.all(5),
+                                //     alignment: Alignment.center,
+                                //     height: 30,
+                                //     child: const Text("Batal"),
+                                //   ),
+                                // ),
+                                // const SizedBox(
+                                //   width: 5,
+                                // ),
+                                // InkWell(
+                                //   onTap: () {
+                                //     if (nameController.text.isEmpty) {
+                                //       EasyLoading.showError(
+                                //           "Kolom Name Masih Kosong...");
+                                //       return;
+                                //     }
+                                //     value.editPipeline(data.idMapping, nameController.text, isSwitched, context, value.file);
+                                //     nameController.clear();
+                                //     isSwitched = false;
+                                //     value.clearFile();
+                                //   },
+                                //   child: Container(
+                                //     decoration: BoxDecoration(
+                                //       borderRadius: BorderRadius.circular(10),
+                                //       color: const Color(0xFF399D44),
+                                //     ),
+                                //     padding: const EdgeInsets.all(5),
+                                //     alignment: Alignment.center,
+                                //     height: 30,
+                                //     child: const Text("Simpan"),
+                                //   ),
+                                // )
                                 ElevatedButton(
                                   style: ButtonStyle(
                                     backgroundColor: MaterialStateProperty.all(
@@ -617,15 +776,15 @@ class PipelinePage{
                                           "Kolom Name Masih Kosong...");
                                       return;
                                     }
-                                    readNotifier.editPipeline(
+                                    value.editPipeline(
                                         data.idMapping.toString(),
                                         nameController.text,
-                                        readNotifier.isSwitched,
+                                        isSwitched,
                                         context,
-                                        readNotifier.file);
+                                        value.file);
                                     nameController.clear();
-                                    readNotifier.switchControl(false);
-                                    readNotifier.clearFile();
+                                    isSwitched = false;
+                                    value.clearFile();
                                   },
                                   child: Text(
                                     "Submit",
@@ -642,13 +801,13 @@ class PipelinePage{
                                       shape: MaterialStateProperty.all(
                                           RoundedRectangleBorder(
                                               borderRadius:
-                                              BorderRadius.circular(5),
+                                                  BorderRadius.circular(5),
                                               side: BorderSide(
                                                   color: Colors.blueAccent)))),
                                   onPressed: () {
                                     nameController.clear();
-                                    readNotifier.switchControl(false);
-                                    readNotifier.clearFile();
+                                    isSwitched = false;
+                                    value.clearFile();
                                     Navigator.pop(context);
                                   },
                                   child: Text(
