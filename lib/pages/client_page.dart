@@ -9,15 +9,17 @@ import 'package:vts_maps/utils/constants.dart';
 import 'package:vts_maps/utils/text_field.dart';
 import 'package:vts_maps/api/GetClientListResponse.dart' as ClientList;
 
-class ClientPage{
-    static TextEditingController nameController = TextEditingController();
-    static TextEditingController emailControler = TextEditingController();
-    static TextEditingController passwordController = TextEditingController();
-    static TextEditingController confirmpasswordController = TextEditingController();
+class ClientPage {
+  static TextEditingController nameController = TextEditingController();
+  static TextEditingController emailControler = TextEditingController();
+  static TextEditingController passwordController = TextEditingController();
+  static TextEditingController confirmpasswordController =
+      TextEditingController();
 
-  static clientList(BuildContext context,Notifier value,){
-
-
+  static clientList(
+    BuildContext context,
+    Notifier value,
+  ) {
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -27,27 +29,23 @@ class ClientPage{
 
           return Dialog(
               shape: const RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius.all(Radius.circular(5))),
+                  borderRadius: BorderRadius.all(Radius.circular(5))),
               child: SizedBox(
                   width: width / 1.5,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
                         color: Colors.black12,
                         padding: const EdgeInsets.all(10),
                         child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment
-                              .spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               " Client List",
                               style: GoogleFonts.openSans(
-                                  fontSize: 20,fontWeight: FontWeight.bold),
+                                  fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                             IconButton(
                               onPressed: () {
@@ -61,9 +59,7 @@ class ClientPage{
                       Padding(
                         padding: const EdgeInsets.all(10),
                         child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment
-                              .spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                                 "Page ${value.currentPage} of ${(value.totalClient / 10).ceil()}"),
@@ -79,18 +75,22 @@ class ClientPage{
                                         shape: MaterialStateProperty.all(
                                             RoundedRectangleBorder(
                                                 borderRadius:
-                                                BorderRadius
-                                                    .circular(
-                                                    5))),
+                                                    BorderRadius.circular(5))),
                                         backgroundColor:
-                                        MaterialStateProperty
-                                            .all(Colors
-                                            .blueAccent)),
-                                    onPressed: (){
+                                            MaterialStateProperty.all(
+                                                Colors.blueAccent)),
+                                    onPressed: () {
                                       value.initClientList();
-                                    }, icon: Icon(Icons.refresh,color: Colors.white,),),
+                                    },
+                                    icon: Icon(
+                                      Icons.refresh,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
-                                SizedBox(width: 5,),
+                                SizedBox(
+                                  width: 5,
+                                ),
                                 SizedBox(
                                   height: 40,
                                   child: ElevatedButton(
@@ -98,16 +98,14 @@ class ClientPage{
                                           shape: MaterialStateProperty.all(
                                               RoundedRectangleBorder(
                                                   borderRadius:
-                                                  BorderRadius
-                                                      .circular(
-                                                      5))),
+                                                      BorderRadius.circular(
+                                                          5))),
                                           backgroundColor:
-                                          MaterialStateProperty
-                                              .all(Colors
-                                              .blueAccent)),
+                                              MaterialStateProperty.all(
+                                                  Colors.blueAccent)),
                                       onPressed: () {
                                         ///FUNCTION ADD CLIENT
-                                        addClientList(context,value);
+                                        addClientList(context, value);
                                       },
                                       child: Text(
                                         "Add Client",
@@ -127,96 +125,110 @@ class ClientPage{
                         height: 380,
                         child: SingleChildScrollView(
                           child: SingleChildScrollView(
-                              scrollDirection:
-                              Axis.horizontal,
+                              scrollDirection: Axis.horizontal,
                               child: value.isLoading
                                   ? const Center(
-                                  child:
-                                  CircularProgressIndicator())
+                                      child: CircularProgressIndicator())
                                   : SizedBox(
-                                width: 900,
-                                    child: DataTable(
-                                    headingRowColor:
-                                    MaterialStateProperty
-                                        .all(Color(
-                                        0xffd3d3d3)),
-                                    columns: [
-                                      const DataColumn(
-                                          label: Text(
-                                              "Name")),
-                                      const DataColumn(
-                                          label: Text(
-                                              "Email")),
-                                      const DataColumn(
-                                          label: Text(
-                                              "Status")),
-                                      const DataColumn(
-                                          label: Text(
-                                              "Action")),
-                                    ],
-                                    rows: value
-                                        .getClientResult
-                                        .map((data) {
-                                      return DataRow(
-                                          cells: [
-                                            DataCell(Text(data
-                                                .clientName!)),
-                                            DataCell(Text(data
-                                                .email!)),
-                                            DataCell(Text(
-                                                (data.status! == "1")
-                                            ? "ACTIVE"
-                                            : "INACTIVE"
-                                            )),
-                                            DataCell(Row(
-                                              children: [
-                                                IconButton(
-                                                  icon:
-                                                  const Icon(
-                                                    Icons
-                                                        .edit,
-                                                    color:
-                                                    Colors.blue,
-                                                  ),
-                                                  onPressed:
-                                                      () {
-                                                    /// FUNCTION EDIT CLIENT
-                                                        editClientList(data, context, value);
-
-                                                  },
+                                      width: 900,
+                                      child: DataTable(
+                                          headingRowColor:
+                                              MaterialStateProperty.all(
+                                                  Color(0xffd3d3d3)),
+                                          columns: [
+                                            const DataColumn(
+                                                label: Text("Name")),
+                                            const DataColumn(
+                                                label: Text("Email")),
+                                            const DataColumn(
+                                                label: Text("Status")),
+                                            const DataColumn(
+                                                label: Text(
+                                                    "View Client Only Data")),
+                                            const DataColumn(
+                                                label: Text("Action")),
+                                          ],
+                                          rows:
+                                              value.getClientResult.map((data) {
+                                            return DataRow(cells: [
+                                              DataCell(Text(data.clientName!)),
+                                              DataCell(Text(data.email!)),
+                                              DataCell(Text(
+                                                  (data.status! == "1")
+                                                      ? "ACTIVE"
+                                                      : "INACTIVE")),
+                                              DataCell(
+                                                SizedBox(
+                                                  height: 40,
+                                                  child: ElevatedButton(
+                                                      style: ButtonStyle(
+                                                          shape: MaterialStateProperty.all(
+                                                              RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              5))),
+                                                          backgroundColor:
+                                                              MaterialStateProperty
+                                                                  .all(Colors
+                                                                      .blueAccent)),
+                                                      onPressed: () {
+                                                        ///FUNCTION VIEW CLIENT ONLY DATA
+                                                        // addClientList(
+                                                        //     context, value);
+                                                      },
+                                                      child: Text(
+                                                        "View Client",
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                        ),
+                                                      )),
                                                 ),
-                                                IconButton(
-                                                  icon:
-                                                  const Icon(
-                                                    Icons
-                                                        .delete,
-                                                    color:
-                                                    Colors.red,
+                                              ),
+                                              DataCell(Row(
+                                                children: [
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.edit,
+                                                      color: Colors.blue,
+                                                    ),
+                                                    onPressed: () {
+                                                      /// FUNCTION EDIT CLIENT
+                                                      editClientList(
+                                                          data, context, value);
+                                                    },
                                                   ),
-                                                  onPressed:
-                                                      () {
-                                                    Alerts.showAlertYesNo(
-                                                        title: "Are you sure you want to delete this user?",
-                                                        onPressYes: () {
-                                                         /// FUNCTION DELETE CLIENT
-                                                          value.deleteClient(data.idClient, context);
-                                                        },
-                                                        onPressNo: () {
-                                                          Navigator.pop(context);
-                                                        },
-                                                        context: context);
-                                                  },
-                                                ),
-                                              ],
-                                            )),
-                                          ]);
-                                    }).toList()),
-                                  )),
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.delete,
+                                                      color: Colors.red,
+                                                    ),
+                                                    onPressed: () {
+                                                      Alerts.showAlertYesNo(
+                                                          title:
+                                                              "Are you sure you want to delete this user?",
+                                                          onPressYes: () {
+                                                            /// FUNCTION DELETE CLIENT
+                                                            value.deleteClient(
+                                                                data.idClient,
+                                                                context);
+                                                          },
+                                                          onPressNo: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          context: context);
+                                                    },
+                                                  ),
+                                                ],
+                                              )),
+                                            ]);
+                                          }).toList()),
+                                    )),
                         ),
                       ),
                       Pagination(
-                        numOfPages:
-                        (value.totalClient / 10).ceil(),
+                        numOfPages: (value.totalClient / 10).ceil(),
                         selectedPage: value.currentPage,
                         pagesVisible: 7,
                         onPageChanged: (page) {
@@ -240,21 +252,18 @@ class ClientPage{
                         ),
                         activeBtnStyle: ButtonStyle(
                           backgroundColor:
-                          MaterialStateProperty.all(
-                              Colors.blue),
+                              MaterialStateProperty.all(Colors.blue),
                           shape: MaterialStateProperty.all(
                             RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(38),
+                              borderRadius: BorderRadius.circular(38),
                             ),
                           ),
                         ),
                         inactiveBtnStyle: ButtonStyle(
-                          shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(38),
-                              )),
+                          shape:
+                              MaterialStateProperty.all(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(38),
+                          )),
                         ),
                         inactiveTextStyle: const TextStyle(
                           fontSize: 14,
@@ -372,8 +381,6 @@ class ClientPage{
                                     ),
                                   ),
                                   onPressed: () {
-                                    print(passwordController.text);
-                                    print(confirmpasswordController.text);
                                     if (nameController.text.isEmpty) {
                                       EasyLoading.showError(
                                           "Kolom Name Masih Kosong...");
@@ -389,12 +396,14 @@ class ClientPage{
                                           "Kolom Password Masih Kosong...");
                                       return;
                                     }
-                                    if (confirmpasswordController.text.isEmpty) {
+                                    if (confirmpasswordController
+                                        .text.isEmpty) {
                                       EasyLoading.showError(
                                           "Kolom Confirm Password Masih Kosong...");
                                       return;
                                     }
-                                    if (passwordController.text != confirmpasswordController.text) {
+                                    if (passwordController.text !=
+                                        confirmpasswordController.text) {
                                       EasyLoading.showError(
                                           "The Password Confirmation does not match...");
                                       return;
@@ -403,8 +412,10 @@ class ClientPage{
                                       "client_name": nameController.text,
                                       "email": emailControler.text,
                                       "password": passwordController.text,
-                                      "password_confirmation": confirmpasswordController.text,
-                                      "status": readNotifier.isSwitched ? "1" : "0"
+                                      "password_confirmation":
+                                          confirmpasswordController.text,
+                                      "status":
+                                          readNotifier.isSwitched ? "1" : "0"
                                     };
                                     readNotifier.submitClient(context, data);
                                     nameController.clear();
@@ -428,7 +439,7 @@ class ClientPage{
                                       shape: MaterialStateProperty.all(
                                           RoundedRectangleBorder(
                                               borderRadius:
-                                              BorderRadius.circular(5),
+                                                  BorderRadius.circular(5),
                                               side: BorderSide(
                                                   color: Colors.blueAccent)))),
                                   onPressed: () {
@@ -460,11 +471,14 @@ class ClientPage{
         });
   }
 
-
-  static editClientList(ClientList.Data data, BuildContext context, Notifier readNotifier,) {
+  static editClientList(
+    ClientList.Data data,
+    BuildContext context,
+    Notifier readNotifier,
+  ) {
     nameController.text = data.clientName!;
     emailControler.text = data.email!;
-    readNotifier.switchControl((data.status == "1")? true : false);
+    readNotifier.switchControl((data.status == "1") ? true : false);
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -571,9 +585,10 @@ class ClientPage{
                                       "id_client": data.idClient!,
                                       "client_name": nameController.text,
                                       "email": emailControler.text,
-                                      "status": readNotifier.isSwitched ? "1" : "0"
+                                      "status":
+                                          readNotifier.isSwitched ? "1" : "0"
                                     };
-                                    readNotifier.editClient(body,context);
+                                    readNotifier.editClient(body, context);
                                     nameController.clear();
                                     emailControler.clear();
                                     readNotifier.switchControl(false);
@@ -593,7 +608,7 @@ class ClientPage{
                                       shape: MaterialStateProperty.all(
                                           RoundedRectangleBorder(
                                               borderRadius:
-                                              BorderRadius.circular(5),
+                                                  BorderRadius.circular(5),
                                               side: BorderSide(
                                                   color: Colors.blueAccent)))),
                                   onPressed: () {

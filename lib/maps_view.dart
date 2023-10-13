@@ -41,8 +41,8 @@ import 'api/GetAllVessel.dart' as Vessel;
 import 'api/GetKapalAndCoor.dart' as VesselCoor;
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
-
+  const HomePage({Key? key, String this.idClient = ""}) : super(key: key);
+  final String idClient;
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -184,30 +184,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
-  // void _showCursorTooltip(BuildContext context) {
-  //   final RenderBox renderBox = _key.currentContext!.findRenderObject() as RenderBox;
-  //   final overlay = OverlayEntry(
-  //     builder: (context) {
-  //       final screenSize = MediaQuery.of(context).size;
-  //       final position = renderBox.localToGlobal(Offset.zero);
-  //       final cursorY = position.dy - 40.0; // Sesuaikan posisi tooltip di atas cursor
-  //       final cursorX = position.dx - 20.0; // Sesuaikan posisi tooltip di atas cursor
-  //
-  //       return Positioned(
-  //         left: cursorX,
-  //         top: cursorY,
-  //         child: CursorTooltip(text: 'Tooltip Text'),
-  //       );
-  //     },
-  //   );
-  //
-  //   Overlay.of(context)!.insert(overlay);
-  // }
-
-  // void _hideCursorTooltip() {
-  //   _overlayEntry?.remove();
-  //   _overlayEntry = null;
-  // }
 
   void _animatedMapMove(LatLng destLocation, double destZoom) {
     final camera = mapController.camera;
@@ -277,6 +253,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
         return Scaffold(
           appBar: AppBar(
+            automaticallyImplyLeading: false,
             backgroundColor: const Color(0xFF0E286C),
             iconTheme: const IconThemeData(
               color: Colors.white, // Change this color to the desired color
@@ -307,7 +284,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         value.initVessel();
                         VesselPage.vesselList(context,value,_pageSize);
                       case "pipelineList":
-                        PipelinePage.pipelineList(context,value,_pageSize);
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Dialog(
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(5))),
+                                    child: PipelinePage(),
+                            );
+                          }
+                        );
                       case "clientList":
                         ClientPage.clientList(context,value);
                     }

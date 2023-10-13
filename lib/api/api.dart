@@ -294,8 +294,8 @@ class Api{
     }
   }
 
-  static Future<GetPipelineResponse> getPipeline()async{
-    var url = "$BASE_URL/get_mapping";
+  static Future<GetPipelineResponse> getPipeline({int page = 1,int perpage = 10})async{
+    var url = "$BASE_URL/get_mapping?page=$page&perpage=$perpage";
     var response = await http.get(
       Uri.parse(url),
     );

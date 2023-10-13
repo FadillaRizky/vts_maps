@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:vts_maps/auth/Authentication.dart';
 import 'package:vts_maps/change_notifier/change_notifier.dart';
+import 'package:vts_maps/home.dart';
 import 'package:vts_maps/maps_view.dart';
 import 'package:vts_maps/utils/shared_pref.dart';
 
@@ -62,9 +63,6 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         load = true;
       });
-      // if(home != Login()){
-      //   home = home;
-      // }
     });
     return MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -85,7 +83,26 @@ class _MyAppState extends State<MyApp> {
           },
         ),
         builder: EasyLoading.init(),
-        home: HomePage(), 
+        routes: {
+          "/": (context) => HomePage(),
+          // "/client-map-view": (context) => HomePage(),
+          "/login": (context) => Login(),
+        },
+        initialRoute: "/",
+        onGenerateRoute: (settings) {
+          if (settings.name!.contains("/client-map-view")) {
+            final settingsUri = Uri.parse(settings.name.toString());
+            if (settingsUri.queryParametersAll.isNotEmpty) {
+              final clientID = settingsUri.queryParameters['client'];
+              print(clientID); //will print "123"
+
+              return MaterialPageRoute(
+                builder: (context) => HomePage(idClient:clientID.toString())
+              );
+            }
+          }
+        },
+        // home: HomePage(), 
         // load == true
         //     ? home
         //     : Scaffold(

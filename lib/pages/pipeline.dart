@@ -1,8 +1,12 @@
+import 'dart:html' as html;
+
 import "package:dropdown_textfield/dropdown_textfield.dart";
 import "package:flutter/material.dart";
 import "package:flutter_easyloading/flutter_easyloading.dart";
 import "package:google_fonts/google_fonts.dart";
 import "package:pagination_flutter/pagination.dart";
+import "package:provider/provider.dart";
+import "package:vts_maps/api/api.dart";
 import "package:vts_maps/change_notifier/change_notifier.dart";
 import "package:vts_maps/utils/alerts.dart";
 
@@ -10,257 +14,266 @@ import 'package:vts_maps/api/GetPipelineResponse.dart' as PipelineResponse;
 import "package:vts_maps/utils/constants.dart";
 import "package:vts_maps/utils/text_field.dart";
 
+class PipelinePage extends StatefulWidget {
+  const PipelinePage({super.key});
 
-class PipelinePage{
-  static SingleValueDropDownController clientController =
+  @override
+  State<PipelinePage> createState() => _PipelinePageState();
+}
+
+class _PipelinePageState extends State<PipelinePage> {
+  SingleValueDropDownController clientController =
       SingleValueDropDownController();
-  static String? idClientValue;
-  static bool isSwitched = false;
-  static TextEditingController nameController = TextEditingController();
-  
-  static pipelineList(BuildContext context,Notifier value, int pageSize,){
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          var width = MediaQuery.of(context).size.width;
-          return Dialog(
-              shape: const RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius.all(Radius.circular(5))),
-              child: SizedBox(
-                  width: width / 1.5,
-                  child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          color: Colors.black12,
-                          padding: const EdgeInsets.all(10),
-                          child: Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment
-                                .spaceBetween,
-                            children: [
-                              Text(
-                                " Pipeline List",
-                                style: GoogleFonts.openSans(
-                                    fontSize: 20,fontWeight: FontWeight.bold),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                icon:
-                                const Icon(Icons.close),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment
-                                .spaceBetween,
-                            children: [
-                              Text(
-                                  "Page ${value.currentPage} of ${(value.totalPipeline / 10).ceil()}"),
-                              Row(
-                                children: [
-                                  SizedBox(
-                                    height: 40,
-                                    width: 40,
-                                    child: IconButton(
-                                      style: ButtonStyle(
-                                          shape: MaterialStateProperty.all(
-                                              RoundedRectangleBorder(
-                                                  borderRadius:
-                                                  BorderRadius
-                                                      .circular(
-                                                      5))),
-                                          backgroundColor:
-                                          MaterialStateProperty
-                                              .all(Colors
-                                              .blueAccent)),
-                                      onPressed: (){
-                                        value.initPipeline(context);
-                                      }, icon: Icon(Icons.refresh,color: Colors.white,),),
-                                  ),
-                                  SizedBox(width: 5,),
-                                  SizedBox(
-                                    height: 40,
-                                    child: ElevatedButton(
-                                        style: ButtonStyle(
-                                            shape: MaterialStateProperty.all(
-                                                RoundedRectangleBorder(
-                                                    borderRadius:
-                                                    BorderRadius
-                                                        .circular(
-                                                        5))),
-                                            backgroundColor:
-                                            MaterialStateProperty
-                                                .all(Colors
-                                                .blueAccent)),
-                                        onPressed: () {
-                                          addPipeline(context, value);
-                                        },
-                                        child: Text(
-                                          "Add Pipeline",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        )),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          height: 380,
-                          width: double.infinity,
-                          child: SingleChildScrollView(
-                            child: SingleChildScrollView(
-                                scrollDirection:
-                                Axis.horizontal,
-                                child: value.isLoading
-                                    ? const Center(
-                                    child:
-                                    CircularProgressIndicator())
-                                    : DataTable(
-                                        headingRowColor:
-                                        MaterialStateProperty
-                                            .all(Color(
-                                            0xffd3d3d3)),
-                                        columns: [
-                                          const DataColumn(
-                                              label: Text(
-                                                  "Name")),
-                                          const DataColumn(
-                                              label: Text(
-                                                  "File")),
-                                          const DataColumn(
-                                              label: Text(
-                                                  "Switch")),
-                                          const DataColumn(
-                                              label: Text(
-                                                  "Action")),
-                                        ],
-                                        rows: value
-                                            .getPipelineResult
-                                            .map(
-                                                (data) {
-                                              return DataRow(
-                                                cells: [
-                                                  DataCell(
-                                                      Text(data
-                                                          .name!)),
-                                                  DataCell(
-                                                      Text(data
-                                                          .file!.replaceAll("https://api.binav-avts.id/storage/mapping/",""))),
-                                                  DataCell(Text(data
-                                                      .onOff!
-                                                      ? "ON"
-                                                      : "OFF")),
-                                                  DataCell(
-                                                      Row(
-                                                        children: [
-                                                          IconButton(
-                                                            icon:
-                                                            const Icon(
-                                                              Icons.edit,
-                                                              color: Colors.blue,
-                                                            ),
-                                                            onPressed:
-                                                                () {
-                                                              editPipeline(data, context, value);
-                                                            },
-                                                          ),
-                                                          IconButton(
-                                                            icon:
-                                                            const Icon(
-                                                              Icons.delete,
-                                                              color: Colors.red,
-                                                            ),
-                                                            onPressed:
-                                                                () {
-                                                              Alerts.showAlertYesNo(
-                                                                  title: "Are you sure you want to delete this data?",
-                                                                  onPressYes: () {
-                                                                    value.deletePipeline(data.idMapping.toString(), context);
-                                                                  },
-                                                                  onPressNo: () {
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                                  context: context);
-                                                            },
-                                                          ),
-                                                        ],
-                                                      )),
-                                                ],
-                                              );
-                                            }).toList())),
-                          ),
-                        ),
-                        Pagination(
-                          numOfPages:
-                          (value.totalPipeline / 10)
-                              .ceil(),
-                          selectedPage: value.currentPage,
-                          pagesVisible: 7,
-                          onPageChanged: (page) {
-                            value.incrementPage(page);
-                            value.initPipeline(context);
-                          },
-                          nextIcon: const Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.blue,
-                            size: 14,
-                          ),
-                          previousIcon: const Icon(
-                            Icons.arrow_back_ios,
-                            color: Colors.blue,
-                            size: 14,
-                          ),
-                          activeTextStyle: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          activeBtnStyle: ButtonStyle(
-                            backgroundColor:
-                            MaterialStateProperty.all(
-                                Colors.blue),
-                            shape:
-                            MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(
-                                    38),
-                              ),
-                            ),
-                          ),
-                          inactiveBtnStyle: ButtonStyle(
-                            shape:
-                            MaterialStateProperty.all(
-                                RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(38),
-                                )),
-                          ),
-                          inactiveTextStyle:
-                          const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ])));
-        });
+  String? idClientValue;
+  bool isSwitched = false;
+  TextEditingController nameController = TextEditingController();
+  Notifier? readNotifier;
+
+  int noRow = 1;
+  int currentPage = 1;
+  int perpage = 10;
+
+  bool load = false;
+
+  incrementPage(int pageIndex) {
+    currentPage = pageIndex;
+    load = true;
   }
+
+  Stream<PipelineResponse.GetPipelineResponse> pipelineStream() async* {
+    while (true) {
+      PipelineResponse.GetPipelineResponse someProduct =
+          await Api.getPipeline(page: currentPage, perpage: perpage);
+      yield someProduct;
+
+      await Future.delayed(Duration(seconds: 15));
+      load = false;
+    }
+  }
+
+  @override
+  void initState() {
+    readNotifier = context.read<Notifier>();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var width = MediaQuery.of(context).size.width;
+
+    return SizedBox(
+      width: width / 1.5,
+      child: StreamBuilder<PipelineResponse.GetPipelineResponse>(
+        stream: pipelineStream(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            var data = snapshot.data;
+            List<PipelineResponse.Data> pipeData = snapshot.data!.data!;
+            return Consumer<Notifier>(builder: (context, value, child) {
+              return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      color: Colors.black12,
+                      padding: const EdgeInsets.all(10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            " Pipeline List",
+                            style: GoogleFonts.openSans(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                              "Page ${currentPage} of ${(data!.total! / 10).ceil()}"),
+                          Row(
+                            children: [
+                              // SizedBox(
+                              //   height: 40,
+                              //   width: 40,
+                              //   child: IconButton(
+                              //     style: ButtonStyle(
+                              //         shape: MaterialStateProperty.all(
+                              //             RoundedRectangleBorder(
+                              //                 borderRadius:
+                              //                 BorderRadius
+                              //                     .circular(
+                              //                     5))),
+                              //         backgroundColor:
+                              //         MaterialStateProperty
+                              //             .all(Colors
+                              //             .blueAccent)),
+                              //     onPressed: (){
+                              //       value.initPipeline(context);
+                              //     }, icon: Icon(Icons.refresh,color: Colors.white,),),
+                              // ),
+                              SizedBox(
+                                width: 5,
+                              ),
+                              SizedBox(
+                                height: 40,
+                                child: ElevatedButton(
+                                    style: ButtonStyle(
+                                        shape: MaterialStateProperty.all(
+                                            RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5))),
+                                        backgroundColor:
+                                            MaterialStateProperty.all(
+                                                Colors.blueAccent)),
+                                    onPressed: () {
+                                      addPipeline(context);
+                                    },
+                                    child: Text(
+                                      "Add Pipeline",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    )),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: 380,
+                      width: double.infinity,
+                      margin: EdgeInsets.symmetric(horizontal: 15),
+                      child: load
+                          ? Center(child: CircularProgressIndicator())
+                          : SingleChildScrollView(
+                              child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: DataTable(
+                                      headingRowColor:
+                                          MaterialStateProperty.all(
+                                              Color(0xffd3d3d3)),
+                                      columns: [
+                                        const DataColumn(label: Text("Name")),
+                                        const DataColumn(label: Text("File")),
+                                        const DataColumn(label: Text("Switch")),
+                                        const DataColumn(label: Text("Action")),
+                                      ],
+                                      rows: pipeData.map((data) {
+                                        return DataRow(
+                                          cells: [
+                                            DataCell(Text(data.name!)),
+                                            DataCell(Text(data.file!.replaceAll(
+                                                "https://api.binav-avts.id/storage/mapping/",
+                                                ""))),
+                                            DataCell(Text(
+                                                data.onOff! ? "ON" : "OFF")),
+                                            DataCell(Row(
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.edit,
+                                                    color: Colors.blue,
+                                                  ),
+                                                  onPressed: () {
+                                                    editPipeline(data, context);
+                                                  },
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.delete,
+                                                    color: Colors.red,
+                                                  ),
+                                                  onPressed: () {
+                                                    Alerts.showAlertYesNo(
+                                                        title:
+                                                            "Are you sure you want to delete this data?",
+                                                        onPressYes: () {
+                                                          value.deletePipeline(
+                                                              data.idMapping
+                                                                  .toString(),
+                                                              context);
+                                                          load = true;
+                                                        },
+                                                        onPressNo: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        context: context);
+                                                  },
+                                                ),
+                                              ],
+                                            )),
+                                          ],
+                                        );
+                                      }).toList())),
+                            ),
+                    ),
+                    Pagination(
+                      numOfPages: (data.total! / 10).ceil(),
+                      selectedPage: currentPage,
+                      pagesVisible: 7,
+                      onPageChanged: (page) {
+                        incrementPage(page);
+                      },
+                      nextIcon: const Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.blue,
+                        size: 14,
+                      ),
+                      previousIcon: const Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.blue,
+                        size: 14,
+                      ),
+                      activeTextStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      activeBtnStyle: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(Colors.blue),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(38),
+                          ),
+                        ),
+                      ),
+                      inactiveBtnStyle: ButtonStyle(
+                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(38),
+                        )),
+                      ),
+                      inactiveTextStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ]);
+            });
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
+    );
+  }
+
   /// function CRUD PIPELINE
-  static addPipeline(BuildContext context, Notifier value) {
+  void addPipeline(BuildContext context) {
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -290,7 +303,7 @@ class PipelinePage{
                           onPressed: () {
                             nameController.clear();
                             isSwitched = false;
-                            value.clearFile();
+                            readNotifier!.clearFile();
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.close),
@@ -315,7 +328,7 @@ class PipelinePage{
                               child: DropDownTextField(
                                 controller: clientController,
                                 dropDownList: [
-                                  for (var x in value.getClientResult)
+                                  for (var x in readNotifier!.getClientResult)
                                     DropDownValueModel(
                                         name: '${x.clientName} - ${x.idClient}',
                                         value: "${x.idClient}"),
@@ -334,8 +347,9 @@ class PipelinePage{
                                   }
                                 },
                                 onChanged: (value) {
-                                  idClientValue =
-                                      clientController.dropDownValue!.value.toString();
+                                  idClientValue = clientController
+                                      .dropDownValue!.value
+                                      .toString();
                                   // SingleValueDropDownController(data: DropDownValueModel(value: "${data['role']}", name: "${data['role']}"))
                                 },
                                 textFieldDecoration: InputDecoration(
@@ -368,7 +382,7 @@ class PipelinePage{
                             ),
                             GestureDetector(
                               onTap: () {
-                                value.selectFile("KMZ");
+                                readNotifier!.selectFile("KMZ");
                               },
                               child: Card(
                                 color: Colors.black12,
@@ -401,7 +415,7 @@ class PipelinePage{
                                                 constraints: BoxConstraints(
                                                     maxWidth: 70),
                                                 child: Text(
-                                                  value.nameFile!,
+                                                  readNotifier!.nameFile!,
                                                   style: const TextStyle(
                                                       fontSize: 10,
                                                       color: Colors.black),
@@ -515,18 +529,23 @@ class PipelinePage{
                                           "Kolom Name Sign Masih Kosong...");
                                       return;
                                     }
-                                    if (value.file == null) {
+                                    if (readNotifier!.file == null) {
                                       EasyLoading.showError(
                                           "Kolom File Masih Kosong...");
                                       return;
                                     }
-                                    value.submitPipeline(idClientValue!,nameController.text,
-                                        isSwitched, context, value.file);
+                                    submitPipeline(
+                                        idClientValue!,
+                                        nameController.text,
+                                        isSwitched,
+                                        context,
+                                        readNotifier!.file);
                                     idClientValue = null;
                                     clientController.clearDropDown();
                                     nameController.clear();
                                     isSwitched = false;
-                                    value.clearFile();
+                                    readNotifier!.clearFile();
+                                    load = true;
                                   },
                                   child: Text(
                                     "Submit",
@@ -551,7 +570,7 @@ class PipelinePage{
                                     clientController.clearDropDown();
                                     nameController.clear();
                                     isSwitched = false;
-                                    value.clearFile();
+                                    readNotifier!.clearFile();
                                     Navigator.pop(context);
                                   },
                                   child: Text(
@@ -575,10 +594,59 @@ class PipelinePage{
         });
   }
 
-  static editPipeline(
-      PipelineResponse.Data data, BuildContext context, Notifier value) {
+  void submitPipeline(
+      String idClientValue, String name, bool onOff, context, file) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    await Api.submitPipeline(idClientValue, name, onOff, file).then((value) {
+      print(value.message);
+      // if (value.message == "Validator Fails") {
+      //   Navigator.pop(context);
+      //   EasyLoading.showError("Call Sign sudah Terdaftar");
+      //   return;
+      // }
+      if (value.message == "Data berhasil masuk database") {
+        Navigator.pop(context);
+        EasyLoading.showSuccess("Berhasil Menambahkan Data");
+        Navigator.pop(context);
+        return;
+      }
+      if (value.message != "Data berhasil masuk database") {
+        Navigator.pop(context);
+        EasyLoading.showError("Gagal Menambahkan Data, Coba Lagi...");
+        return;
+      }
+      return;
+    });
+  }
+
+  void editPipeline(PipelineResponse.Data data, BuildContext context) {
     isSwitched = data.onOff!;
     nameController.text = data.name!;
+
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -608,7 +676,7 @@ class PipelinePage{
                           onPressed: () {
                             nameController.clear();
                             isSwitched = false;
-                            value.clearFile();
+                            readNotifier!.clearFile();
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.close),
@@ -637,7 +705,7 @@ class PipelinePage{
                             ),
                             GestureDetector(
                               onTap: () {
-                                value.selectFile("KMZ");
+                                readNotifier!.selectFile("KMZ");
                               },
                               child: Card(
                                 color: Colors.black12,
@@ -670,8 +738,8 @@ class PipelinePage{
                                                 constraints: BoxConstraints(
                                                     maxWidth: 70),
                                                 child: Text(
-                                                  value.nameFile != ""
-                                                      ? value.nameFile!
+                                                  readNotifier!.nameFile != ""
+                                                      ? readNotifier!.nameFile!
                                                       : data.file != null
                                                           ? data.file!
                                                           : "",
@@ -776,15 +844,16 @@ class PipelinePage{
                                           "Kolom Name Masih Kosong...");
                                       return;
                                     }
-                                    value.editPipeline(
+                                    editPipelineApi(
                                         data.idMapping.toString(),
                                         nameController.text,
                                         isSwitched,
                                         context,
-                                        value.file);
+                                        readNotifier!.file);
                                     nameController.clear();
+                                    load = true;
                                     isSwitched = false;
-                                    value.clearFile();
+                                    readNotifier!.clearFile();
                                   },
                                   child: Text(
                                     "Submit",
@@ -807,7 +876,7 @@ class PipelinePage{
                                   onPressed: () {
                                     nameController.clear();
                                     isSwitched = false;
-                                    value.clearFile();
+                                    readNotifier!.clearFile();
                                     Navigator.pop(context);
                                   },
                                   child: Text(
@@ -829,5 +898,47 @@ class PipelinePage{
             ),
           );
         });
+  }
+
+  void editPipelineApi(
+      String id, String name, bool onOff, BuildContext context, file) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    await Api.editPipeline(id, name, onOff, file).then((value) {
+      if (value.message != "Data berhasil di ubah database") {
+        Navigator.pop(context);
+        EasyLoading.showError("Gagal Edit Data");
+        Navigator.pop(context);
+      }
+      if (value.message == "Data berhasil di ubah database") {
+        Navigator.pop(context);
+        EasyLoading.showSuccess("Berhasil Edit Data");
+        Navigator.pop(context);
+      }
+      return;
+    });
   }
 }
