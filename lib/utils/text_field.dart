@@ -9,12 +9,13 @@ class CustomTextField extends StatelessWidget {
     required this.controller,
     required this.hint,
     required this.type,
-    this.initValue,
+    this.initValue, this.enable,
   });
 
   final TextEditingController controller;
   final String hint;
   final String? initValue;
+  final bool? enable;
   final TextInputType type;
 
   @override
@@ -33,6 +34,7 @@ class CustomTextField extends StatelessWidget {
             keyboardType: type,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.fromLTRB(8, 3, 1, 3),
+              enabled: (enable == null)? true : false,
               // hintText: hint,
               // labelText: hint,
               // floatingLabelBehavior: FloatingLabelBehavior.always ,
@@ -50,6 +52,9 @@ class CustomTextField extends StatelessWidget {
                 enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(width: 1,color: Colors.black38)
                 ),
+              disabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 1,color: Colors.black38)
+              ),
               // enabledBorder: OutlineInputBorder(
               //   borderSide: BorderSide(width: 1,color: Colors.black12),
               // ),

@@ -157,12 +157,13 @@ class Api{
 
       final formData = html.FormData();
       formData.appendBlob('xml_file', file);
-      formData.append("call_sign", data[0]);
-      formData.append("flag", data[1]);
-      formData.append("class", data[2]);
-      formData.append("builder", data[3]);
-      formData.append("year_built", data[4]);
-      formData.append("size", data[5]);
+      formData.append("id_client", data[0]);
+      formData.append("call_sign", data[1]);
+      formData.append("flag", data[2]);
+      formData.append("class", data[3]);
+      formData.append("builder", data[4]);
+      formData.append("year_built", data[5]);
+      formData.append("size", data[6]);
       formData.append("status", onOff ? "1" : "0");
       // formData.append("ip", data[5]);
       // formData.append("port", data[6]);

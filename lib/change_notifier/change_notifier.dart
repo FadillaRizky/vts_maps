@@ -264,6 +264,18 @@ class Notifier extends ChangeNotifier {
   bool _isLoadingIp = false;
   bool get isLoadingIp => _isLoadingIp;
 
+  String? _type;
+  String? get type => _type;
+
+  void clearType()async{
+    _type = null;
+    notifyListeners();
+  }
+  void selectingType(String value)async{
+    _type = value;
+    notifyListeners();
+  }
+
   void initIpList(String callSign) async{
     _isLoadingIp = true;
     await Api.getIpList(callSign).then((value){
@@ -271,11 +283,13 @@ class Notifier extends ChangeNotifier {
       if (value.total! == 0) {
         _isLoadingIp = false;
         _ipPortResult = [];
+        _type = null;
         _totalIp = value.total!.toInt();
       }
       if (value.total! > 0) {
         _ipPortResult.addAll(value.data!);
         _isLoadingIp = false;
+        _type = null;
         _totalIp = value.total!.toInt();
       }
     });

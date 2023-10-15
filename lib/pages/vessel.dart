@@ -132,93 +132,103 @@ class VesselPage {
                       SizedBox(
                         height: 380,
                         child: SingleChildScrollView(
-                          child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: value.isLoading
-                                  ? const Center(
-                                      child: CircularProgressIndicator())
-                                  : DataTable(
-                                      headingRowColor:
-                                          MaterialStateProperty.all(
-                                              Color(0xffd3d3d3)),
-                                      columns: [
-                                        const DataColumn(
-                                            label: Text("CallSign")),
-                                        const DataColumn(label: Text("Flag")),
-                                        const DataColumn(label: Text("Class")),
-                                        const DataColumn(
-                                            label: Text("Builder")),
-                                        const DataColumn(
-                                            label: Text("Year Built")),
-                                        const DataColumn(label: Text("Size")),
-                                        const DataColumn(
-                                            label: Text("File XML")),
-                                        const DataColumn(
-                                            label: Text("Upload IP ")),
-                                        const DataColumn(label: Text("Action")),
-                                      ],
-                                      rows: value.vesselResult.map((data) {
-                                        return DataRow(cells: [
-                                          DataCell(Text(data.callSign!)),
-                                          DataCell(Text(data.flag!)),
-                                          DataCell(Text(data.kelas!)),
-                                          DataCell(Text(data.builder!)),
-                                          DataCell(Text(data.yearBuilt!)),
-                                          DataCell(Text(data.size!)),
-                                          DataCell(SizedBox(
-                                            width: 100,
-                                            child: Text(
-                                              data.xmlFile!,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 2,
-                                            ),
-                                          )),
-                                          DataCell(IconButton(
+                            scrollDirection: Axis.horizontal,
+                            child: value.isLoading
+                                ? const Center(
+                                    child: CircularProgressIndicator())
+                                : DataTable(
+                                    headingRowColor:
+                                        MaterialStateProperty.all(
+                                            Color(0xffd3d3d3)),
+                                    columns: [
+                                      const DataColumn(
+                                          label: Text("CallSign")),
+                                      const DataColumn(label: Text("Flag")),
+                                      const DataColumn(label: Text("Class")),
+                                      const DataColumn(
+                                          label: Text("Builder")),
+                                      const DataColumn(
+                                          label: Text("Year Built")),
+                                      const DataColumn(label: Text("Size")),
+                                      const DataColumn(
+                                          label: Text("File XML")),
+                                      const DataColumn(
+                                          label: Text("Upload IP ")),
+                                      const DataColumn(label: Text("Action")),
+                                    ],
+                                    rows: value.vesselResult.map((data) {
+                                      return DataRow(cells: [
+                                        DataCell(Text(data.callSign!)),
+                                        DataCell(Text(data.flag!)),
+                                        DataCell(Text(data.kelas!)),
+                                        DataCell(Text(data.builder!)),
+                                        DataCell(Text(data.yearBuilt!)),
+                                        DataCell(Text(data.size!)),
+                                        DataCell(SizedBox(
+                                          width: 100,
+                                          child: Text(
+                                            data.xmlFile!,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,
+                                          ),
+                                        )),
+                                        DataCell(IconButton(
+                                            onPressed: () {
+                                              value.initIpList(
+                                                  data.callSign!);
+                                              uploadIpAndPort(context, value,
+                                                  data.callSign!);
+                                            },
+                                            icon: Icon(Icons
+                                                .edit_location_alt_outlined))),
+                                        DataCell(Row(
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.visibility,
+                                                color: Colors.blue,
+                                              ),
                                               onPressed: () {
                                                 value.initIpList(
                                                     data.callSign!);
-                                                uploadIpAndPort(context, value,
-                                                    data.callSign!);
+                                                showDetailVessel(
+                                                    data, context, value);
                                               },
-                                              icon: Icon(Icons
-                                                  .edit_location_alt_outlined))),
-                                          DataCell(Row(
-                                            children: [
-                                              IconButton(
-                                                icon: const Icon(
-                                                  Icons.edit,
-                                                  color: Colors.blue,
-                                                ),
-                                                onPressed: () {
-                                                  editVesselAndCoor(
-                                                      data, context, value);
-                                                },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.edit,
+                                                color: Colors.blue,
                                               ),
-                                              IconButton(
-                                                icon: const Icon(
-                                                  Icons.delete,
-                                                  color: Colors.red,
-                                                ),
-                                                onPressed: () {
-                                                  Alerts.showAlertYesNo(
-                                                      title:
-                                                          "Are you sure you want to delete this data?",
-                                                      onPressYes: () {
-                                                        value.deleteVessel(
-                                                            data.callSign,
-                                                            context);
-                                                      },
-                                                      onPressNo: () {
-                                                        Navigator.pop(context);
-                                                      },
-                                                      context: context);
-                                                },
+                                              onPressed: () {
+                                                editVesselAndCoor(
+                                                    data, context, value);
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.delete,
+                                                color: Colors.red,
                                               ),
-                                            ],
-                                          )),
-                                        ]);
-                                      }).toList())),
-                        ),
+                                              onPressed: () {
+                                                Alerts.showAlertYesNo(
+                                                    title:
+                                                        "Are you sure you want to delete this data?",
+                                                    onPressYes: () {
+                                                      value.deleteVessel(
+                                                          data.callSign,
+                                                          context);
+                                                    },
+                                                    onPressNo: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    context: context);
+                                              },
+                                            ),
+                                          ],
+                                        )),
+                                      ]);
+                                    }).toList())),
                       ),
                       Pagination(
                         numOfPages: (value.totalVessel / 10).ceil(),
@@ -269,7 +279,7 @@ class VesselPage {
   }
 
   static uploadIpAndPort(
-      BuildContext context, Notifier value, String callSign) {
+      BuildContext context, Notifier readNotifier, String callSign) {
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -281,7 +291,7 @@ class VesselPage {
                 borderRadius: BorderRadius.all(Radius.circular(5))),
             child: Container(
               color: Colors.white,
-              width: width / 3,
+              width: width / 2,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,7 +311,7 @@ class VesselPage {
                           onPressed: () {
                             ipController.clear();
                             portController.clear();
-                            type = null;
+                            readNotifier.clearType();
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.close),
@@ -336,11 +346,11 @@ class VesselPage {
                                       keyboardType: TextInputType.text,
                                       decoration: InputDecoration(
                                           contentPadding:
-                                              EdgeInsets.fromLTRB(8, 3, 1, 3),
+                                          EdgeInsets.fromLTRB(8, 3, 1, 3),
                                           labelText: "Port",
                                           labelStyle: Constants.labelstyle,
                                           floatingLabelBehavior:
-                                              FloatingLabelBehavior.always,
+                                          FloatingLabelBehavior.always,
                                           focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 width: 1,
@@ -364,40 +374,35 @@ class VesselPage {
                                   child: DropdownSearch<String>(
                                     dropdownBuilder: (context, selectedItem) =>
                                         Text(
-                                      selectedItem ?? "",
-                                      style: const TextStyle(
-                                          fontSize: 15, color: Colors.black54),
-                                    ),
+                                          selectedItem ?? "",
+                                          style: const TextStyle(
+                                              fontSize: 15, color: Colors.black54),
+                                        ),
                                     popupProps: PopupPropsMultiSelection.dialog(
                                       fit: FlexFit.loose,
-                                      itemBuilder:
-                                          (context, item, isSelected) =>
-                                              ListTile(
-                                        title: Text(
-                                          item,
-                                          style: const TextStyle(
-                                            fontSize: 15,
+                                      itemBuilder: (context, item, isSelected) =>
+                                          ListTile(
+                                            title: Text(
+                                              item,
+                                              style: const TextStyle(
+                                                fontSize: 15,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
                                     ),
-                                    dropdownDecoratorProps:
-                                        DropDownDecoratorProps(
+                                    dropdownDecoratorProps: DropDownDecoratorProps(
                                       dropdownSearchDecoration: InputDecoration(
                                         labelText: "Type",
                                         labelStyle: Constants.labelstyle,
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                              width: 1,
-                                              color: Colors.blueAccent),
+                                              width: 1, color: Colors.blueAccent),
                                         ),
                                         enabledBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                                width: 1,
-                                                color: Colors.black38)),
+                                                width: 1, color: Colors.black38)),
                                         contentPadding:
-                                            const EdgeInsets.fromLTRB(
-                                                8, 3, 1, 3),
+                                        const EdgeInsets.fromLTRB(8, 3, 1, 3),
                                         filled: true,
                                         fillColor: Colors.white,
                                       ),
@@ -409,7 +414,7 @@ class VesselPage {
                                       "vtg",
                                     ],
                                     onChanged: (value) {
-                                      type = value;
+                                      readNotifier.selectingType(value!);
                                     },
                                   ),
                                 ),
@@ -442,21 +447,20 @@ class VesselPage {
                                           "Kolom Port Masih Kosong...");
                                       return;
                                     }
-                                    if (type == null) {
+                                    if (readNotifier.type == "") {
                                       EasyLoading.showError(
                                           "Kolom Type Masih Kosong...");
                                       return;
                                     }
-                                    Map<String, String> data = {
-                                      "call_sign": callSign,
-                                      "ip": ipController.text,
-                                      "port": portController.text,
-                                      "type_ip": type!,
+                                    Map<String,String> data = {
+                                      "call_sign" : callSign,
+                                      "ip" : ipController.text,
+                                      "port" : portController.text,
+                                      "type_ip" : readNotifier.type!,
                                     };
-                                    value.uploadIP(data, context, callSign);
+                                    readNotifier.uploadIP(data, context,callSign);
                                     ipController.clear();
                                     portController.clear();
-                                    type = null;
                                   },
                                   child: Text(
                                     "Save",
@@ -471,60 +475,60 @@ class VesselPage {
                               height: 5,
                             ),
                             SizedBox(
-                              height: 380,
-                              child: SingleChildScrollView(
-                                child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: value.isLoadingIp
-                                        ? const Center(
-                                            child: CircularProgressIndicator())
-                                        : DataTable(
-                                            headingRowColor:
-                                                MaterialStateProperty.all(
-                                                    Color(0xffd3d3d3)),
-                                            columns: [
-                                              const DataColumn(
-                                                  label: Text("No")),
-                                              const DataColumn(
-                                                  label: Text("IP")),
-                                              const DataColumn(
-                                                  label: Text("Port")),
-                                              const DataColumn(
-                                                  label: Text("Type")),
-                                              const DataColumn(
-                                                  label: Text("Delete")),
-                                            ],
-                                            rows:
-                                                value.ipPortResult.map((data) {
-                                              return DataRow(cells: [
-                                                DataCell(SizedBox(
-                                                    width: 10,
-                                                    child: Text(""))),
-                                                DataCell(Text(data.ip!)),
-                                                DataCell(Text(data.port!)),
-                                                DataCell(Text(data.typeIp!)),
-                                                DataCell(IconButton(
-                                                  onPressed: () {
-                                                    Alerts.showAlertYesNo(
-                                                        title:
-                                                            "Are you sure you want to delete this data?",
-                                                        onPressYes: () {
-                                                          value.deleteIP(
-                                                              data.idIpKapal!,
-                                                              data.callSign!,
-                                                              context);
-                                                        },
-                                                        onPressNo: () {
-                                                          Navigator.pop(
-                                                              context);
-                                                        },
-                                                        context: context);
-                                                  },
-                                                  icon: Icon(Icons.delete),
-                                                )),
-                                              ]);
-                                            }).toList())),
-                              ),
+                              height: 300,
+                              child: readNotifier.isLoadingIp
+                                  ? const Center(
+                                  child: CircularProgressIndicator())
+                                  : SingleChildScrollView(
+                                    child: DataTable(
+                                    headingRowColor:
+                                    MaterialStateProperty.all(
+                                        Color(0xffd3d3d3)),
+                                    columns: [
+                                      const DataColumn(
+                                          label: Text("No")),
+                                      const DataColumn(
+                                          label: SizedBox(
+                                              width: 210,
+                                              child: Text("IP"))),
+                                      const DataColumn(
+                                          label: Text("Port")),
+                                      const DataColumn(
+                                          label: Text("Type")),
+                                      const DataColumn(
+                                          label: Text("Delete")),
+                                    ],
+                                    rows:
+                                    readNotifier.ipPortResult.map((data) {
+                                      return DataRow(cells: [
+                                        DataCell(SizedBox(
+                                            width: 10,
+                                            child: Text(""))),
+                                        DataCell(Text(data.ip!)),
+                                        DataCell(Text(data.port!)),
+                                        DataCell(Text(data.typeIp!)),
+                                        DataCell(IconButton(
+                                          onPressed: () {
+                                            Alerts.showAlertYesNo(
+                                                title:
+                                                "Are you sure you want to delete this data?",
+                                                onPressYes: () {
+                                                  readNotifier.deleteIP(
+                                                      data.idIpKapal!,
+                                                      data.callSign!,
+                                                      context);
+                                                },
+                                                onPressNo: () {
+                                                  Navigator.pop(
+                                                      context);
+                                                },
+                                                context: context);
+                                          },
+                                          icon: Icon(Icons.delete),
+                                        )),
+                                      ]);
+                                    }).toList()),
+                                  ),
                             ),
                           ],
                         ),
@@ -1464,6 +1468,402 @@ class VesselPage {
                       ),
                     ),
                   ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  static showDetailVessel(
+      Vessel.Data data, BuildContext context, Notifier value) {
+    callsignController.text = data.callSign!;
+    flagController.text = data.flag!;
+    classController.text = data.kelas!;
+    builderController.text = data.builder!;
+    yearbuiltController.text = data.yearBuilt!;
+    vesselSize = data.size!;
+    isSwitched = data.status!;
+
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          var width = MediaQuery.of(context).size.width;
+          return Dialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5))),
+            child: SizedBox(
+              width: width / 2,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    color: Colors.black12,
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          " Detail Vessel",
+                          style: GoogleFonts.openSans(
+                              fontSize: 15, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            callsignController.clear();
+                            flagController.clear();
+                            classController.clear();
+                            builderController.clear();
+                            yearbuiltController.clear();
+                            vesselSize = null;
+                            value.clearFile();
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 485,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              height: 5,
+                            ),
+                            CustomTextField(
+                              controller: callsignController,
+                              hint: 'Call Sign',
+                              type: TextInputType.text,
+                              enable: false,
+                            ),
+                            CustomTextField(
+                              controller: flagController,
+                              hint: 'Bendera',
+                              type: TextInputType.text,
+                              enable: false,
+                            ),
+                            CustomTextField(
+                              controller: classController,
+                              hint: 'Kelas',
+                              type: TextInputType.text,
+                              enable: false,
+                            ),
+                            CustomTextField(
+                              controller: builderController,
+                              hint: 'Builder',
+                              type: TextInputType.text,
+                              enable: false,
+                            ),
+                            CustomTextField(
+                              controller: yearbuiltController,
+                              hint: 'Tahun Pembuatan',
+                              type: TextInputType.number,
+                              enable: false,
+                            ),
+                            SizedBox(
+                              height: 35,
+                              width: double.infinity,
+                              child: DropdownSearch<String>(
+                                selectedItem: data.size ?? "",
+                                dropdownBuilder: (context, selectedItem) =>
+                                    Text(
+                                      selectedItem ?? "",
+                                      style: const TextStyle(
+                                          fontSize: 15, color: Colors.black54),
+                                    ),
+                                popupProps: PopupPropsMultiSelection.dialog(
+                                  fit: FlexFit.loose,
+                                  itemBuilder: (context, item, isSelected) =>
+                                      ListTile(
+                                        title: Text(
+                                          item,
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ),
+                                ),
+                                dropdownDecoratorProps: DropDownDecoratorProps(
+                                  dropdownSearchDecoration: InputDecoration(
+                                    labelText: "Ukuran Kapal",
+                                    labelStyle: Constants.labelstyle,
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          width: 1, color: Colors.blueAccent),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            width: 1, color: Colors.black38)),
+                                    contentPadding:
+                                    const EdgeInsets.fromLTRB(8, 3, 1, 3),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    enabled: false
+                                  ),
+                                ),
+                                // items: [
+                                //   "Small",
+                                //   "Medium",
+                                //   "Large",
+                                // ],
+                                // onChanged: (value) {
+                                //   vesselSize = value;
+                                // },
+                              ),
+                            ),
+                            Text(" List IP",style: GoogleFonts.openSans(fontSize: 17,fontWeight: FontWeight.bold),),
+                            Divider(),
+                            SizedBox(
+                              height: 200,
+                              child: SingleChildScrollView(
+                                child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: value.isLoadingIp
+                                        ? const Center(
+                                        child: CircularProgressIndicator())
+                                        : DataTable(
+                                        headingRowColor:
+                                        MaterialStateProperty.all(
+                                            Color(0xffd3d3d3)),
+                                        columns: [
+                                          const DataColumn(
+                                              label: Text("No")),
+                                          const DataColumn(
+                                              label: SizedBox(
+                                                  width: 200,
+                                                  child: Text("IP"))),
+                                          const DataColumn(
+                                              label: Text("Port")),
+                                          const DataColumn(
+                                              label: Text("Type")),
+                                          const DataColumn(
+                                              label: Text("Delete")),
+                                        ],
+                                        rows:
+                                        value.ipPortResult.map((data) {
+                                          return DataRow(cells: [
+                                            DataCell(SizedBox(
+                                                width: 10,
+                                                child: Text(""))),
+                                            DataCell(Text(data.ip!)),
+                                            DataCell(Text(data.port!)),
+                                            DataCell(Text(data.typeIp!)),
+                                            DataCell(IconButton(
+                                              onPressed: () {
+                                                Alerts.showAlertYesNo(
+                                                    title:
+                                                    "Are you sure you want to delete this data?",
+                                                    onPressYes: () {
+                                                      value.deleteIP(
+                                                          data.idIpKapal!,
+                                                          data.callSign!,
+                                                          context);
+                                                    },
+                                                    onPressNo: () {
+                                                      Navigator.pop(
+                                                          context);
+                                                    },
+                                                    context: context);
+                                              },
+                                              icon: Icon(Icons.delete),
+                                            )),
+                                          ]);
+                                        }).toList())),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            SizedBox(
+                              height: 40,
+                              child: FittedBox(
+                                fit: BoxFit.fill,
+                                child: Switch(
+                                  value: isSwitched,
+                                  onChanged: null,
+                                  activeTrackColor: Colors.lightGreen,
+                                  activeColor: Colors.green,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Card(
+                              color: Colors.black12,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  children: [
+                                    const Text(
+                                      "Upload your file",
+                                      style: TextStyle(
+                                          fontSize: 13, color: Colors.white),
+                                    ),
+                                    const Text("XML",
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.white)),
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                    Card(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(5),
+                                        child: Column(
+                                          children: [
+                                            Image.asset(
+                                              "assets/xml_icon2.png",
+                                              height: 55,
+                                            ),
+                                            ConstrainedBox(
+                                              constraints: BoxConstraints(
+                                                  maxWidth: 70),
+                                              child: Text(
+                                                // nameFileEdit != ""
+                                                // ? nameFileEdit!
+                                                //     : data.kapal!.xmlFile != null
+                                                // ? data.kapal!.xmlFile!
+                                                //     : ""
+                                                value.nameFile != ""
+                                                    ? value.nameFile!
+                                                    : data.xmlFile != null
+                                                    ? data.xmlFile!
+                                                    : "",
+                                                style: const TextStyle(
+                                                    fontSize: 10,
+                                                    color: Colors.black),
+                                                maxLines: 3,
+                                                overflow:
+                                                TextOverflow.ellipsis,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                ElevatedButton(
+                                  style: ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all(
+                                        Colors.blueAccent),
+                                    shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    if (callsignController.text.isEmpty) {
+                                      EasyLoading.showError(
+                                          "Kolom Call Sign Masih Kosong...");
+                                      return;
+                                    }
+                                    if (flagController.text.isEmpty) {
+                                      EasyLoading.showError(
+                                          "Kolom Bendera Masih Kosong...");
+                                      return;
+                                    }
+                                    if (classController.text.isEmpty) {
+                                      EasyLoading.showError(
+                                          "Kolom Kelas Masih Kosong...");
+                                      return;
+                                    }
+                                    if (builderController.text.isEmpty) {
+                                      EasyLoading.showError(
+                                          "Kolom Builder Masih Kosong...");
+                                      return;
+                                    }
+                                    if (yearbuiltController.text.isEmpty) {
+                                      EasyLoading.showError(
+                                          "Kolom Tahun Pembuatan Masih Kosong...");
+                                      return;
+                                    }
+                                    if (vesselSize == null) {
+                                      EasyLoading.showError(
+                                          "Kolom Ukuran Kapal Masih Kosong...");
+                                      return;
+                                    }
+                                    List<String> dataEdit = [
+                                      data.callSign!,
+                                      callsignController.text,
+                                      flagController.text,
+                                      classController.text,
+                                      builderController.text,
+                                      yearbuiltController.text,
+                                      vesselSize!,
+                                    ];
+                                    value.editVessel(dataEdit, context,
+                                        isSwitched, value.file);
+                                    callsignController.clear();
+                                    flagController.clear();
+                                    classController.clear();
+                                    builderController.clear();
+                                    yearbuiltController.clear();
+                                    vesselSize = null;
+                                    isSwitched = false;
+                                    value.clearFile();
+                                  },
+                                  child: Text(
+                                    "Submit",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 5,
+                                ),
+                                TextButton(
+                                  style: ButtonStyle(
+                                      shape: MaterialStateProperty.all(
+                                          RoundedRectangleBorder(
+                                              borderRadius:
+                                              BorderRadius.circular(5),
+                                              side: BorderSide(
+                                                  color: Colors.blueAccent)))),
+                                  onPressed: () {
+                                    callsignController.clear();
+                                    flagController.clear();
+                                    classController.clear();
+                                    builderController.clear();
+                                    yearbuiltController.clear();
+                                    vesselSize = null;
+                                    isSwitched = false;
+                                    value.clearFile();
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(
+                                    "Cancel",
+                                    style: TextStyle(
+                                      color: Colors.blueAccent,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
                 ],
               ),
             ),
