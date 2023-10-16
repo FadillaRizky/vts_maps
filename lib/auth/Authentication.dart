@@ -7,8 +7,8 @@ import 'package:vts_maps/api/LoginResponse.dart';
 import '../utils/shared_pref.dart';
 import 'auth_check_response.dart';
 
-// const BASE_URL = "https://client-project.enricko.site/api";
-const BASE_URL = "https://api.binav-avts.id/api";
+const BASE_URL = "https://client-project.enricko.site/api";
+// const BASE_URL = "https://api.binav-avts.id/api";
 // const BASE_URL = "http://127.0.0.1:8000/api";
 
 class Auth {

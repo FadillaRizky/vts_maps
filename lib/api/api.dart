@@ -26,7 +26,8 @@ import 'GetIpListResponse.dart';
 import 'GetPipelineResponse.dart';
 import 'UploadIpAndPortResponse.dart';
 
-const BASE_URL = "https://api.binav-avts.id/api";
+const BASE_URL = "https://client-project.enricko.site/api";
+// const BASE_URL = "https://api.binav-avts.id/api";
 // const BASE_URL = "http://127.0.0.1:8000/api";
 
 class Api{
@@ -67,8 +68,8 @@ class Api{
     throw "Gagal request all vessel:\n${response.body}";
 
   }
-  static Future<GetAllVesselCoor> getAllVesselLatestCoor() async {
-    var url = "$BASE_URL/get_all_latest_coor?page=1&perpage=100";
+  static Future<GetAllVesselCoor> getAllVesselLatestCoor({int page = 1,int perpage = 100}) async {
+    var url = "$BASE_URL/get_all_latest_coor?page=$page&perpage=$perpage";
     var response = await http.get(
       Uri.parse(url),
     );
@@ -402,8 +403,8 @@ class Api{
   }
 
   /// CRUD CLIENT LIST
-  static Future<GetClientResponse> getClientList({int page = 1})async{
-    var url = "$BASE_URL/get_client?page=$page";
+  static Future<GetClientResponse> getClientList({int page = 1,int perpage = 10})async{
+    var url = "$BASE_URL/get_client?page=$page&perpage=$perpage";
     var response = await http.get(
       Uri.parse(url),
     );

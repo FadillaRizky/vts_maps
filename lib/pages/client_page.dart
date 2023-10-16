@@ -3,74 +3,109 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pagination_flutter/pagination.dart';
+import 'package:provider/provider.dart';
+import 'package:vts_maps/api/api.dart';
 import 'package:vts_maps/change_notifier/change_notifier.dart';
 import 'package:vts_maps/utils/alerts.dart';
 import 'package:vts_maps/utils/constants.dart';
 import 'package:vts_maps/utils/text_field.dart';
 import 'package:vts_maps/api/GetClientListResponse.dart' as ClientList;
 
-class ClientPage {
-  static TextEditingController nameController = TextEditingController();
-  static TextEditingController emailControler = TextEditingController();
-  static TextEditingController passwordController = TextEditingController();
-  static TextEditingController confirmpasswordController =
-      TextEditingController();
+class ClientPage extends StatefulWidget {
+  const ClientPage({super.key});
 
-  static clientList(
-    BuildContext context,
-    Notifier value,
-  ) {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          var height = MediaQuery.of(context).size.height;
-          var width = MediaQuery.of(context).size.width;
+  @override
+  State<ClientPage> createState() => _ClientPageState();
+}
 
-          return Dialog(
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5))),
-              child: SizedBox(
-                  width: width / 1.5,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        color: Colors.black12,
-                        padding: const EdgeInsets.all(10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              " Client List",
-                              style: GoogleFonts.openSans(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              icon: const Icon(Icons.close),
-                            ),
-                          ],
-                        ),
+class _ClientPageState extends State<ClientPage> {
+  TextEditingController nameController = TextEditingController();
+  TextEditingController emailControler = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmpasswordController = TextEditingController();
+
+  bool load = false;
+  int page = 1;
+  int perpage = 10;
+
+  Notifier? readNotifier;
+
+  incrementPage(int pageIndex) {
+    page = pageIndex;
+    load = true;
+  }
+
+  Stream<ClientList.GetClientResponse> clientStream(
+      {int page = 1, int perpage = 10}) async* {
+    ClientList.GetClientResponse someProduct =
+        await Api.getClientList(page: page, perpage: perpage);
+    yield someProduct;
+    load = false;
+  }
+
+  @override
+  void initState() {
+    readNotifier = context.read<Notifier>();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
+
+    return SizedBox(
+      width: width / 1.5,
+      child: StreamBuilder<ClientList.GetClientResponse>(
+          stream: clientStream(page: page, perpage: perpage),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (snapshot.hasData) {
+              var data = snapshot.data;
+              List<ClientList.Data> clientData = snapshot.data!.data!;
+              return Consumer<Notifier>(builder: (context, value, child) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      color: Colors.black12,
+                      padding: const EdgeInsets.all(10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            " Client List",
+                            style: GoogleFonts.openSans(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                                "Page ${value.currentPage} of ${(value.totalClient / 10).ceil()}"),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                              "Page ${page} of ${(data!.total! / perpage).ceil()}"),
 
-                            ///
-                            Row(
-                              children: [
-                                SizedBox(
-                                  height: 40,
-                                  width: 40,
-                                  child: IconButton(
+                          ///
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 5,
+                              ),
+                              SizedBox(
+                                height: 40,
+                                child: ElevatedButton(
                                     style: ButtonStyle(
                                         shape: MaterialStateProperty.all(
                                             RoundedRectangleBorder(
@@ -80,202 +115,174 @@ class ClientPage {
                                             MaterialStateProperty.all(
                                                 Colors.blueAccent)),
                                     onPressed: () {
-                                      value.initClientList();
+                                      ///FUNCTION ADD CLIENT
+                                      addClientList(context);
                                     },
-                                    icon: Icon(
-                                      Icons.refresh,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 5,
-                                ),
-                                SizedBox(
-                                  height: 40,
-                                  child: ElevatedButton(
-                                      style: ButtonStyle(
-                                          shape: MaterialStateProperty.all(
-                                              RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          5))),
-                                          backgroundColor:
-                                              MaterialStateProperty.all(
-                                                  Colors.blueAccent)),
-                                      onPressed: () {
-                                        ///FUNCTION ADD CLIENT
-                                        addClientList(context, value);
-                                      },
-                                      child: Text(
-                                        "Add Client",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      )),
-                                ),
-                              ],
-                            )
-
-                            ///
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: 380,
-                        child: SingleChildScrollView(
-                          child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: value.isLoading
-                                  ? const Center(
-                                      child: CircularProgressIndicator())
-                                  : SizedBox(
-                                      width: 900,
-                                      child: DataTable(
-                                          headingRowColor:
-                                              MaterialStateProperty.all(
-                                                  Color(0xffd3d3d3)),
-                                          columns: [
-                                            const DataColumn(
-                                                label: Text("Name")),
-                                            const DataColumn(
-                                                label: Text("Email")),
-                                            const DataColumn(
-                                                label: Text("Status")),
-                                            const DataColumn(
-                                                label: Text(
-                                                    "View Client Only Data")),
-                                            const DataColumn(
-                                                label: Text("Action")),
-                                          ],
-                                          rows:
-                                              value.getClientResult.map((data) {
-                                            return DataRow(cells: [
-                                              DataCell(Text(data.clientName!)),
-                                              DataCell(Text(data.email!)),
-                                              DataCell(Text(
-                                                  (data.status! == "1")
-                                                      ? "ACTIVE"
-                                                      : "INACTIVE")),
-                                              DataCell(
-                                                SizedBox(
-                                                  height: 40,
-                                                  child: ElevatedButton(
-                                                      style: ButtonStyle(
-                                                          shape: MaterialStateProperty.all(
-                                                              RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              5))),
-                                                          backgroundColor:
-                                                              MaterialStateProperty
-                                                                  .all(Colors
-                                                                      .blueAccent)),
-                                                      onPressed: () {
-                                                        ///FUNCTION VIEW CLIENT ONLY DATA
-                                                        // addClientList(
-                                                        //     context, value);
-                                                      },
-                                                      child: Text(
-                                                        "View Client",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                        ),
-                                                      )),
-                                                ),
-                                              ),
-                                              DataCell(Row(
-                                                children: [
-                                                  IconButton(
-                                                    icon: const Icon(
-                                                      Icons.edit,
-                                                      color: Colors.blue,
-                                                    ),
-                                                    onPressed: () {
-                                                      /// FUNCTION EDIT CLIENT
-                                                      editClientList(
-                                                          data, context, value);
-                                                    },
-                                                  ),
-                                                  IconButton(
-                                                    icon: const Icon(
-                                                      Icons.delete,
-                                                      color: Colors.red,
-                                                    ),
-                                                    onPressed: () {
-                                                      Alerts.showAlertYesNo(
-                                                          title:
-                                                              "Are you sure you want to delete this user?",
-                                                          onPressYes: () {
-                                                            /// FUNCTION DELETE CLIENT
-                                                            value.deleteClient(
-                                                                data.idClient,
-                                                                context);
-                                                          },
-                                                          onPressNo: () {
-                                                            Navigator.pop(
-                                                                context);
-                                                          },
-                                                          context: context);
-                                                    },
-                                                  ),
-                                                ],
-                                              )),
-                                            ]);
-                                          }).toList()),
+                                    child: Text(
+                                      "Add Client",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
                                     )),
-                        ),
+                              ),
+                            ],
+                          )
+
+                          ///
+                        ],
                       ),
-                      Pagination(
-                        numOfPages: (value.totalClient / 10).ceil(),
-                        selectedPage: value.currentPage,
-                        pagesVisible: 7,
-                        onPageChanged: (page) {
-                          value.incrementPage(page);
-                          value.initClientList();
-                        },
-                        nextIcon: const Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.blue,
-                          size: 14,
-                        ),
-                        previousIcon: const Icon(
-                          Icons.arrow_back_ios,
-                          color: Colors.blue,
-                          size: 14,
-                        ),
-                        activeTextStyle: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        activeBtnStyle: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.blue),
-                          shape: MaterialStateProperty.all(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(38),
+                    ),
+                    Container(
+                      height: 380,
+                       width: double.infinity,
+                      margin: EdgeInsets.symmetric(horizontal: 15),
+                      child: load
+                          ? Center(child: CircularProgressIndicator())
+                          : SingleChildScrollView(
+                              child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: DataTable(
+                                      headingRowColor:
+                                          MaterialStateProperty.all(
+                                              Color(0xffd3d3d3)),
+                                      columns: [
+                                        const DataColumn(label: Text("Name")),
+                                        const DataColumn(
+                                            label: Text("Email")),
+                                        const DataColumn(
+                                            label: Text("Status")),
+                                        const DataColumn(
+                                            label: Text(
+                                                "View Client Only Data")),
+                                        const DataColumn(
+                                            label: Text("Action")),
+                                      ],
+                                      rows: clientData.map((data) {
+                                        return DataRow(cells: [
+                                          DataCell(Text(data.clientName!)),
+                                          DataCell(Text(data.email!)),
+                                          DataCell(Text((data.status! == "1")
+                                              ? "ACTIVE"
+                                              : "INACTIVE")),
+                                          DataCell(
+                                            SizedBox(
+                                              height: 40,
+                                              child: ElevatedButton(
+                                                  style: ButtonStyle(
+                                                      shape: MaterialStateProperty.all(
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5))),
+                                                      backgroundColor:
+                                                          MaterialStateProperty
+                                                              .all(Colors
+                                                                  .blueAccent)),
+                                                  onPressed: () {
+                                                    ///FUNCTION VIEW CLIENT ONLY DATA
+                                                     // addClientList(context);
+                                                  },
+                                                  child: Text(
+                                                    "View Client",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  )),
+                                            ),
+                                          ),
+                                          DataCell(Row(
+                                            children: [
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.edit,
+                                                  color: Colors.blue,
+                                                ),
+                                                onPressed: () {
+                                                  /// FUNCTION EDIT CLIENT
+                                                  editClientList(
+                                                      data, context);
+                                                },
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.delete,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  Alerts.showAlertYesNo(
+                                                      title:
+                                                          "Are you sure you want to delete this user?",
+                                                      onPressYes: () {
+                                                        /// FUNCTION DELETE CLIENT
+                                                        value.deleteClient(
+                                                            data.idClient,
+                                                            context);
+                                                      },
+                                                      onPressNo: () {
+                                                        Navigator.pop(
+                                                            context);
+                                                      },
+                                                      context: context);
+                                                },
+                                              ),
+                                            ],
+                                          )),
+                                        ]);
+                                      }).toList())),
                             ),
+                    ),
+                    Pagination(
+                      numOfPages: (data!.total! / perpage).ceil(),
+                      selectedPage: page,
+                      pagesVisible: 7,
+                      onPageChanged: (page) {
+                        incrementPage(page);
+                      },
+                      nextIcon: const Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.blue,
+                        size: 14,
+                      ),
+                      previousIcon: const Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.blue,
+                        size: 14,
+                      ),
+                      activeTextStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      activeBtnStyle: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(Colors.blue),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(38),
                           ),
                         ),
-                        inactiveBtnStyle: ButtonStyle(
-                          shape:
-                              MaterialStateProperty.all(RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(38),
-                          )),
-                        ),
-                        inactiveTextStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
                       ),
-                    ],
-                  )));
-        });
+                      inactiveBtnStyle: ButtonStyle(
+                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(38),
+                        )),
+                      ),
+                      inactiveTextStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                );
+              });
+            } else {
+              return Center(child: CircularProgressIndicator());
+            }
+          }),
+    );
   }
 
-  static addClientList(BuildContext context, Notifier readNotifier) {
+  void addClientList(BuildContext context) {
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -308,7 +315,7 @@ class ClientPage {
                             emailControler.clear();
                             passwordController.clear();
                             confirmpasswordController.clear();
-                            readNotifier.switchControl(false);
+                            readNotifier!.switchControl(false);
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.close),
@@ -355,9 +362,9 @@ class ClientPage {
                               child: FittedBox(
                                 fit: BoxFit.fill,
                                 child: Switch(
-                                  value: readNotifier.isSwitched,
+                                  value: readNotifier!.isSwitched,
                                   onChanged: (bool value) {
-                                    readNotifier.switchControl(value);
+                                    readNotifier!.switchControl(value);
                                   },
                                   activeTrackColor: Colors.lightGreen,
                                   activeColor: Colors.green,
@@ -415,14 +422,16 @@ class ClientPage {
                                       "password_confirmation":
                                           confirmpasswordController.text,
                                       "status":
-                                          readNotifier.isSwitched ? "1" : "0"
+                                          readNotifier!.isSwitched ? "1" : "0"
                                     };
-                                    readNotifier.submitClient(context, data);
+                                    submitClient(context, data);
                                     nameController.clear();
                                     emailControler.clear();
                                     passwordController.clear();
                                     confirmpasswordController.clear();
-                                    readNotifier.switchControl(false);
+                                    readNotifier!.switchControl(false);
+                                    load = true;
+
                                   },
                                   child: Text(
                                     "Submit",
@@ -447,7 +456,7 @@ class ClientPage {
                                     emailControler.clear();
                                     passwordController.clear();
                                     confirmpasswordController.clear();
-                                    readNotifier.switchControl(false);
+                                    readNotifier!.switchControl(false);
                                     Navigator.pop(context);
                                   },
                                   child: Text(
@@ -470,15 +479,56 @@ class ClientPage {
           );
         });
   }
+  void submitClient(BuildContext context,Map<String,String> data)async{
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    await Api.createClient(data).then((value){
+      print(value.message);
+      if (value.message == "Data berhasil masuk database") {
+        Navigator.pop(context);
+        EasyLoading.showSuccess("Berhasil Menambahkan Data");
+        Navigator.pop(context);
+        return;
+      }
+      if (value.message != "Data berhasil masuk database") {
+        Navigator.pop(context);
+        EasyLoading.showError("Gagal Menambahkan Data, Coba Lagi...");
+        return;
+      }
+      return;
+    });
+  }
 
-  static editClientList(
+  void editClientList(
     ClientList.Data data,
     BuildContext context,
-    Notifier readNotifier,
   ) {
     nameController.text = data.clientName!;
     emailControler.text = data.email!;
-    readNotifier.switchControl((data.status == "1") ? true : false);
+    readNotifier!.switchControl((data.status == "1") ? true : false);
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -508,7 +558,7 @@ class ClientPage {
                           onPressed: () {
                             nameController.clear();
                             emailControler.clear();
-                            readNotifier.switchControl(false);
+                            readNotifier!.switchControl(false);
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.close),
@@ -545,9 +595,9 @@ class ClientPage {
                               child: FittedBox(
                                 fit: BoxFit.fill,
                                 child: Switch(
-                                  value: readNotifier.isSwitched,
+                                  value: readNotifier!.isSwitched,
                                   onChanged: (bool value) {
-                                    readNotifier.switchControl(value);
+                                    readNotifier!.switchControl(value);
                                   },
                                   activeTrackColor: Colors.lightGreen,
                                   activeColor: Colors.green,
@@ -586,12 +636,13 @@ class ClientPage {
                                       "client_name": nameController.text,
                                       "email": emailControler.text,
                                       "status":
-                                          readNotifier.isSwitched ? "1" : "0"
+                                          readNotifier!.isSwitched ? "1" : "0"
                                     };
-                                    readNotifier.editClient(body, context);
+                                    editClient(body, context);
                                     nameController.clear();
                                     emailControler.clear();
-                                    readNotifier.switchControl(false);
+                                    load = true;
+                                    readNotifier!.switchControl(false);
                                   },
                                   child: Text(
                                     "Submit",
@@ -614,7 +665,7 @@ class ClientPage {
                                   onPressed: () {
                                     nameController.clear();
                                     emailControler.clear();
-                                    readNotifier.switchControl(false);
+                                    readNotifier!.switchControl(false);
                                     Navigator.pop(context);
                                   },
                                   child: Text(
@@ -636,5 +687,44 @@ class ClientPage {
             ),
           );
         });
+  }
+  void editClient(Map <String,String> data,BuildContext context)async{
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    await Api.updateClient(data).then((value) {
+      print(value.message);
+      if (value.status == 200) {
+        Navigator.pop(context);
+        EasyLoading.showSuccess("Berhasil Edit Data");
+        Navigator.pop(context);
+      }else{
+        Navigator.pop(context);
+        EasyLoading.showError("Gagal Edit Data");
+      }
+      return;
+    });
   }
 }

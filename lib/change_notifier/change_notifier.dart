@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:vts_maps/api/GetAllVesselCoor.dart' as LatestVesselCoor;
@@ -37,8 +39,6 @@ class Notifier extends ChangeNotifier {
   /// CRUD VESSEL
   List<VesselCoor.Data> _vesselCoorResult = [];
   List<VesselCoor.Data> get vesselCoorResult => _vesselCoorResult;
-
-
 
   int _totalIp = 0;
   int get totalIp => _totalIp;
@@ -437,93 +437,6 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void submitClient(BuildContext context,Map<String,String> data)async{
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(
-                color: Colors.white,
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Text(
-                "loading ..",
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-    await Api.createClient(data).then((value){
-      print(value.message);
-      if (value.message == "Data berhasil masuk database") {
-        Navigator.pop(context);
-        EasyLoading.showSuccess("Berhasil Menambahkan Data");
-        Navigator.pop(context);
-        initClientList();
-        return;
-      }
-      if (value.message != "Data berhasil masuk database") {
-        Navigator.pop(context);
-        EasyLoading.showError("Gagal Menambahkan Data, Coba Lagi...");
-        return;
-      }
-      return;
-    });
-    notifyListeners();
-  }
-
-  void editClient(Map <String,String> data,BuildContext context)async{
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(
-                color: Colors.white,
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Text(
-                "loading ..",
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-    await Api.updateClient(data).then((value) {
-      print(value.message);
-      if (value.status == 200) {
-        Navigator.pop(context);
-        EasyLoading.showSuccess("Berhasil Edit Data");
-        Navigator.pop(context);
-        initClientList();
-      }else{
-        Navigator.pop(context);
-        EasyLoading.showError("Gagal Edit Data");
-      }
-      return;
-    });
-    notifyListeners();
-  }
-
   void deleteClient(id,context){
     Api.deleteClient(id).then((value) {
       if (value.message == "Data berhasil di hapus database") {
@@ -561,65 +474,65 @@ class Notifier extends ChangeNotifier {
   }
 
   // === Vessel Function ===
-  String _onClickVessel = "";
-  String get onClickVessel => _onClickVessel;
+  // String _onClickVessel = "";
+  // String get onClickVessel => _onClickVessel;
 
-  VesselCoor.Data? _searchKapal; 
-  VesselCoor.Data? get searchKapal => _searchKapal; 
+  // VesselCoor.Data? _searchKapal; 
+  // VesselCoor.Data? get searchKapal => _searchKapal; 
 
-  void clickVessel(String call_sign,context){
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(
-                color: Colors.white,
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Text(
-                "loading ..",
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-      try {
-    Api.getKapalAndCoor(call_sign: call_sign).then((value){
-        _searchKapal = null;
-        // print(value.data!.first.kapal!.callSign);
-        if (value.total! == 0) {
-          _searchKapal = null;
-          // Navigator.pop(context);
-        }
-        if (value.total! > 0) {
-          _searchKapal = value.data!.first as VesselCoor.Data;
-          // Navigator.pop(context);
-          // vesselTotal = value.total!;
-        }
-    _onClickVessel = call_sign;
-        Navigator.pop(context);
-    });
-      } catch (e) {
-        print(e); 
-      }
-    notifyListeners();
-  }
+  // void clickVessel(String call_sign,context){
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (BuildContext context) {
+  //       return Dialog(
+  //         backgroundColor: Colors.transparent,
+  //         elevation: 0,
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             CircularProgressIndicator(
+  //               color: Colors.white,
+  //             ),
+  //             SizedBox(
+  //               height: 20,
+  //             ),
+  //             Text(
+  //               "loading ..",
+  //               style: TextStyle(color: Colors.white, fontSize: 20),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  //     try {
+  //   Api.getKapalAndCoor(call_sign: call_sign).then((value){
+  //       _searchKapal = null;
+  //       // print(value.data!.first.kapal!.callSign);
+  //       if (value.total! == 0) {
+  //         _searchKapal = null;
+  //         // Navigator.pop(context);
+  //       }
+  //       if (value.total! > 0) {
+  //         _searchKapal = value.data!.first as VesselCoor.Data;
+  //         // Navigator.pop(context);
+  //         // vesselTotal = value.total!;
+  //       }
+  //   _onClickVessel = call_sign;
+  //       Navigator.pop(context);
+  //   });
+  //     } catch (e) {
+  //       print(e); 
+  //     }
+  //   notifyListeners();
+  // }
 
-  void removeClickedVessel(){
-    _onClickVessel = "";
-    _searchKapal = null;
-    notifyListeners();
-  }
+  // void removeClickedVessel(){
+  //   _onClickVessel = "";
+  //   _searchKapal = null;
+  //   notifyListeners();
+  // }
 
   int _predictMovementVessel = 0;
   int get predictMovementVessel => _predictMovementVessel;
@@ -763,4 +676,24 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  num? _currentZoom = 15;
+  num? get currentZoom => _currentZoom;
+
+  void changeZoom(num zoom){
+    _currentZoom = zoom;
+    // print(zoom);
+    notifyListeners();
+  }
+
+  String? _vesselClick = "";
+  String? get vesselClick => _vesselClick;
+
+  void vesselClicked(String call_sign){
+    _vesselClick = call_sign;
+    notifyListeners();
+  }
+  void removeVesselClicked(){
+    _vesselClick = "";
+    notifyListeners();
+  }
 }

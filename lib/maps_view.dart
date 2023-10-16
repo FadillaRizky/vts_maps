@@ -24,6 +24,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:vts_maps/change_notifier/change_notifier.dart';
 import 'package:vts_maps/draw/vessel_draw.dart';
 import 'package:vts_maps/pages/client_page.dart';
+import 'package:vts_maps/pages/maps/marker_vessel.dart';
+import 'package:vts_maps/pages/maps/pipeline_layer.dart';
+import 'package:vts_maps/pages/maps/vessel_detail.dart';
 import 'package:vts_maps/pages/pipeline.dart';
 import 'package:vts_maps/pages/vessel.dart';
 import 'package:vts_maps/utils/alerts.dart';
@@ -41,8 +44,9 @@ import 'api/GetAllVessel.dart' as Vessel;
 import 'api/GetKapalAndCoor.dart' as VesselCoor;
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key, String this.idClient = ""}) : super(key: key);
+  const HomePage({Key? key, String this.idClient = "",String this.vesselClicked = ""}) : super(key: key);
   final String idClient;
+  final String vesselClicked;
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -156,19 +160,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> runNotifier() async {
     final notifier = await Provider.of<Notifier>(context, listen: false);
-    notifier.initVesselCoor();
     notifier.initLatLangCoor();
     notifier.initPipeline(context);
-    notifier.initClientList();
     Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       notifier.initKalmanFilter();
     });
     Timer.periodic(const Duration(minutes: 5), (timer) {
-      notifier.initVesselCoor();
       notifier.resetKalmanFilter();
       notifier.initLatLangCoor();
       notifier.initPipeline(context);
-      notifier.initClientList();
     });
   }
 
@@ -237,19 +237,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       builder: (context, value, child) {
         var readNotifier = context.read<Notifier>();
 
-        Future<void> searchVessel(String callSign) async {
-          value.clickVessel(callSign, context);
-          Future.delayed(const Duration(seconds: 1), () {
-            print(value.searchKapal!.kapal!.callSign);
-            value.initLatLangCoor(call_sign: callSign);
-            _animatedMapMove(
-                LatLng(
-                  value.searchKapal!.coor!.coorGga!.latitude!.toDouble(),
-                  value.searchKapal!.coor!.coorGga!.longitude!.toDouble(),
-                ),
-                13);
-          });
-        }
+        // Future<void> searchVessel(String callSign) async {
+        //   value.clickVessel(callSign, context);
+        //   Future.delayed(const Duration(seconds: 1), () {
+        //     print(value.searchKapal!.kapal!.callSign);
+        //     value.initLatLangCoor(call_sign: callSign);
+        //     _animatedMapMove(
+        //         LatLng(
+        //           value.searchKapal!.coor!.coorGga!.latitude!.toDouble(),
+        //           value.searchKapal!.coor!.coorGga!.longitude!.toDouble(),
+        //         ),
+        //         13);
+        //   });
+        // }
 
         return Scaffold(
           appBar: AppBar(
@@ -299,7 +299,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           }
                         );
                       case "clientList":
-                        ClientPage.clientList(context, value);
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          var height = MediaQuery.of(context).size.height;
+                          var width = MediaQuery.of(context).size.width;
+
+                          return Dialog(
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(5))),
+                              child: ClientPage(),
+                            );
+                        });
                     }
                   },
                 ),
@@ -384,7 +396,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               InkWell(
                 onTap: () {
-                  searchVessel(SearchVessel.text);
+                  // searchVessel(SearchVessel.text);
                 },
                 child: Container(
                   width: 50,
@@ -428,7 +440,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       initialCenter: const LatLng(-1.089955, 117.360343),
                       onPositionChanged: (position, hasGesture) {
                         setState(() {
-                          currentZoom = (position.zoom! - 8) * 9;
+                          currentZoom = (position.zoom! - 8) * 5;
+                          value.changeZoom((position.zoom! - 8) * 5);
                         });
                         // readNotifier.vesselSize(position.zoom!,vesselSizes());
                       },
@@ -455,263 +468,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
 
                       /// widget berisi detail informasi kapal
-                      if (value.onClickVessel != "")
-                        Center(
-                          child: Container(
-                            constraints: const BoxConstraints(
-                              maxWidth: 600,
-                            ),
-                            child: SnappingSheet(
-                              controller: snappingSheetController,
-                              // child: Background(),
-                              lockOverflowDrag: true,
-                              snappingPositions: [
-                                SnappingPosition.factor(
-                                  snappingCurve: Curves.elasticOut,
-                                  snappingDuration:
-                                      const Duration(milliseconds: 1750),
-                                  positionFactor: (301.74 /
-                                      MediaQuery.of(context).size.height),
-                                ),
-                                const SnappingPosition.factor(
-                                  positionFactor: 0.0,
-                                  snappingCurve: Curves.easeOutExpo,
-                                  snappingDuration: Duration(seconds: 1),
-                                  grabbingContentOffset:
-                                      GrabbingContentOffset.top,
-                                ),
-                                SnappingPosition.factor(
-                                  snappingCurve: Curves.elasticOut,
-                                  snappingDuration:
-                                      const Duration(milliseconds: 1750),
-                                  positionFactor: (500 /
-                                      MediaQuery.of(context).size.height),
-                                ),
-                                // SnappingPosition.factor(
-                                //   grabbingContentOffset:
-                                //       GrabbingContentOffset.bottom,
-                                //   snappingCurve: Curves.easeInExpo,
-                                //   snappingDuration: Duration(seconds: 1),
-                                //   positionFactor: 0.9,
-                                // ),
-                              ],
-                              grabbing: GrabbingWidget(),
-                              grabbingHeight: 75,
-                              sheetAbove: null,
-                              sheetBelow: SnappingSheetContent(
-                                draggable: true,
-                                // childScrollController: listViewController,
-                                child: SingleChildScrollView(
-                                  // physics: NeverScrollableScrollPhysics(),
-                                  child: Container(
-                                    color: Colors.white,
-                                    child: Column(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            snappingSheetController
-                                                .snapToPosition(
-                                              const SnappingPosition.factor(
-                                                  positionFactor: -0.5),
-                                            );
-                                            Timer(
-                                                const Duration(
-                                                    milliseconds: 300), () {
-                                              value.removeClickedVessel();
-                                            });
-                                          },
-                                          child: Container(
-                                            alignment: Alignment.topRight,
-                                            child: Container(
-                                              width: 45,
-                                              height: 45,
-                                              decoration: const BoxDecoration(
-                                                  color: Colors.black12),
-                                              padding: const EdgeInsets.all(4),
-                                              child: const Center(
-                                                child: Text(
-                                                  "X",
-                                                  style:
-                                                      TextStyle(fontSize: 20),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 15, vertical: 10),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "${value.searchKapal!.kapal!.callSign}",
-                                                    style: const TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  Text(
-                                                    "${value.searchKapal!.kapal!.flag}",
-                                                    style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w400),
-                                                  ),
-                                                ],
-                                              ),
-                                              Image.asset(
-                                                "assets/model_kapal.jpg",
-                                                width: 100,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Container(
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 15, vertical: 10),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "Position Information"
-                                                    .toUpperCase(),
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Container(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              10),
-                                                      decoration: BoxDecoration(
-                                                          border: Border.all(
-                                                              color:
-                                                                  Colors.grey,
-                                                              width: 1)),
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          const Text(
-                                                            'Latitude',
-                                                            style: TextStyle(
-                                                              fontSize: 14,
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                      255,
-                                                                      61,
-                                                                      61,
-                                                                      61),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            "${predictLatLong(value.searchKapal!.coor!.coorGga!.latitude!.toDouble(), value.searchKapal!.coor!.coorGga!.longitude!.toDouble(), 100, value.searchKapal!.coor!.coorHdt!.headingDegree ?? value.searchKapal!.coor!.defaultHeading!, value.predictMovementVessel).latitude.toStringAsFixed(5)}}",
-                                                            style:
-                                                                const TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                      255,
-                                                                      61,
-                                                                      61,
-                                                                      61),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Expanded(
-                                                    child: Container(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              10),
-                                                      decoration: BoxDecoration(
-                                                          border: Border.all(
-                                                              color:
-                                                                  Colors.grey,
-                                                              width: 1)),
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          const Text(
-                                                            'Longitude',
-                                                            style: TextStyle(
-                                                              fontSize: 14,
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                      255,
-                                                                      61,
-                                                                      61,
-                                                                      61),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            "${predictLatLong(value.searchKapal!.coor!.coorGga!.latitude!.toDouble(), value.searchKapal!.coor!.coorGga!.longitude!.toDouble(), 100, value.searchKapal!.coor!.coorHdt!.headingDegree ?? value.searchKapal!.coor!.defaultHeading!, value.predictMovementVessel).latitude.toStringAsFixed(5)}}",
-                                                            style:
-                                                                const TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                      255,
-                                                                      61,
-                                                                      61,
-                                                                      61),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const Text(
-                                          "Vessel",
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        VesselDrawer(
-                                            link: value
-                                                .searchKapal!.kapal!.xmlFile!
-                                                .toString()),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                      if (value.vesselClick! != "")
+                        VesselDetail(call_sign: value.vesselClick!)
                     ],
                     children: [
                       TileLayer(
@@ -731,70 +489,56 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         userAgentPackageName:
                             'dev.fleaflet.flutter_map.example',
                       ),
-                      if (value.kmlOverlayPolygons.isNotEmpty)
-                        for (final kmlOverlayPolygon
-                            in value.kmlOverlayPolygons)
-                          PolylineLayer(
-                            polylines: kmlOverlayPolygon.map((kmlPolygon) {
-                              return Polyline(
-                                strokeWidth: 3,
-                                points: kmlPolygon.points,
-                                color: Color(
-                                    int.parse(kmlPolygon.color, radix: 16)),
-                              );
-                            }).toList(),
-                          ),
-
-                      PolylineLayer(
-                        polylines: [
-                          Polyline(
-                            strokeWidth: 5,
-                            points: [
-                              for (var x in value.latLangResult.reversed)
-                                if (x.callSign == value.onClickVessel)
-                                  LatLng(x.latitude!, x.longitude!),
-                              // for (var i in value.vesselCoorResult)
-                              if (value.searchKapal != null)
-                                if (value.searchKapal!.kapal!.callSign ==
-                                    value.onClickVessel)
-                                  LatLng(
-                                      predictLatLong(
-                                              value.searchKapal!.coor!.coorGga!.latitude!
-                                                  .toDouble(),
-                                              value.searchKapal!.coor!.coorGga!
-                                                  .longitude!
-                                                  .toDouble(),
-                                              100,
-                                              value.searchKapal!.coor!.coorHdt!
-                                                      .headingDegree ??
-                                                  value.searchKapal!.coor!
-                                                      .defaultHeading!
-                                                      .toDouble(),
-                                              value.predictMovementVessel)
-                                          .latitude,
-                                      predictLatLong(
-                                              value.searchKapal!.coor!.coorGga!
-                                                  .latitude!
-                                                  .toDouble(),
-                                              value.searchKapal!.coor!.coorGga!
-                                                  .longitude!
-                                                  .toDouble(),
-                                              100,
-                                              value.searchKapal!.coor!.coorHdt!
-                                                      .headingDegree ??
-                                                  value.searchKapal!.coor!
-                                                      .defaultHeading!
-                                                      .toDouble(),
-                                              value.predictMovementVessel)
-                                          .longitude
-                                      // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
-                                      //   i.coorGga!.longitude!.toDouble()
-                                      ),
-                            ],
-                            color: Colors.blue,
-                          ),
-                        ],
-                      ),
+                      // PolylineLayer(
+                      //   polylines: [
+                      //     Polyline(
+                      //       strokeWidth: 5,
+                      //       points: [
+                      //         for (var x in value.latLangResult.reversed)
+                      //           if (x.callSign == value.onClickVessel)
+                      //             LatLng(x.latitude!, x.longitude!),
+                      //         // for (var i in value.vesselCoorResult)
+                      //         if (value.searchKapal != null)
+                      //           if (value.searchKapal!.kapal!.callSign ==
+                      //               value.onClickVessel)
+                      //             LatLng(
+                      //                 predictLatLong(
+                      //                         value.searchKapal!.coor!.coorGga!.latitude!
+                      //                             .toDouble(),
+                      //                         value.searchKapal!.coor!.coorGga!
+                      //                             .longitude!
+                      //                             .toDouble(),
+                      //                         100,
+                      //                         value.searchKapal!.coor!.coorHdt!
+                      //                                 .headingDegree ??
+                      //                             value.searchKapal!.coor!
+                      //                                 .defaultHeading!
+                      //                                 .toDouble(),
+                      //                         value.predictMovementVessel)
+                      //                     .latitude,
+                      //                 predictLatLong(
+                      //                         value.searchKapal!.coor!.coorGga!
+                      //                             .latitude!
+                      //                             .toDouble(),
+                      //                         value.searchKapal!.coor!.coorGga!
+                      //                             .longitude!
+                      //                             .toDouble(),
+                      //                         100,
+                      //                         value.searchKapal!.coor!.coorHdt!
+                      //                                 .headingDegree ??
+                      //                             value.searchKapal!.coor!
+                      //                                 .defaultHeading!
+                      //                                 .toDouble(),
+                      //                         value.predictMovementVessel)
+                      //                     .longitude
+                      //                 // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
+                      //                 //   i.coorGga!.longitude!.toDouble()
+                      //                 ),
+                      //       ],
+                      //       color: Colors.blue,
+                      //     ),
+                      //   ],
+                      // ),
                       // CircleLayer(
                       //   circles: [
                       //     for (var x in latLangResult.reversed.where((e) => e.callSign == onClickVessel))
@@ -807,6 +551,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       //       ),
                       //   ],
                       // ),
+                      
                       MarkerLayer(markers: [
                         if (latLng != null)
                           Marker(
@@ -814,93 +559,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             height: pointSize,
                             point: latLng!,
                             builder: (ctx) => Image.asset(
-                              "assets/compass2.png",
+                              "assets/compass.png",
                               width: 250,
                               height: 250,
                             ),
                           ),
                       ]),
-                      MarkerLayer(
-                        markers: value.vesselCoorResult
-                            .map(
-                              (i) => Marker(
-                                width:
-                                    // mapController.zoom * 1,
-                                    // (mapController.zoom - 10) / 2,
-                                    // vesselSizes(i.kapal!.size!.toString()) + currentZoom,
-                                    // 10 + currentZoom,
-                                    // currentZoom.toDouble(),
-                                    // value.currentZoom.toDouble(),
-                                    vesselSizes(i.kapal!.size!.toString()) +
-                                        currentZoom.toDouble(),
-                                height:
-                                    // mapController.zoom * 1,
-                                    // (mapController.zoom - 10) / 2,
-                                    // vesselSizes(i.kapal!.size!.toString()) + currentZoom,
-                                    // 10 + currentZoom,
-                                    // currentZoom.toDouble() ,
-                                    // value.currentZoom.toDouble(),
-                                    vesselSizes(i.kapal!.size!.toString()) +
-                                        currentZoom.toDouble(),
-                                point: LatLng(
-                                    predictLatLong(
-                                            i.coor!.coorGga!.latitude!
-                                                .toDouble(),
-                                            i.coor!.coorGga!.longitude!
-                                                .toDouble(),
-                                            100,
-                                            i.coor!.coorHdt!.headingDegree ??
-                                                i.coor!.defaultHeading!
-                                                    .toDouble(),
-                                            value.predictMovementVessel)
-                                        .latitude,
-                                    predictLatLong(
-                                            i.coor!.coorGga!.latitude!
-                                                .toDouble(),
-                                            i.coor!.coorGga!.longitude!
-                                                .toDouble(),
-                                            100,
-                                            i.coor!.coorHdt!.headingDegree ??
-                                                i.coor!.defaultHeading!
-                                                    .toDouble(),
-                                            value.predictMovementVessel)
-                                        .longitude
 
-                                    // i.coorGga!.latitude!.toDouble() + (predictMovementVessel * (9.72222 / 111111.1)),
-                                    //   i.coorGga!.longitude!.toDouble()
-                                    ),
-                                rotateOrigin: const Offset(10, -10),
-                                builder: (context) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      searchVessel(i.kapal!.callSign!);
-                                    },
-                                    child: Transform.rotate(
-                                      angle: degreesToRadians(i
-                                              .coor!.coorHdt!.headingDegree ??
-                                          i.coor!.defaultHeading!.toDouble()),
-                                      child: Tooltip(
-                                        message: i.kapal!.callSign!.toString(),
-                                        child: Image.asset(
-                                          "assets/ship.png",
-                                          height: vesselSizes(
-                                                  i.kapal!.size!.toString()) +
-                                              currentZoom.toDouble(),
-                                          width: vesselSizes(
-                                                  i.kapal!.size!.toString()) +
-                                              currentZoom.toDouble(),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            )
-                            .toList(),
-                      ),
+                      // Pipeline Layers (pages/maps/pipeline_layer.dart)
+                      PipelineLayer(),
+
+                      // Vessel Marker (pages/maps/marker_vessel.dart)
+                      MarkerVessel(),
                     ],
                   ),
                 ),
+              
               ],
             ),
           ),
@@ -910,3 +584,5 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
 }
+
+

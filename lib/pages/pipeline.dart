@@ -41,14 +41,10 @@ class _PipelinePageState extends State<PipelinePage> {
   }
 
   Stream<PipelineResponse.GetPipelineResponse> pipelineStream() async* {
-    while (true) {
-      PipelineResponse.GetPipelineResponse someProduct =
-          await Api.getPipeline(page: currentPage, perpage: perpage);
-      yield someProduct;
-
-      await Future.delayed(Duration(seconds: 15));
-      load = false;
-    }
+    PipelineResponse.GetPipelineResponse someProduct =
+        await Api.getPipeline(page: currentPage, perpage: perpage);
+    yield someProduct;
+    load = false;
   }
 
   @override
@@ -102,7 +98,7 @@ class _PipelinePageState extends State<PipelinePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                              "Page ${currentPage} of ${(data!.total! / 10).ceil()}"),
+                              "Page ${currentPage} of ${(data!.total! / perpage).ceil()}"),
                           Row(
                             children: [
                               // SizedBox(
@@ -223,7 +219,7 @@ class _PipelinePageState extends State<PipelinePage> {
                             ),
                     ),
                     Pagination(
-                      numOfPages: (data.total! / 10).ceil(),
+                      numOfPages: (data.total! / perpage).ceil(),
                       selectedPage: currentPage,
                       pagesVisible: 7,
                       onPageChanged: (page) {
@@ -783,51 +779,6 @@ class _PipelinePageState extends State<PipelinePage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                // InkWell(
-                                //   onTap: () {
-                                //     ///
-                                //     nameController.clear();
-                                //     isSwitched = false;
-                                //     value.clearFile();
-                                //     Navigator.pop(context);
-                                //   },
-                                //   child: Container(
-                                //     decoration: BoxDecoration(
-                                //       borderRadius: BorderRadius.circular(10),
-                                //       color: const Color(0xFFFF0000),
-                                //     ),
-                                //     padding: const EdgeInsets.all(5),
-                                //     alignment: Alignment.center,
-                                //     height: 30,
-                                //     child: const Text("Batal"),
-                                //   ),
-                                // ),
-                                // const SizedBox(
-                                //   width: 5,
-                                // ),
-                                // InkWell(
-                                //   onTap: () {
-                                //     if (nameController.text.isEmpty) {
-                                //       EasyLoading.showError(
-                                //           "Kolom Name Masih Kosong...");
-                                //       return;
-                                //     }
-                                //     value.editPipeline(data.idMapping, nameController.text, isSwitched, context, value.file);
-                                //     nameController.clear();
-                                //     isSwitched = false;
-                                //     value.clearFile();
-                                //   },
-                                //   child: Container(
-                                //     decoration: BoxDecoration(
-                                //       borderRadius: BorderRadius.circular(10),
-                                //       color: const Color(0xFF399D44),
-                                //     ),
-                                //     padding: const EdgeInsets.all(5),
-                                //     alignment: Alignment.center,
-                                //     height: 30,
-                                //     child: const Text("Simpan"),
-                                //   ),
-                                // )
                                 ElevatedButton(
                                   style: ButtonStyle(
                                     backgroundColor: MaterialStateProperty.all(
