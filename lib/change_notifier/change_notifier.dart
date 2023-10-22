@@ -186,8 +186,6 @@ class Notifier extends ChangeNotifier {
         Navigator.pop(context);
         EasyLoading.showSuccess("Berhasil Edit Kapal");
         Navigator.pop(context);
-        initVessel();
-        initVesselCoor();
       }
       if (value.message == "Validator Fails") {
         Navigator.pop(context);
@@ -249,7 +247,6 @@ class Notifier extends ChangeNotifier {
       if (value.message == "Data berhasil masuk database") {
         EasyLoading.showSuccess("Berhasil Menambahkan Data");
         Navigator.pop(context);
-        initIpList(callSign);
         return;
       }
       if (value.message != "Data berhasil masuk database") {
@@ -276,32 +273,11 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void initIpList(String callSign) async{
-    _isLoadingIp = true;
-    await Api.getIpList(callSign).then((value){
-      _ipPortResult.clear();
-      if (value.total! == 0) {
-        _isLoadingIp = false;
-        _ipPortResult = [];
-        _type = null;
-        _totalIp = value.total!.toInt();
-      }
-      if (value.total! > 0) {
-        _ipPortResult.addAll(value.data!);
-        _isLoadingIp = false;
-        _type = null;
-        _totalIp = value.total!.toInt();
-      }
-    });
-    notifyListeners();
-  }
-
   void deleteIP(String id,callSign,context){
     Api.deleteIP(id).then((value) {
       if (value.message == "Data berhasil di hapus database") {
         EasyLoading.showSuccess("Data Terhapus..");
         Navigator.pop(context);
-        initIpList(callSign);
       } else {
         EasyLoading.showError(
             "Gagal Menghapus Data..");
@@ -688,8 +664,50 @@ class Notifier extends ChangeNotifier {
   String? _vesselClick = "";
   String? get vesselClick => _vesselClick;
 
-  void vesselClicked(String call_sign){
+  VesselCoor.Data? _searchKapal; 
+  VesselCoor.Data? get searchKapal => _searchKapal; 
+
+  void vesselClicked(String call_sign,context){
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+      try {
+    Api.getKapalAndCoor(call_sign: call_sign).then((value){
+        _searchKapal = null;
+        if (value.total! == 0) {
+          _searchKapal = null;
+        }
+        if (value.total! > 0) {
+          _searchKapal = value.data!.first as VesselCoor.Data;
+        }
     _vesselClick = call_sign;
+        Navigator.pop(context);
+    });
+      } catch (e) {
+        print(e); 
+      }
     notifyListeners();
   }
   void removeVesselClicked(){

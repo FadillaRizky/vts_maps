@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -10,6 +13,7 @@ import 'package:vts_maps/utils/alerts.dart';
 import 'package:vts_maps/utils/constants.dart';
 import 'package:vts_maps/utils/text_field.dart';
 import 'package:vts_maps/api/GetClientListResponse.dart' as ClientList;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ClientPage extends StatefulWidget {
   const ClientPage({super.key});
@@ -26,7 +30,7 @@ class _ClientPageState extends State<ClientPage> {
 
   bool load = false;
   int page = 1;
-  int perpage = 10;
+  int perpage = 1;
 
   Notifier? readNotifier;
 
@@ -35,18 +39,46 @@ class _ClientPageState extends State<ClientPage> {
     load = true;
   }
 
-  Stream<ClientList.GetClientResponse> clientStream(
-      {int page = 1, int perpage = 10}) async* {
-    ClientList.GetClientResponse someProduct =
-        await Api.getClientList(page: page, perpage: perpage);
-    yield someProduct;
-    load = false;
+  // Stream<ClientList.GetClientResponse> clientStream(
+  //     {int page = 1, int perpage = 10}) async* {
+  //   ClientList.GetClientResponse someProduct =
+  //       await Api.getClientList(page: page, perpage: perpage);
+  //   yield someProduct;
+  //   load = false;
+  // }
+
+  final WebSocketChannel channel = WebSocketChannel.connect(
+      Uri.parse('ws://api.binav-avts.id:6001/socket-client?appKey=123456'));
+
+  Timer? timer;
+
+  void fetchData(){
+    timer = Timer.periodic(Duration(milliseconds: 1000), (timer) {
+      channel.sink.add(json.encode({
+        "page":page,
+        "perpage":perpage,
+      }));
+      load = false;
+    });
+  }
+
+  void stopFetchingData(){
+    if (timer != null) {
+      timer!.cancel();
+    }
   }
 
   @override
   void initState() {
+    fetchData();
     readNotifier = context.read<Notifier>();
     super.initState();
+  }
+  @override
+  void dispose() {
+    channel.sink.close();
+    stopFetchingData();
+    super.dispose();
   }
 
   @override
@@ -56,14 +88,18 @@ class _ClientPageState extends State<ClientPage> {
 
     return SizedBox(
       width: width / 1.5,
-      child: StreamBuilder<ClientList.GetClientResponse>(
-          stream: clientStream(page: page, perpage: perpage),
+      child: StreamBuilder(
+          stream: channel.stream,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (snapshot.hasData) {
-              var data = snapshot.data;
-              List<ClientList.Data> clientData = snapshot.data!.data!;
+            } else if (snapshot.hasData && snapshot.data != "on Opened") {
+              // var data = snapshot.data;
+              // List<ClientList.Data> clientData = snapshot.data!.data!;
+
+              final data = ClientList.GetClientResponse.fromJson(jsonDecode(snapshot.data));
+              List<ClientList.Data> clientData = data.data!;
+              
               return Consumer<Notifier>(builder: (context, value, child) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -117,6 +153,7 @@ class _ClientPageState extends State<ClientPage> {
                                     onPressed: () {
                                       ///FUNCTION ADD CLIENT
                                       addClientList(context);
+                                      
                                     },
                                     child: Text(
                                       "Add Client",
@@ -132,144 +169,150 @@ class _ClientPageState extends State<ClientPage> {
                         ],
                       ),
                     ),
-                    Container(
-                      height: 380,
-                       width: double.infinity,
-                      margin: EdgeInsets.symmetric(horizontal: 15),
-                      child: load
-                          ? Center(child: CircularProgressIndicator())
-                          : SingleChildScrollView(
-                              child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: DataTable(
-                                      headingRowColor:
-                                          MaterialStateProperty.all(
-                                              Color(0xffd3d3d3)),
-                                      columns: [
-                                        const DataColumn(label: Text("Name")),
-                                        const DataColumn(
-                                            label: Text("Email")),
-                                        const DataColumn(
-                                            label: Text("Status")),
-                                        const DataColumn(
-                                            label: Text(
-                                                "View Client Only Data")),
-                                        const DataColumn(
-                                            label: Text("Action")),
-                                      ],
-                                      rows: clientData.map((data) {
-                                        return DataRow(cells: [
-                                          DataCell(Text(data.clientName!)),
-                                          DataCell(Text(data.email!)),
-                                          DataCell(Text((data.status! == "1")
-                                              ? "ACTIVE"
-                                              : "INACTIVE")),
-                                          DataCell(
-                                            SizedBox(
-                                              height: 40,
-                                              child: ElevatedButton(
-                                                  style: ButtonStyle(
-                                                      shape: MaterialStateProperty.all(
-                                                          RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          5))),
-                                                      backgroundColor:
-                                                          MaterialStateProperty
-                                                              .all(Colors
-                                                                  .blueAccent)),
-                                                  onPressed: () {
-                                                    ///FUNCTION VIEW CLIENT ONLY DATA
-                                                     // addClientList(context);
-                                                  },
-                                                  child: Text(
-                                                    "View Client",
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                    ),
-                                                  )),
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        margin: EdgeInsets.symmetric(horizontal: 15),
+                        child: load
+                            ? Center(child: CircularProgressIndicator())
+                            : SingleChildScrollView(
+                                child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: DataTable(
+                                        headingRowColor:
+                                            MaterialStateProperty.all(
+                                                Color(0xffd3d3d3)),
+                                        columns: [
+                                          const DataColumn(label: Text("Name")),
+                                          const DataColumn(
+                                              label: Text("Email")),
+                                          const DataColumn(
+                                              label: Text("Status")),
+                                          const DataColumn(
+                                              label: Text(
+                                                  "View Client Only Data")),
+                                          const DataColumn(
+                                              label: Text("Action")),
+                                        ],
+                                        rows: clientData.map((data) {
+                                          return DataRow(cells: [
+                                            DataCell(Text(data.clientName!)),
+                                            DataCell(Text(data.email!)),
+                                            DataCell(Text((data.status! == "1")
+                                                ? "ACTIVE"
+                                                : "INACTIVE")),
+                                            DataCell(
+                                              SizedBox(
+                                                height: 40,
+                                                child: ElevatedButton(
+                                                    style: ButtonStyle(
+                                                        shape: MaterialStateProperty.all(
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5))),
+                                                        backgroundColor:
+                                                            MaterialStateProperty
+                                                                .all(Colors
+                                                                    .blueAccent)),
+                                                    onPressed: () {
+                                                      ///FUNCTION VIEW CLIENT ONLY DATA
+                                                       // addClientList(context);
+                                                    },
+                                                    child: Text(
+                                                      "View Client",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                      ),
+                                                    )),
+                                              ),
                                             ),
-                                          ),
-                                          DataCell(Row(
-                                            children: [
-                                              IconButton(
-                                                icon: const Icon(
-                                                  Icons.edit,
-                                                  color: Colors.blue,
+                                            DataCell(Row(
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.edit,
+                                                    color: Colors.blue,
+                                                  ),
+                                                  onPressed: () {
+                                                    /// FUNCTION EDIT CLIENT
+                                                    editClientList(
+                                                        data, context);
+                                                  },
                                                 ),
-                                                onPressed: () {
-                                                  /// FUNCTION EDIT CLIENT
-                                                  editClientList(
-                                                      data, context);
-                                                },
-                                              ),
-                                              IconButton(
-                                                icon: const Icon(
-                                                  Icons.delete,
-                                                  color: Colors.red,
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.delete,
+                                                    color: Colors.red,
+                                                  ),
+                                                  onPressed: () {
+                                                    Alerts.showAlertYesNo(
+                                                        title:
+                                                            "Are you sure you want to delete this user?",
+                                                        onPressYes: () {
+                                                          /// FUNCTION DELETE CLIENT
+                                                          value.deleteClient(
+                                                              data.idClient,
+                                                              context);
+                                                        },
+                                                        onPressNo: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        context: context);
+                                                  },
                                                 ),
-                                                onPressed: () {
-                                                  Alerts.showAlertYesNo(
-                                                      title:
-                                                          "Are you sure you want to delete this user?",
-                                                      onPressYes: () {
-                                                        /// FUNCTION DELETE CLIENT
-                                                        value.deleteClient(
-                                                            data.idClient,
-                                                            context);
-                                                      },
-                                                      onPressNo: () {
-                                                        Navigator.pop(
-                                                            context);
-                                                      },
-                                                      context: context);
-                                                },
-                                              ),
-                                            ],
-                                          )),
-                                        ]);
-                                      }).toList())),
-                            ),
+                                              ],
+                                            )),
+                                          ]);
+                                        }).toList())),
+                              ),
+                      ),
                     ),
-                    Pagination(
-                      numOfPages: (data!.total! / perpage).ceil(),
-                      selectedPage: page,
-                      pagesVisible: 7,
-                      onPageChanged: (page) {
-                        incrementPage(page);
-                      },
-                      nextIcon: const Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.blue,
-                        size: 14,
-                      ),
-                      previousIcon: const Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.blue,
-                        size: 14,
-                      ),
-                      activeTextStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      activeBtnStyle: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Colors.blue),
-                        shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(38),
+                    Container(
+                      height: 50,
+                      width: double.infinity,
+                      margin: EdgeInsets.symmetric(horizontal: 15),
+                      child: Pagination(
+                        numOfPages: (data!.total! / perpage).ceil(),
+                        selectedPage: page,
+                        pagesVisible: 7,
+                        onPageChanged: (page) {
+                          incrementPage(page);
+                        },
+                        nextIcon: const Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.blue,
+                          size: 14,
+                        ),
+                        previousIcon: const Icon(
+                          Icons.arrow_back_ios,
+                          color: Colors.blue,
+                          size: 14,
+                        ),
+                        activeTextStyle: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        activeBtnStyle: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(Colors.blue),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(38),
+                            ),
                           ),
                         ),
-                      ),
-                      inactiveBtnStyle: ButtonStyle(
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(38),
-                        )),
-                      ),
-                      inactiveTextStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        inactiveBtnStyle: ButtonStyle(
+                          shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(38),
+                          )),
+                        ),
+                        inactiveTextStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],

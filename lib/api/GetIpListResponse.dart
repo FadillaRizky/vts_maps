@@ -163,7 +163,7 @@ class Kapal {
   Kapal({
       String? callSign, 
       String? idClient, 
-      String? status, 
+      num? status, 
       String? flag, 
       String? kelas,
       String? builder, 
@@ -200,7 +200,7 @@ class Kapal {
   }
   String? _callSign;
   String? _idClient;
-  String? _status;
+  num? _status;
   String? _flag;
   String? _kelas;
   String? _builder;
@@ -211,7 +211,7 @@ class Kapal {
   String? _updatedAt;
 Kapal copyWith({  String? callSign,
   String? idClient,
-  String? status,
+  num? status,
   String? flag,
   String? kelas,
   String? builder,
@@ -234,7 +234,7 @@ Kapal copyWith({  String? callSign,
 );
   String? get callSign => _callSign;
   String? get idClient => _idClient;
-  String? get status => _status;
+  num? get status => _status;
   String? get flag => _flag;
   String? get kelas => _kelas;
   String? get builder => _builder;

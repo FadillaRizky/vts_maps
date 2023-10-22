@@ -1,3 +1,5 @@
+import "dart:async";
+import "dart:convert";
 import 'dart:html' as html;
 
 import "package:dropdown_textfield/dropdown_textfield.dart";
@@ -13,6 +15,7 @@ import "package:vts_maps/utils/alerts.dart";
 import 'package:vts_maps/api/GetPipelineResponse.dart' as PipelineResponse;
 import "package:vts_maps/utils/constants.dart";
 import "package:vts_maps/utils/text_field.dart";
+import "package:web_socket_channel/web_socket_channel.dart";
 
 class PipelinePage extends StatefulWidget {
   const PipelinePage({super.key});
@@ -30,27 +33,56 @@ class _PipelinePageState extends State<PipelinePage> {
   Notifier? readNotifier;
 
   int noRow = 1;
-  int currentPage = 1;
+  int page = 1;
   int perpage = 10;
 
   bool load = false;
 
   incrementPage(int pageIndex) {
-    currentPage = pageIndex;
+    page = pageIndex;
     load = true;
   }
 
-  Stream<PipelineResponse.GetPipelineResponse> pipelineStream() async* {
-    PipelineResponse.GetPipelineResponse someProduct =
-        await Api.getPipeline(page: currentPage, perpage: perpage);
-    yield someProduct;
-    load = false;
+  // Stream<PipelineResponse.GetPipelineResponse> pipelineStream() async* {
+  //   PipelineResponse.GetPipelineResponse someProduct =
+  //       await Api.getPipeline(page: page, perpage: perpage);
+  //   yield someProduct;
+  //   load = false;
+  // }
+
+  final WebSocketChannel channel = WebSocketChannel.connect(
+      Uri.parse('ws://api.binav-avts.id:6001/socket-mapping?appKey=123456'));
+  Timer? timer;
+
+  void fetchData() {
+    timer = Timer.periodic(Duration(milliseconds: 1000), (timer) {
+      channel.sink.add(json.encode({
+        // Give an parameter to fetch the data
+        "page": page,
+        "perpage": perpage,
+      }));
+      load = false;
+    });
+  }
+
+  void stopFetchingData() {
+    if (timer != null) {
+      timer!.cancel();
+    }
   }
 
   @override
   void initState() {
+    fetchData();
     readNotifier = context.read<Notifier>();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    channel.sink.close();
+    stopFetchingData();
+    super.dispose();
   }
 
   @override
@@ -59,14 +91,19 @@ class _PipelinePageState extends State<PipelinePage> {
 
     return SizedBox(
       width: width / 1.5,
-      child: StreamBuilder<PipelineResponse.GetPipelineResponse>(
-        stream: pipelineStream(),
+      child: StreamBuilder(
+        stream: channel.stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            var data = snapshot.data;
-            List<PipelineResponse.Data> pipeData = snapshot.data!.data!;
+          } else if (snapshot.hasData && snapshot.data != "on Opened") {
+            // var data = snapshot.data;
+            // List<PipelineResponse.Data> pipeData = snapshot.data!.data!;
+
+            final data = PipelineResponse.GetPipelineResponse.fromJson(
+                jsonDecode(snapshot.data));
+            List<PipelineResponse.Data> pipeData = data.data!;
+
             return Consumer<Notifier>(builder: (context, value, child) {
               return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -98,7 +135,7 @@ class _PipelinePageState extends State<PipelinePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                              "Page ${currentPage} of ${(data!.total! / perpage).ceil()}"),
+                              "Page ${page} of ${(data!.total! / perpage).ceil()}"),
                           Row(
                             children: [
                               // SizedBox(
@@ -136,6 +173,7 @@ class _PipelinePageState extends State<PipelinePage> {
                                                 Colors.blueAccent)),
                                     onPressed: () {
                                       addPipeline(context);
+                                      value.initClientList();
                                     },
                                     child: Text(
                                       "Add Pipeline",
@@ -149,113 +187,124 @@ class _PipelinePageState extends State<PipelinePage> {
                         ],
                       ),
                     ),
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        margin: EdgeInsets.symmetric(horizontal: 15),
+                        child: load
+                            ? Center(child: CircularProgressIndicator())
+                            : SingleChildScrollView(
+                                child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: DataTable(
+                                        headingRowColor:
+                                            MaterialStateProperty.all(
+                                                Color(0xffd3d3d3)),
+                                        columns: [
+                                          const DataColumn(label: Text("Name")),
+                                          const DataColumn(label: Text("File")),
+                                          const DataColumn(
+                                              label: Text("Switch")),
+                                          const DataColumn(
+                                              label: Text("Action")),
+                                        ],
+                                        rows: pipeData.map((data) {
+                                          return DataRow(
+                                            cells: [
+                                              DataCell(Text(data.name!)),
+                                              DataCell(Text(data.file!.replaceAll(
+                                                  "https://client-project.enricko.site/storage/mapping/",
+                                                  ""))),
+                                              DataCell(Text(
+                                                  data.onOff! ? "ON" : "OFF")),
+                                              DataCell(Row(
+                                                children: [
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.edit,
+                                                      color: Colors.blue,
+                                                    ),
+                                                    onPressed: () {
+                                                      editPipeline(
+                                                          data, context);
+                                                    },
+                                                  ),
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.delete,
+                                                      color: Colors.red,
+                                                    ),
+                                                    onPressed: () {
+                                                      Alerts.showAlertYesNo(
+                                                          title:
+                                                              "Are you sure you want to delete this data?",
+                                                          onPressYes: () {
+                                                            value.deletePipeline(
+                                                                data.idMapping
+                                                                    .toString(),
+                                                                context);
+                                                            load = true;
+                                                          },
+                                                          onPressNo: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          context: context);
+                                                    },
+                                                  ),
+                                                ],
+                                              )),
+                                            ],
+                                          );
+                                        }).toList())),
+                              ),
+                      ),
+                    ),
                     Container(
-                      height: 380,
+                      height: 50,
                       width: double.infinity,
                       margin: EdgeInsets.symmetric(horizontal: 15),
-                      child: load
-                          ? Center(child: CircularProgressIndicator())
-                          : SingleChildScrollView(
-                              child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: DataTable(
-                                      headingRowColor:
-                                          MaterialStateProperty.all(
-                                              Color(0xffd3d3d3)),
-                                      columns: [
-                                        const DataColumn(label: Text("Name")),
-                                        const DataColumn(label: Text("File")),
-                                        const DataColumn(label: Text("Switch")),
-                                        const DataColumn(label: Text("Action")),
-                                      ],
-                                      rows: pipeData.map((data) {
-                                        return DataRow(
-                                          cells: [
-                                            DataCell(Text(data.name!)),
-                                            DataCell(Text(data.file!.replaceAll(
-                                                "https://api.binav-avts.id/storage/mapping/",
-                                                ""))),
-                                            DataCell(Text(
-                                                data.onOff! ? "ON" : "OFF")),
-                                            DataCell(Row(
-                                              children: [
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.edit,
-                                                    color: Colors.blue,
-                                                  ),
-                                                  onPressed: () {
-                                                    editPipeline(data, context);
-                                                  },
-                                                ),
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.delete,
-                                                    color: Colors.red,
-                                                  ),
-                                                  onPressed: () {
-                                                    Alerts.showAlertYesNo(
-                                                        title:
-                                                            "Are you sure you want to delete this data?",
-                                                        onPressYes: () {
-                                                          value.deletePipeline(
-                                                              data.idMapping
-                                                                  .toString(),
-                                                              context);
-                                                          load = true;
-                                                        },
-                                                        onPressNo: () {
-                                                          Navigator.pop(
-                                                              context);
-                                                        },
-                                                        context: context);
-                                                  },
-                                                ),
-                                              ],
-                                            )),
-                                          ],
-                                        );
-                                      }).toList())),
+                      child: Pagination(
+                        numOfPages: (data.total! / perpage).ceil(),
+                        selectedPage: page,
+                        pagesVisible: 7,
+                        onPageChanged: (page) {
+                          incrementPage(page);
+                        },
+                        nextIcon: const Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.blue,
+                          size: 14,
+                        ),
+                        previousIcon: const Icon(
+                          Icons.arrow_back_ios,
+                          color: Colors.blue,
+                          size: 14,
+                        ),
+                        activeTextStyle: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        activeBtnStyle: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.blue),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(38),
                             ),
-                    ),
-                    Pagination(
-                      numOfPages: (data.total! / perpage).ceil(),
-                      selectedPage: currentPage,
-                      pagesVisible: 7,
-                      onPageChanged: (page) {
-                        incrementPage(page);
-                      },
-                      nextIcon: const Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.blue,
-                        size: 14,
-                      ),
-                      previousIcon: const Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.blue,
-                        size: 14,
-                      ),
-                      activeTextStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      activeBtnStyle: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Colors.blue),
-                        shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(38),
                           ),
                         ),
-                      ),
-                      inactiveBtnStyle: ButtonStyle(
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(38),
-                        )),
-                      ),
-                      inactiveTextStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        inactiveBtnStyle: ButtonStyle(
+                          shape:
+                              MaterialStateProperty.all(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(38),
+                          )),
+                        ),
+                        inactiveTextStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ]);

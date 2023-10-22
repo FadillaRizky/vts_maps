@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math' as math;
@@ -20,6 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:snapping_sheet/snapping_sheet.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:vts_maps/api/api.dart';
 
 import 'package:vts_maps/change_notifier/change_notifier.dart';
 import 'package:vts_maps/draw/vessel_draw.dart';
@@ -28,23 +31,26 @@ import 'package:vts_maps/pages/maps/marker_vessel.dart';
 import 'package:vts_maps/pages/maps/pipeline_layer.dart';
 import 'package:vts_maps/pages/maps/vessel_detail.dart';
 import 'package:vts_maps/pages/pipeline.dart';
-import 'package:vts_maps/pages/vessel.dart';
+import 'package:vts_maps/pages/vessel/vessel.dart';
 import 'package:vts_maps/utils/alerts.dart';
 import 'package:vts_maps/utils/text_field.dart';
 
 import 'package:vts_maps/system/scale_bar.dart';
 import 'package:vts_maps/utils/constants.dart';
 import 'package:vts_maps/utils/snipping_sheet.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'system/zoom_button.dart';
 import 'api/GetPipelineResponse.dart' as PipelineResponse;
 import 'api/GetAllVesselCoor.dart' as LatestVesselCoor;
 import 'api/GetAllLatLangCoor.dart' as LatLangCoor;
 import 'api/GetAllVessel.dart' as Vessel;
-import 'api/GetKapalAndCoor.dart' as VesselCoor;
+import 'api/GetKapalAndCoor.dart' as GetVesselCoor;
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key, String this.idClient = "",String this.vesselClicked = ""}) : super(key: key);
+  const HomePage(
+      {Key? key, String this.idClient = "", String this.vesselClicked = ""})
+      : super(key: key);
   final String idClient;
   final String vesselClicked;
   @override
@@ -172,18 +178,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    runNotifier();
-
-    mapController = MapController();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      updatePoint(null, context);
-    });
-  }
-
 
   void _animatedMapMove(LatLng destLocation, double destZoom) {
     final camera = mapController.camera;
@@ -231,25 +225,71 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     controller.forward();
   }
 
+  // Stream<GetVesselCoor.GetKapalAndCoor> vesselStream(
+  //     {int page = 1, int perpage = 100}) async* {
+  //   GetVesselCoor.GetKapalAndCoor data =
+  //       await Api.getKapalAndCoor(page: page, perpage: perpage);
+  //   yield data;
+  // }
+  final WebSocketChannel channel = WebSocketChannel.connect(
+      Uri.parse('ws://api.binav-avts.id:6001/socket-kapalCoor?appKey=123456'));
+
+  Timer? timer;
+
+  void fetchData(){
+    // print(widget.call_sign);
+    timer = Timer.periodic(Duration(milliseconds: 1000), (timer) {
+      channel.sink.add(json.encode({
+        // "call_sign":widget.call_sign
+        "payload":"test"
+      }));
+    });
+  }
+
+  void stopFetchingData(){
+    if (timer != null) {
+      timer!.cancel();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+
+    runNotifier();
+
+    mapController = MapController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updatePoint(null, context);
+    });
+  }
+  @override
+  void dispose() {
+    channel.sink.close();
+    stopFetchingData();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<Notifier>(
       builder: (context, value, child) {
         var readNotifier = context.read<Notifier>();
 
-        // Future<void> searchVessel(String callSign) async {
-        //   value.clickVessel(callSign, context);
-        //   Future.delayed(const Duration(seconds: 1), () {
-        //     print(value.searchKapal!.kapal!.callSign);
-        //     value.initLatLangCoor(call_sign: callSign);
-        //     _animatedMapMove(
-        //         LatLng(
-        //           value.searchKapal!.coor!.coorGga!.latitude!.toDouble(),
-        //           value.searchKapal!.coor!.coorGga!.longitude!.toDouble(),
-        //         ),
-        //         13);
-        //   });
-        // }
+        Future<void> searchVessel(String callSign) async {
+          value.vesselClicked(callSign, context);
+          Future.delayed(const Duration(seconds: 1), () {
+            print(value.searchKapal!.kapal!.callSign);
+            value.initLatLangCoor(call_sign: callSign);
+            _animatedMapMove(
+                LatLng(
+                  value.searchKapal!.coor!.coorGga!.latitude!.toDouble()  - .005,
+                  value.searchKapal!.coor!.coorGga!.longitude!.toDouble(),
+                ),
+                15);
+          });
+        }
 
         return Scaffold(
           appBar: AppBar(
@@ -281,114 +321,145 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   onSelected: (item) {
                     switch (item) {
                       case "vesselList":
-                        value.initVessel();
-                        VesselPage.vesselList(context, value,_pageSize);
+                        showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return Dialog(
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(5))),
+                                  child: VesselPage());
+                            });
                       case "pipelineList":
                         showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (BuildContext context) {
-                            var height = MediaQuery.of(context).size.height;
-                            var width = MediaQuery.of(context).size.width;
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              var height = MediaQuery.of(context).size.height;
+                              var width = MediaQuery.of(context).size.width;
 
-                            return Dialog(
+                              return Dialog(
                                 shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(5))),
-                                    child: PipelinePage(),
-                            );
-                          }
-                        );
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(5))),
+                                child: PipelinePage(),
+                              );
+                            });
                       case "clientList":
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (BuildContext context) {
-                          var height = MediaQuery.of(context).size.height;
-                          var width = MediaQuery.of(context).size.width;
+                        showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              var height = MediaQuery.of(context).size.height;
+                              var width = MediaQuery.of(context).size.width;
 
-                          return Dialog(
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(5))),
-                              child: ClientPage(),
-                            );
-                        });
+                              return Dialog(
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(5))),
+                                child: ClientPage(),
+                              );
+                            });
                     }
                   },
                 ),
-                // Container(
-                //   child: ElevatedButton(
-                //     style: ElevatedButton.styleFrom(
-                //         backgroundColor: Colors.blue),
-                //     onPressed: () {
-                //       _animatedMapMove(
-                //           LatLng(
-                //             -1.2437,
-                //             104.79504,
-                //           ),
-                //           13);
-                //     },
-                //     child: Text(
-                //       "To Overlay DWG",
-                //       style: TextStyle(color: Colors.white),
-                //     ),
-                //   ),
-                // ),
               ],
             ),
             actions: [
               SizedBox(
                 width: 300,
                 height: 50,
-                child: SearchField<VesselCoor.Data>(
-                  controller: SearchVessel,
-                  suggestions: value.vesselCoorResult
-                      .map(
-                        (e) => SearchFieldListItem<VesselCoor.Data>(
-                          e.kapal!.callSign!,
-                          item: e,
-                          // Use child to show Custom Widgets in the suggestions
-                          // defaults to Text widget
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                const SizedBox(
-                                  width: 10,
+                child: StreamBuilder(
+                  stream: channel.stream,
+                  builder: (context, snapshot) {
+                    if(snapshot.hasData && snapshot.data != "on Opened"){
+                      final data = GetVesselCoor.GetKapalAndCoor.fromJson(jsonDecode(snapshot.data));
+                      List<GetVesselCoor.Data> vesselData = data.data!;
+
+                      return SearchField<GetVesselCoor.Data>(
+                        controller: SearchVessel,
+                        suggestions: vesselData
+                            .map(
+                              (e) => SearchFieldListItem<GetVesselCoor.Data>(
+                                e.kapal!.callSign!,
+                                item: e,
+                                // Use child to show Custom Widgets in the suggestions
+                                // defaults to Text widget
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    children: [
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text(e.kapal!.callSign!),
+                                    ],
+                                  ),
                                 ),
-                                Text(e.kapal!.callSign!),
-                              ],
-                            ),
+                              ),
+                            )
+                            .where((e) => e.searchKey
+                                .toLowerCase()
+                                .contains(SearchVessel.text.toLowerCase()))
+                            .toList(),
+                        searchInputDecoration: InputDecoration(
+                          hintText: "Pilih Call Sign Kapal",
+                          // labelText: "Pilih Call Sign Kapal",
+                          hintStyle: const TextStyle(color: Colors.black),
+                          // labelStyle: TextStyle(color: Colors.black),
+                          prefixIcon: const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Icon(Icons.search),
+                          ),
+                          filled: true,
+                          fillColor: const Color.fromARGB(255, 230, 230, 230),
+                          prefixIconColor: Colors.black,
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                                width: 3, color: Color.fromARGB(255, 230, 230, 230)),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                  
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                                width: 3, color: Color.fromARGB(255, 230, 230, 230)),
+                            borderRadius: BorderRadius.circular(50),
                           ),
                         ),
-                      )
-                      .where((e) => e.searchKey
-                          .toLowerCase()
-                          .contains(SearchVessel.text.toLowerCase()))
-                      .toList(),
-                  searchInputDecoration: InputDecoration(
-                    hintText: "Pilih Call Sign Kapal",
-                    // labelText: "Pilih Call Sign Kapal",
-                    hintStyle: const TextStyle(color: Colors.black),
-                    // labelStyle: TextStyle(color: Colors.black),
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Icon(Icons.search),
-                    ),
-                    filled: true,
-                    fillColor: const Color.fromARGB(255, 230, 230, 230),
-                    prefixIconColor: Colors.black,
-                    border: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                          width: 3, color: Color.fromARGB(255, 230, 230, 230)),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                          width: 3, color: Color.fromARGB(255, 230, 230, 230)),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                  ),
+                      );
+                    
+                    }else{
+                      return SearchField(
+                        controller: SearchVessel,
+                        suggestions: [],
+                        searchInputDecoration: InputDecoration(
+                          hintText: "Pilih Call Sign Kapal",
+                          // labelText: "Pilih Call Sign Kapal",
+                          hintStyle: const TextStyle(color: Colors.black),
+                          // labelStyle: TextStyle(color: Colors.black),
+                          prefixIcon: const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Icon(Icons.search),
+                          ),
+                          filled: true,
+                          fillColor: const Color.fromARGB(255, 230, 230, 230),
+                          prefixIconColor: Colors.black,
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                                width: 3, color: Color.fromARGB(255, 230, 230, 230)),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                  
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                                width: 3, color: Color.fromARGB(255, 230, 230, 230)),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                        ),
+                      );
+                    }
+                  }
                 ),
               ),
               const SizedBox(
@@ -396,7 +467,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               InkWell(
                 onTap: () {
-                  // searchVessel(SearchVessel.text);
+                  searchVessel(SearchVessel.text);
                 },
                 child: Container(
                   width: 50,
@@ -551,7 +622,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       //       ),
                       //   ],
                       // ),
-                      
+
                       MarkerLayer(markers: [
                         if (latLng != null)
                           Marker(
@@ -570,11 +641,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       PipelineLayer(),
 
                       // Vessel Marker (pages/maps/marker_vessel.dart)
-                      MarkerVessel(),
+                      MarkerVessel(mapController: mapController),
                     ],
                   ),
                 ),
-              
               ],
             ),
           ),
@@ -582,7 +652,4 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       },
     );
   }
-
 }
-
-

@@ -85,7 +85,6 @@ class _MyAppState extends State<MyApp> {
         builder: EasyLoading.init(),
         routes: {
           "/": (context) => HomePage(),
-          // "/client-map-view": (context) => HomePage(),
           "/login": (context) => Login(),
         },
         initialRoute: "/",

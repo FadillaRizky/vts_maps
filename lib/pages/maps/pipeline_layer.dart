@@ -47,16 +47,5 @@ class _PipelineLayerState extends State<PipelineLayer> {
                   .toList(),
       );
     },);
-    // return StreamBuilder<List<List<KmlPolygon>>>(
-    //     stream: pipelineStream(context),
-    //     builder: (context, snapshot) {
-    //       if (snapshot.hasData) {
-    //         return Stack(
-    //           children: 
-    //         );
-    //       } else {
-    //         return Container();
-    //       }
-    //     });
   }
 }

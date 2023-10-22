@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -7,15 +9,18 @@ import 'package:provider/provider.dart';
 import 'package:vts_maps/api/GetKapalAndCoor.dart' as GetVesselCoor;
 import 'package:vts_maps/api/api.dart';
 import 'package:vts_maps/change_notifier/change_notifier.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/io.dart';
 
 class MarkerVessel extends StatefulWidget {
-  const MarkerVessel({super.key});
+  const MarkerVessel({super.key, required this.mapController});
+  final MapController mapController;
 
   @override
   State<MarkerVessel> createState() => _MarkerVesselState();
 }
 
-class _MarkerVesselState extends State<MarkerVessel> {
+class _MarkerVesselState extends State<MarkerVessel> with TickerProviderStateMixin {
   int predictMovementVessel = 1;
 
   double vesselSizes(String size) {
@@ -31,13 +36,6 @@ class _MarkerVesselState extends State<MarkerVessel> {
       default:
         return 8.0;
     }
-  }
-
-  Stream<GetVesselCoor.GetKapalAndCoor> vesselStream(
-      {int page = 1, int perpage = 100}) async* {
-    GetVesselCoor.GetKapalAndCoor data =
-        await Api.getKapalAndCoor(page: page, perpage: perpage);
-    yield data;
   }
 
   double degreesToRadians(double degrees) {
@@ -63,18 +61,126 @@ class _MarkerVesselState extends State<MarkerVessel> {
     return LatLng(newLatitude, newLongitude);
   }
 
+  static const _startedId = 'AnimatedMapController#MoveStarted';
+  static const _inProgressId = 'AnimatedMapController#MoveInProgress';
+  static const _finishedId = 'AnimatedMapController#MoveFinished';
+
+  void _animatedMapMove(LatLng destLocation, double destZoom) {
+    final camera = widget.mapController.camera;
+    final latTween = Tween<double>(
+        begin: camera.center.latitude, end: destLocation.latitude);
+    final lngTween = Tween<double>(
+        begin: camera.center.longitude, end: destLocation.longitude);
+    final zoomTween = Tween<double>(begin: camera.zoom, end: destZoom);
+
+    final controller = AnimationController(
+        duration: const Duration(milliseconds: 500), vsync: this);
+
+    final Animation<double> animation =
+        CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
+
+    final startIdWithTarget =
+        '$_startedId#${destLocation.latitude},${destLocation.longitude},$destZoom';
+    bool hasTriggeredMove = false;
+
+    controller.addListener(() {
+      final String id;
+      if (animation.value == 1.0) {
+        id = _finishedId;
+      } else if (!hasTriggeredMove) {
+        id = startIdWithTarget;
+      } else {
+        id = _inProgressId;
+      }
+
+      hasTriggeredMove |= widget.mapController.move(
+        LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
+        zoomTween.evaluate(animation),
+        id: id,
+      );
+    });
+
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.dispose();
+      } else if (status == AnimationStatus.dismissed) {
+        controller.dispose();
+      }
+    });
+
+    controller.forward();
+  }
+
+  Future<void> searchVessel(String callSign) async {
+    var readNotifier = context.read<Notifier>();
+
+    readNotifier.vesselClicked(callSign, context);
+    Future.delayed(const Duration(seconds: 1), () {
+      print(readNotifier.searchKapal!.kapal!.callSign);
+      readNotifier.initLatLangCoor(call_sign: callSign);
+      _animatedMapMove(
+          LatLng(
+            readNotifier.searchKapal!.coor!.coorGga!.latitude!.toDouble() - .005,
+            readNotifier.searchKapal!.coor!.coorGga!.longitude!.toDouble(),
+          ),
+          15);
+    });
+  }
+
+  // Stream<GetVesselCoor.GetKapalAndCoor> vesselStream(
+  //     {int page = 1, int perpage = 100}) async* {
+  //   GetVesselCoor.GetKapalAndCoor data =
+  //       await Api.getKapalAndCoor(page: page, perpage: perpage);
+  //   yield data;
+  // }
+  
+  final WebSocketChannel channel = WebSocketChannel.connect(
+      Uri.parse('ws://api.binav-avts.id:6001/socket-kapalCoor?appKey=123456'));
+  Timer? timer;
+
+  void fetchData(){
+    timer = Timer.periodic(Duration(milliseconds: 1000), (timer) {
+      channel.sink.add(json.encode({
+        // Give an parameter to fetch the data
+        "payload":"test"
+      }));
+    });
+  }
+
+  void stopFetchingData(){
+    if (timer != null) {
+      timer!.cancel();
+    }
+  }
+
+  @override
+  void initState() {
+    fetchData();
+    
+    super.initState();
+  }
+  @override
+  void dispose() {
+    channel.sink.close();
+    stopFetchingData();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<GetVesselCoor.GetKapalAndCoor>(
-      stream: vesselStream(),
+    return StreamBuilder(
+      stream: channel.stream,
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          List<GetVesselCoor.Data> clientData = snapshot.data!.data!;
+        if (snapshot.hasData && snapshot.data != "on Opened") {
+          final message = GetVesselCoor.GetKapalAndCoor.fromJson(jsonDecode(snapshot.data));
+          List<GetVesselCoor.Data> vesselData = message.data!;
 
+          // print(vesselData);
+          // return Container();
           return Consumer<Notifier>(builder: (context, value, child) {
             return MarkerLayer(
               markers: [
-                for (var i in clientData)
+                for (var i in vesselData)
                   Marker(
                     width: vesselSizes(i.kapal!.size!.toString()) +
                         value.currentZoom!.toDouble(),
@@ -101,8 +207,8 @@ class _MarkerVesselState extends State<MarkerVessel> {
                     builder: (context) {
                       return GestureDetector(
                         onTap: () {
-                          // searchVessel(i.kapal!.callSign!);
-                          value.vesselClicked(i.kapal!.callSign!);
+                          searchVessel(i.kapal!.callSign!);
+                          // value.vesselClicked(i.kapal!.callSign!,context);
                         },
                         child: Transform.rotate(
                           angle: degreesToRadians(
