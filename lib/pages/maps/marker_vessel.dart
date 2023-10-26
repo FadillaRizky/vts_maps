@@ -13,8 +13,9 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 
 class MarkerVessel extends StatefulWidget {
-  const MarkerVessel({super.key, required this.mapController});
+  const MarkerVessel({super.key, required this.mapController, this.id_client = ""});
   final MapController mapController;
+  final String id_client;
 
   @override
   State<MarkerVessel> createState() => _MarkerVesselState();
@@ -135,14 +136,21 @@ class _MarkerVesselState extends State<MarkerVessel> with TickerProviderStateMix
   // }
   
   final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('ws://api.binav-avts.id:6001/socket-kapalCoor?appKey=123456'));
+      Uri.parse('wss://api.binav-avts.id:6001/socket-kapalCoor?appKey=123456&User-Agent=BinavAvts/1.0&Accept=application/json'));
   Timer? timer;
 
   void fetchData(){
-    timer = Timer.periodic(Duration(milliseconds: 1000), (timer) {
+    // First request Data
+    channel.sink.add(json.encode({
+      // Give an parameter to fetch the data
+      "payload":"test",
+      "id_client":widget.id_client
+    }));
+    timer = Timer.periodic(Duration(milliseconds: 5000), (timer) {
       channel.sink.add(json.encode({
         // Give an parameter to fetch the data
-        "payload":"test"
+        "payload":"test",
+        "id_client":widget.id_client
       }));
     });
   }
@@ -203,9 +211,8 @@ class _MarkerVesselState extends State<MarkerVessel> with TickerProviderStateMix
                                     i.coor!.defaultHeading!.toDouble(),
                                 predictMovementVessel)
                             .longitude),
-                    rotateOrigin: const Offset(10, -10),
-                    builder: (context) {
-                      return GestureDetector(
+                    // rotateOrigin: const Offset(10, -10),
+                    child: GestureDetector(
                         onTap: () {
                           searchVessel(i.kapal!.callSign!);
                           // value.vesselClicked(i.kapal!.callSign!,context);
@@ -225,8 +232,7 @@ class _MarkerVesselState extends State<MarkerVessel> with TickerProviderStateMix
                             ),
                           ),
                         ),
-                      );
-                    },
+                      ),
                   ),
               ],
             );

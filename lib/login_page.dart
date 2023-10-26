@@ -79,7 +79,7 @@ class _LoginState extends State<Login> {
           EasyLoading.showSuccess("Login Berhasil");
           Navigator.pop(context);
           Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (ctx) => HomePage()));
+              context, MaterialPageRoute(builder: (ctx) => VtsMaps()));
         } else if (value.message != "Login Success") {
           EasyLoading.showError("Login Gagal..");
           Navigator.pop(context);

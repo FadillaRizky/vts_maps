@@ -27,7 +27,7 @@ class _VesselDetailState extends State<VesselDetail> {
       SnappingSheetController();
 
   final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('ws://api.binav-avts.id:6001/socket-kapalCoor?appKey=123456'));
+      Uri.parse('wss://api.binav-avts.id:6001/socket-kapalCoor?appKey=123456'));
 
   Timer? timer;
 

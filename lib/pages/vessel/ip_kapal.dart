@@ -29,7 +29,7 @@ class _IpKapalPageState extends State<IpKapalPage> {
   bool load = false;
 
   final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('ws://api.binav-avts.id:6001/socket-ipKapal?appKey=123456'));
+      Uri.parse('wss://api.binav-avts.id:6001/socket-ipKapal?appKey=123456'));
   Timer? timer;
 
   void fetchData() {

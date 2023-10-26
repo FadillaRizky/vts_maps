@@ -36,6 +36,9 @@ class Api{
     var url = "$BASE_URL/kapal?page=$page&perpage=$perpage&call_sign=${call_sign}&id_client=${id_client}";
     var response = await http.get(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return GetAllVessel.fromJson(jsonDecode(response.body));
@@ -48,6 +51,9 @@ class Api{
     var url = "$BASE_URL/get_kapal?call_sign=$call_sign";
     var response = await http.get(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return GetAllVessel.fromJson(jsonDecode(response.body));
@@ -60,6 +66,9 @@ class Api{
     var url = "$BASE_URL/get_all_latlang_coor?call_sign=$call_sign&page=1&perpage=100";
     var response = await http.get(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return GetAllLatLangCoor.fromJson(jsonDecode(response.body));
@@ -72,6 +81,9 @@ class Api{
     var url = "$BASE_URL/get_all_latest_coor?page=$page&perpage=$perpage";
     var response = await http.get(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return GetAllVesselCoor.fromJson(jsonDecode(response.body));
@@ -128,6 +140,8 @@ class Api{
         headers: {
           // 'Content-type': 'application/json',
           // 'Authorization': 'Bearer $token',
+        "User-Agent":"BinavAvts/1.0",
+      
         },
       );
       if (response.statusCode == 200) {
@@ -196,6 +210,9 @@ class Api{
     var url = "$BASE_URL/get_kapal_and_latest_coor?call_sign=$call_sign&page=$page&perpage=$perpage";
     var response = await http.get(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return GetKapalAndCoor.fromJson(jsonDecode(response.body));
@@ -252,6 +269,9 @@ class Api{
     var url = "$BASE_URL/delete_kapal/$callSign";
     var response = await http.post(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return DeleteVesselResponse.fromJson(jsonDecode(response.body));
@@ -266,7 +286,10 @@ class Api{
     var url = "$BASE_URL/insert_kapal_ip";
     var response = await http.post(
       Uri.parse(url),
-      body : data
+      body : data,
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return UploadIpAndPortResponse.fromJson(jsonDecode(response.body));
@@ -279,6 +302,9 @@ class Api{
     var url = "$BASE_URL/get_kapal_ip?call_sign=$callSign";
     var response = await http.get(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return GetIpListResponse.fromJson(jsonDecode(response.body));
@@ -291,6 +317,9 @@ class Api{
     var url = "$BASE_URL/delete_kapal_ip/$id";
     var response = await http.post(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return DeleteIpAndPortResponse.fromJson(jsonDecode(response.body));
@@ -343,6 +372,9 @@ class Api{
     var url = "$BASE_URL/get_mapping?page=$page&perpage=$perpage";
     var response = await http.get(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return GetPipelineResponse.fromJson(jsonDecode(response.body));
@@ -394,6 +426,9 @@ class Api{
     var url = "$BASE_URL/delete_mapping/$idMapping";
     var response = await http.post(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return DeletePipelineResponse.fromJson(jsonDecode(response.body));
@@ -407,6 +442,9 @@ class Api{
     var url = "$BASE_URL/get_client?page=$page&perpage=$perpage";
     var response = await http.get(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return GetClientResponse.fromJson(jsonDecode(response.body));
@@ -426,6 +464,7 @@ class Api{
         headers: {
           // 'Content-type': 'application/json',
           // 'Authorization': 'Bearer $token',
+        "User-Agent":"BinavAvts/1.0",
         },
       );
       if (response.statusCode == 200) {
@@ -447,6 +486,9 @@ class Api{
     var url = "$BASE_URL/delete_client/$id";
     var response = await http.post(
       Uri.parse(url),
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return DeleteClientResponse.fromJson(jsonDecode(response.body));
@@ -459,7 +501,10 @@ class Api{
     var url = "$BASE_URL/update_client";
     var response = await http.post(
       Uri.parse(url),
-      body: data
+      body: data,
+      headers: {
+        "User-Agent":"BinavAvts/1.0",
+      }
     );
     if (response.statusCode == 200) {
       return EditClientResponse.fromJson(jsonDecode(response.body));

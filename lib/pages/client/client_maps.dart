@@ -32,21 +32,21 @@ import 'package:vts_maps/utils/constants.dart';
 import 'package:vts_maps/utils/snipping_sheet.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import 'system/zoom_button.dart';
-import 'api/GetPipelineResponse.dart' as PipelineResponse;
-import 'api/GetAllVesselCoor.dart' as LatestVesselCoor;
-import 'api/GetAllLatLangCoor.dart' as LatLangCoor;
-import 'api/GetAllVessel.dart' as Vessel;
-import 'api/GetKapalAndCoor.dart' as GetVesselCoor;
+import 'package:vts_maps/system/zoom_button.dart';
+import 'package:vts_maps/api/GetPipelineResponse.dart' as PipelineResponse;
+import 'package:vts_maps/api/GetAllVesselCoor.dart' as LatestVesselCoor;
+import 'package:vts_maps/api/GetAllLatLangCoor.dart' as LatLangCoor;
+import 'package:vts_maps/api/GetAllVessel.dart' as Vessel;
+import 'package:vts_maps/api/GetKapalAndCoor.dart' as GetVesselCoor;
 
-class VtsMaps extends StatefulWidget {
-  const VtsMaps(
+class ClientMaps extends StatefulWidget {
+  const ClientMaps(
       {Key? key, String this.idClient = "", String this.vesselClicked = ""})
       : super(key: key);
   final String idClient;
   final String vesselClicked;
   @override
-  State<VtsMaps> createState() => _VtsMapsState();
+  State<ClientMaps> createState() => _ClientMapsState();
 }
 
 class KmlPolygon {
@@ -56,7 +56,7 @@ class KmlPolygon {
   KmlPolygon({required this.points, required this.color});
 }
 
-class _VtsMapsState extends State<VtsMaps> with TickerProviderStateMixin  {
+class _ClientMapsState extends State<ClientMaps> with TickerProviderStateMixin {
   // final GlobalKey _key = GlobalKey();
   // Controller
   final SnappingSheetController snappingSheetController =
@@ -294,6 +294,10 @@ class _VtsMapsState extends State<VtsMaps> with TickerProviderStateMixin  {
                   position: PopupMenuPosition.under,
                   icon: const Icon(Icons.menu),
                   itemBuilder: (context) => [
+                    PopupMenuItem(
+                      enabled: false,
+                      child: Text("Client ID : "+widget.idClient),
+                    ),
                     const PopupMenuItem(
                       value: 'vesselList',
                       child: Text('Vessel List'),
@@ -352,9 +356,6 @@ class _VtsMapsState extends State<VtsMaps> with TickerProviderStateMixin  {
                             });
                     }
                   },
-                ),
-                Container(
-                  child: Text(widget.idClient),
                 ),
               ],
             ),

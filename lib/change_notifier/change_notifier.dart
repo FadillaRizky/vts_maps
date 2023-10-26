@@ -542,7 +542,6 @@ class Notifier extends ChangeNotifier {
             throw Exception('Failed to load KMZ data: ${response.statusCode}');
           }
         } else if (file.endsWith(".kml")) {
-          // final String kmlData = await loadKmlFromFile(file,context);
           _kmlOverlayPolygons.add(parseKmlForOverlay(kmlData: response.body));
         }
       }

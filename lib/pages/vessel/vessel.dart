@@ -19,7 +19,8 @@ import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class VesselPage extends StatefulWidget {
-  const VesselPage({super.key});
+  const VesselPage({super.key, this.id_client =""});
+  final String id_client;
 
   @override
   State<VesselPage> createState() => _VesselPageState();
@@ -57,7 +58,7 @@ class _VesselPageState extends State<VesselPage> {
   // }
 
   final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('ws://api.binav-avts.id:6001/socket-kapal?appKey=123456'));
+      Uri.parse('wss://api.binav-avts.id:6001/socket-kapal?appKey=123456'));
   Timer? timer;
 
   void fetchData() {
@@ -66,6 +67,7 @@ class _VesselPageState extends State<VesselPage> {
         // Give an parameter to fetch the data
         "page": page,
         "perpage": perpage,
+        "id_client":widget.id_client
       }));
       load = false;
     });

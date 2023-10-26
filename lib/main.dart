@@ -1,13 +1,16 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:vts_maps/auth/Authentication.dart';
 import 'package:vts_maps/change_notifier/change_notifier.dart';
 import 'package:vts_maps/home.dart';
 import 'package:vts_maps/maps_view.dart';
+import 'package:vts_maps/pages/client/client_maps.dart';
 import 'package:vts_maps/utils/shared_pref.dart';
 
 import 'login_page.dart';
@@ -45,7 +48,7 @@ class _MyAppState extends State<MyApp> {
       } else {
         setState(() {
           EasyLoading.showSuccess("Selamat Datang Kembali ${value.name}");
-          home = HomePage();
+          home = VtsMaps();
         });
       }
     });
@@ -64,7 +67,7 @@ class _MyAppState extends State<MyApp> {
         load = true;
       });
     });
-    return MaterialApp(
+    return MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'AVTS',
         theme: ThemeData(
@@ -83,24 +86,27 @@ class _MyAppState extends State<MyApp> {
           },
         ),
         builder: EasyLoading.init(),
-        routes: {
-          "/": (context) => HomePage(),
-          "/login": (context) => Login(),
-        },
-        initialRoute: "/",
-        onGenerateRoute: (settings) {
-          if (settings.name!.contains("/client-map-view")) {
-            final settingsUri = Uri.parse(settings.name.toString());
-            if (settingsUri.queryParametersAll.isNotEmpty) {
-              final clientID = settingsUri.queryParameters['client'];
-              print(clientID); //will print "123"
+        routerConfig: _router,
 
-              return MaterialPageRoute(
-                builder: (context) => HomePage(idClient:clientID.toString())
-              );
-            }
-          }
-        },
+        // routes: {
+        //   "/": (context) => HomePage(),
+        //   "/login": (context) => Login(),
+        //   // "/client-map-view": (context) => HomePage(),
+        // },
+        // initialRoute: "/",
+        // onGenerateRoute: (settings) {
+        //   if (settings.name!.contains("/client-map-view")) {
+        //     final settingsUri = Uri.parse(settings.name.toString());
+        //     if (settingsUri.queryParametersAll.isNotEmpty) {
+        //       final clientID = settingsUri.queryParameters['client'];
+        //       print(clientID);
+
+        //       return MaterialPageRoute(
+        //         builder: (context) => HomePage(idClient:clientID.toString())
+        //       );
+        //     }
+        //   }
+        // },
         // home: HomePage(), 
         // load == true
         //     ? home
@@ -113,3 +119,22 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+
+final GoRouter _router = GoRouter(
+  routes: <RouteBase>[
+    GoRoute(
+      path: '/',
+      builder: (BuildContext context, GoRouterState state) {
+        return const VtsMaps();
+      },
+      routes: <RouteBase>[
+        GoRoute(
+          path: 'client-map-view/:client',
+          builder: (BuildContext context, GoRouterState state) {
+            return ClientMaps(idClient:state.pathParameters['client'].toString());
+          },
+        ),
+      ],
+    ),
+  ],
+);

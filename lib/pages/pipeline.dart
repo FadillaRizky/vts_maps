@@ -18,7 +18,8 @@ import "package:vts_maps/utils/text_field.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
 
 class PipelinePage extends StatefulWidget {
-  const PipelinePage({super.key});
+  const PipelinePage({super.key, this.id_client = ""});
+  final String id_client;
 
   @override
   State<PipelinePage> createState() => _PipelinePageState();
@@ -51,7 +52,7 @@ class _PipelinePageState extends State<PipelinePage> {
   // }
 
   final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('ws://api.binav-avts.id:6001/socket-mapping?appKey=123456'));
+      Uri.parse('wss://api.binav-avts.id:6001/socket-mapping?appKey=123456'));
   Timer? timer;
 
   void fetchData() {
@@ -60,6 +61,7 @@ class _PipelinePageState extends State<PipelinePage> {
         // Give an parameter to fetch the data
         "page": page,
         "perpage": perpage,
+        "id_client":widget.id_client
       }));
       load = false;
     });
@@ -327,38 +329,37 @@ class _PipelinePageState extends State<PipelinePage> {
           return Dialog(
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(5))),
-            child: SizedBox(
-              width: width / 3,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    color: Colors.black12,
-                    padding: const EdgeInsets.all(8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          " Add Pipeline",
-                          style: GoogleFonts.openSans(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            nameController.clear();
-                            isSwitched = false;
-                            readNotifier!.clearFile();
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
+            child: SingleChildScrollView(
+              child: Container(
+                width: width / 2.5,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      color: Colors.black12,
+                      padding: const EdgeInsets.all(8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            " Add Pipeline",
+                            style: GoogleFonts.openSans(
+                                fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              nameController.clear();
+                              isSwitched = false;
+                              readNotifier!.clearFile();
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 485,
-                    child: Padding(
+                    Padding(
                       padding: const EdgeInsets.all(8),
                       child: SingleChildScrollView(
                         child: Column(
@@ -631,8 +632,8 @@ class _PipelinePageState extends State<PipelinePage> {
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

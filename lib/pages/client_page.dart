@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pagination_flutter/pagination.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +17,8 @@ import 'package:vts_maps/api/GetClientListResponse.dart' as ClientList;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ClientPage extends StatefulWidget {
-  const ClientPage({super.key});
+  const ClientPage({super.key, this.id_client = ""});
+  final String id_client;
 
   @override
   State<ClientPage> createState() => _ClientPageState();
@@ -30,7 +32,7 @@ class _ClientPageState extends State<ClientPage> {
 
   bool load = false;
   int page = 1;
-  int perpage = 1;
+  int perpage = 10;
 
   Notifier? readNotifier;
 
@@ -48,7 +50,7 @@ class _ClientPageState extends State<ClientPage> {
   // }
 
   final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('ws://api.binav-avts.id:6001/socket-client?appKey=123456'));
+      Uri.parse('wss://api.binav-avts.id:6001/socket-client?appKey=123456'));
 
   Timer? timer;
 
@@ -218,7 +220,9 @@ class _ClientPageState extends State<ClientPage> {
                                                                     .blueAccent)),
                                                     onPressed: () {
                                                       ///FUNCTION VIEW CLIENT ONLY DATA
-                                                       // addClientList(context);
+                                                      setState((){});
+                                                      context.go("/client-map-view/${data.idClient}");
+                                                      setState((){});
                                                     },
                                                     child: Text(
                                                       "View Client",
@@ -334,41 +338,40 @@ class _ClientPageState extends State<ClientPage> {
           return Dialog(
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(5))),
-            child: Container(
-              color: Colors.white,
-              width: width / 3,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    color: Colors.black12,
-                    padding: const EdgeInsets.all(8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          " Add Client",
-                          style: GoogleFonts.openSans(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            nameController.clear();
-                            emailControler.clear();
-                            passwordController.clear();
-                            confirmpasswordController.clear();
-                            readNotifier!.switchControl(false);
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
+            child: SingleChildScrollView(
+              child: Container(
+                color: Colors.white,
+                width: width / 3,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      color: Colors.black12,
+                      padding: const EdgeInsets.all(8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            " Add Client",
+                            style: GoogleFonts.openSans(
+                                fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              nameController.clear();
+                              emailControler.clear();
+                              passwordController.clear();
+                              confirmpasswordController.clear();
+                              readNotifier!.switchControl(false);
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 480,
-                    child: Padding(
+                    Padding(
                       padding: const EdgeInsets.all(12),
                       child: SingleChildScrollView(
                         child: Column(
@@ -474,7 +477,7 @@ class _ClientPageState extends State<ClientPage> {
                                     confirmpasswordController.clear();
                                     readNotifier!.switchControl(false);
                                     load = true;
-
+            
                                   },
                                   child: Text(
                                     "Submit",
@@ -515,8 +518,8 @@ class _ClientPageState extends State<ClientPage> {
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
