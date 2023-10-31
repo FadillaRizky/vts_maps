@@ -56,7 +56,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    authCheck();
+    // authCheck();
     super.initState();
   }
 
@@ -125,13 +125,17 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (BuildContext context, GoRouterState state) {
-        return const VtsMaps();
+        return
+          Login();
+          // const VtsMaps();
       },
       routes: <RouteBase>[
         GoRoute(
           path: 'client-map-view/:client',
           builder: (BuildContext context, GoRouterState state) {
-            return ClientMaps(idClient:state.pathParameters['client'].toString());
+            return Login(idClient:state.pathParameters['client'].toString());
+
+              ClientMaps(idClient:state.pathParameters['client'].toString());
           },
         ),
       ],

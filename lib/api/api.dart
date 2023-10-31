@@ -282,7 +282,7 @@ class Api{
 
   /// CRUD IP AND PORT
 
-  static Future<UploadIpAndPortResponse> uploadIP(Map <String,String> data) async {
+  static Future<UploadIpAndPortResponse> uploadIP(Map <String,dynamic> data) async {
     var url = "$BASE_URL/insert_kapal_ip";
     var response = await http.post(
       Uri.parse(url),
@@ -298,7 +298,7 @@ class Api{
 
   }
 
-  static Future<GetIpListResponse> getIpList(String callSign)async{
+  static Future<GetIpListResponse> getIpList(callSign)async{
     var url = "$BASE_URL/get_kapal_ip?call_sign=$callSign";
     var response = await http.get(
       Uri.parse(url),
