@@ -438,19 +438,16 @@ class Api{
   }
 
   /// CRUD CLIENT LIST
-  static Future<GetClientResponse> getClientList({int page = 1,int perpage = 10})async{
-    var url = "$BASE_URL/get_client?page=$page&perpage=$perpage";
+  static Future<GetClientResponse> getClientList({int page = 1,int perpage = 10,String id_client = ""})async{
+    var url = "$BASE_URL/get_client?page=$page&perpage=$perpage&id_client=$id_client";
     var response = await http.get(
       Uri.parse(url),
       headers: {
         "User-Agent":"BinavAvts/1.0",
       }
     );
-    if (response.statusCode == 200) {
-      return GetClientResponse.fromJson(jsonDecode(response.body));
-    }
+    return GetClientResponse.fromJson(jsonDecode(response.body));
     //jika tidak,muncul pesan error
-    throw "Gagal request client list:\n${response.body}";
   }
 
   static Future<SubmitClientResponse>createClient(Map<String,String> data) async {

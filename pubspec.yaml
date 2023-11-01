@@ -64,6 +64,7 @@ dependencies:
   flutter_map_cancellable_tile_provider: ^1.0.0
   carousel_slider: ^4.2.1
   dots_indicator: ^3.0.0
+  
 
 
 

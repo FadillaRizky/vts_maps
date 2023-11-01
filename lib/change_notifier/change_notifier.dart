@@ -14,7 +14,10 @@ import 'package:vts_maps/api/GetKapalAndCoor.dart' as VesselCoor;
 import 'package:vts_maps/api/GetIpListResponse.dart' as IpList;
 import 'package:vts_maps/api/GetPipelineResponse.dart' as Pipeline;
 import 'package:vts_maps/api/GetClientListResponse.dart' as ClientResponse;
+import 'package:vts_maps/api/LoginResponse.dart' as LoginResponse;
 import 'package:vts_maps/api/api.dart';
+import 'package:vts_maps/auth/Authentication.dart';
+import 'package:vts_maps/auth/auth_check_response.dart';
 import 'package:vts_maps/model/kml_model.dart';
 import 'package:vts_maps/utils/constants.dart';
 import 'package:vts_maps/utils/shared_pref.dart';
@@ -30,9 +33,31 @@ class Notifier extends ChangeNotifier {
   String _token = "";
   String get token => _token;
 
+  bool _loggedIn = false;
+  bool get loggedIn => _loggedIn;
+
+  AuthCheckResponse? _userAuth;
+  AuthCheckResponse? get userAuth => _userAuth;
+
   void setAuth(String token){
     LoginPref.saveToSharedPref(token);
     _token = token;
+    notifyListeners();
+  }
+
+  Future<void> authCheck() async {
+    Auth.AuthCheck().then((value) async {
+      if (value.message!.contains("Unauthenticated") && await LoginPref.checkPref() == true) {
+          _loggedIn = false;
+          LoginPref.removePref();
+          EasyLoading.showError("Renew your login session", dismissOnTap: true);
+          _userAuth = null;
+      } else {
+        _userAuth = value;
+        _loggedIn = true;
+        EasyLoading.showSuccess("Selamat Datang Kembali ${value.user!.name}");
+      }
+    });
     notifyListeners();
   }
 

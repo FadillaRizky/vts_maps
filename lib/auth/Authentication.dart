@@ -23,11 +23,7 @@ class Auth {
         return LoginResponse.fromJson(jsonDecode(response.body));
       }
 
-      if (response.statusCode == 400 && response.statusCode == 404) {
-        return LoginResponse.fromJson(jsonDecode(response.body));
-      } else {
-        throw "Gagal Login User:\n${response.body}";
-      }
+      return LoginResponse.fromJson(jsonDecode(response.body));
     } catch (e) {
       print("error nya $e");
       rethrow;
@@ -49,11 +45,7 @@ class Auth {
       if (response.statusCode == 200) {
         return AuthCheckResponse.fromJson(jsonDecode(response.body));
       }
-      if (response.statusCode == 401) {
-        // 401 Unauthorized
-        return AuthCheckResponse.fromJson(jsonDecode(response.body));
-      }
-      throw "Gagal Get User:\n${response.body}";
+      return AuthCheckResponse.fromJson(jsonDecode(response.body));
     } catch (e) {
       print("error nya $e");
       rethrow;

@@ -166,8 +166,6 @@ class _ClientPageState extends State<ClientPage> {
                               ),
                             ],
                           )
-
-                          ///
                         ],
                       ),
                     ),

@@ -3,8 +3,9 @@ class LoginResponse {
   String? message;
   String? token;
   User? user;
+  Client? client;
 
-  LoginResponse({this.message, this.token, this.user});
+  LoginResponse({this.message, this.token, this.user, this.client});
 
   LoginResponse.fromJson(Map<String, dynamic> json) {
     if(json["message"] is String) {
@@ -16,6 +17,9 @@ class LoginResponse {
     if(json["user"] is Map) {
       user = json["user"] == null ? null : User.fromJson(json["user"]);
     }
+    if(json["client"] is Map) {
+      client = json["client"] == null ? null : Client.fromJson(json["client"]);
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -25,12 +29,53 @@ class LoginResponse {
     if(user != null) {
       _data["user"] = user?.toJson();
     }
+    if(client != null) {
+      _data["client"] = client?.toJson();
+    }
+    return _data;
+  }
+}
+
+class Client {
+  String? idClient;
+  String? idUser;
+  int? status;
+  String? createdAt;
+  String? updatedAt;
+
+  Client({this.idClient, this.idUser, this.status, this.createdAt, this.updatedAt});
+
+  Client.fromJson(Map<String, dynamic> json) {
+    if(json["id_client"] is String) {
+      idClient = json["id_client"];
+    }
+    if(json["id_user"] is String) {
+      idUser = json["id_user"];
+    }
+    if(json["status"] is int) {
+      status = json["status"];
+    }
+    if(json["created_at"] is String) {
+      createdAt = json["created_at"];
+    }
+    if(json["updated_at"] is String) {
+      updatedAt = json["updated_at"];
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["id_client"] = idClient;
+    _data["id_user"] = idUser;
+    _data["status"] = status;
+    _data["created_at"] = createdAt;
+    _data["updated_at"] = updatedAt;
     return _data;
   }
 }
 
 class User {
-  int? id;
+  String? idUser;
   String? name;
   String? email;
   dynamic emailVerifiedAt;
@@ -38,11 +83,11 @@ class User {
   String? createdAt;
   String? updatedAt;
 
-  User({this.id, this.name, this.email, this.emailVerifiedAt, this.level, this.createdAt, this.updatedAt});
+  User({this.idUser, this.name, this.email, this.emailVerifiedAt, this.level, this.createdAt, this.updatedAt});
 
   User.fromJson(Map<String, dynamic> json) {
-    if(json["id"] is int) {
-      id = json["id"];
+    if(json["id_user"] is String) {
+      idUser = json["id_user"];
     }
     if(json["name"] is String) {
       name = json["name"];
@@ -64,7 +109,7 @@ class User {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["id"] = id;
+    _data["id_user"] = idUser;
     _data["name"] = name;
     _data["email"] = email;
     _data["email_verified_at"] = emailVerifiedAt;
