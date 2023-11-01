@@ -80,7 +80,7 @@ class _LoginState extends State<Login> {
       Auth.Login(data).then((value) {
         if (value.message == "Login Success") {
           final notifier = Provider.of<Notifier>(context, listen: false);
-          notifier.setAuth(value.token!);
+          notifier.setAuth(value.token!,value);
           EasyLoading.showSuccess("Login Berhasil",duration: Duration(seconds: 3),dismissOnTap: true);
           context.go("/");
         } else if (value.message != "Login Success") {
@@ -110,10 +110,10 @@ class _LoginState extends State<Login> {
     try {
       Auth.Login(data!).then((value) {
         if (value.message == "Login Success") {
-          final notifier = Provider.of<Notifier>(context, listen: false);
-          notifier.setAuth(value.token!);
-          EasyLoading.showSuccess("Login Berhasil",duration: Duration(seconds: 3),dismissOnTap: true);
           context.go("/client-map-view/${widget.idClient}");
+          final notifier = Provider.of<Notifier>(context, listen: false);
+          notifier.setAuth(value.token!,value);
+          EasyLoading.showSuccess("Login Berhasil",duration: Duration(seconds: 3),dismissOnTap: true);
         } else if (value.message != "Login Success") {
           EasyLoading.showError("Login Gagal..",duration: Duration(seconds: 3),dismissOnTap: true);
         }
@@ -141,6 +141,8 @@ class _LoginState extends State<Login> {
   void initState() {
     super.initState();
     authClient(context);
+    // final notifier = Provider.of<Notifier>(context, listen: false);
+    // notifier.authCheck(context);
   }
 
   @override
@@ -241,7 +243,7 @@ class _LoginState extends State<Login> {
                         Expanded(child: Container()),
                         Column(
                           children: [
-                            // widget.idClient != null ? Text("Email : ${emailController.text}") : 
+                            widget.idClient != null ? Text("Email : ${emailController.text}") : 
                             Visibility(
                               visible: _isVisible!,
                               child: Container(

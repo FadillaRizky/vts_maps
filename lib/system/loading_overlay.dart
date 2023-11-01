@@ -33,7 +33,7 @@ class _LoadingOverlayState extends State<LoadingOverlay> {
 
   Future<void> runLoader()async{
     show();
-    timer = Timer(Duration(seconds: 2), () {
+    timer = Timer(Duration(seconds: 3), () {
       hide();
     });
   }
@@ -58,7 +58,7 @@ class _LoadingOverlayState extends State<LoadingOverlay> {
         if (_isLoading)
           const Opacity(
             opacity: 0.8,
-            child: ModalBarrier(dismissible: false, color: Colors.black),
+            child: ModalBarrier(dismissible: false, color: Colors.white),
           ),
         if (_isLoading)
           const Center(

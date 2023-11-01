@@ -30,7 +30,7 @@ class Auth {
     }
   }
 
-  static Future<AuthCheckResponse> AuthCheck() async {
+  static Future<LoginResponse> AuthCheck() async {
     try {
       var url = "$BASE_URL/user";
       var dataPref = await LoginPref.getPref();
@@ -43,9 +43,9 @@ class Auth {
         },
       );
       if (response.statusCode == 200) {
-        return AuthCheckResponse.fromJson(jsonDecode(response.body));
+        return LoginResponse.fromJson(jsonDecode(response.body));
       }
-      return AuthCheckResponse.fromJson(jsonDecode(response.body));
+      return LoginResponse.fromJson(jsonDecode(response.body));
     } catch (e) {
       print("error nya $e");
       rethrow;

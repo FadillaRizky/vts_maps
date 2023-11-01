@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:vts_maps/api/GetAllVesselCoor.dart' as LatestVesselCoor;
@@ -28,7 +29,6 @@ import 'dart:html' as html;
 import 'package:http/http.dart' as http;
 
 class Notifier extends ChangeNotifier {
-
   // === AUTH ===
   String _token = "";
   String get token => _token;
@@ -36,25 +36,42 @@ class Notifier extends ChangeNotifier {
   bool _loggedIn = false;
   bool get loggedIn => _loggedIn;
 
-  AuthCheckResponse? _userAuth;
-  AuthCheckResponse? get userAuth => _userAuth;
+  LoginResponse.LoginResponse? _userAuth;
+  LoginResponse.LoginResponse? get userAuth => _userAuth;
 
-  void setAuth(String token){
-    LoginPref.saveToSharedPref(token);
+  void setAuth(String token, LoginResponse.LoginResponse dataLogin) {
+    LoginPref.saveToSharedPref(
+        token,
+        dataLogin.user!.idUser.toString(),
+        dataLogin.client!.idClient.toString(),
+        dataLogin.user!.name.toString(),
+        dataLogin.user!.email.toString(),
+        dataLogin.user!.level.toString());
     _token = token;
+    _userAuth = dataLogin;
     notifyListeners();
   }
 
-  Future<void> authCheck() async {
-    Auth.AuthCheck().then((value) async {
-      if (value.message!.contains("Unauthenticated") && await LoginPref.checkPref() == true) {
-          _loggedIn = false;
-          LoginPref.removePref();
-          EasyLoading.showError("Renew your login session", dismissOnTap: true);
-          _userAuth = null;
+  void authCheck(BuildContext context) async {
+    await Auth.AuthCheck().then((value) async {
+      final userPref = await LoginPref.getPref();
+      if (value.message!.contains("Unauthenticated")) {
+        if (userPref.level == "client") {
+          context.go("/login-client/${userPref.idClient}");
+        } else {
+          context.go("/login");
+        }
+        _loggedIn = false;
+        LoginPref.removePref();
+        EasyLoading.showError("Renew your login session", dismissOnTap: true);
+        _userAuth = null;
       } else {
+        if (userPref.level == "client") {
+          context.go("/client-map-view/${userPref.idClient}");
+        } else {
+          context.go("/");
+        }
         _userAuth = value;
-        // print("id_user = ${_userAuth!.user!.idUser}");
         _loggedIn = true;
         EasyLoading.showSuccess("Selamat Datang Kembali ${value.user!.name}");
       }
@@ -71,7 +88,7 @@ class Notifier extends ChangeNotifier {
 
   int _currentPage = 1;
   int get currentPage => _currentPage;
-  
+
   int _pageSize = 1;
   int get pageSize => _pageSize;
 
@@ -81,13 +98,14 @@ class Notifier extends ChangeNotifier {
   int _totalVessel = 0;
   int get totalVessel => _totalVessel;
 
-  void incrementPage(pageIndex){
+  void incrementPage(pageIndex) {
     _currentPage = pageIndex;
     notifyListeners();
   }
-  void initVesselCoor() async{
+
+  void initVesselCoor() async {
     _isLoading = true;
-    await Api.getKapalAndCoor().then((value){
+    await Api.getKapalAndCoor().then((value) {
       _vesselCoorResult.clear();
       if (value.total! == 0) {
         _isLoading = false;
@@ -107,9 +125,9 @@ class Notifier extends ChangeNotifier {
   List<Vessel.Data> _vesselResult = [];
   List<Vessel.Data> get vesselResult => _vesselResult;
 
-  void initVessel() async{
+  void initVessel() async {
     _isLoading = true;
-    await Api.getAllVessel(page:_currentPage).then((value){
+    await Api.getAllVessel(page: _currentPage).then((value) {
       _vesselResult.clear();
       if (value.total! == 0) {
         _isLoading = false;
@@ -126,7 +144,7 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void submitVessel(data,context,onOff,file)async{
+  void submitVessel(data, context, onOff, file) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -152,31 +170,32 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-    await Api.submitCreateVessel(data,onOff, file).then((value){
-          if (value.message == "Validator Fails") {
-            Navigator.pop(context);
-            EasyLoading.showError("Call Sign sudah Terdaftar");
-            return;
-          }
-          if (value.message == "Data berhasil masuk database") {
-            Navigator.pop(context);
-            EasyLoading.showSuccess("Berhasil Menambahkan Data");
-            Navigator.pop(context);
-            initVessel();
-            initVesselCoor();
-            return;
-          }
-          if (value.message != "Data berhasil masuk database") {
-            Navigator.pop(context);
-            EasyLoading.showError("Gagal Menambahkan Kapal Karena : ${value.message}. Coba Lagi...");
-            return;
-          }
-          return;
+    await Api.submitCreateVessel(data, onOff, file).then((value) {
+      if (value.message == "Validator Fails") {
+        Navigator.pop(context);
+        EasyLoading.showError("Call Sign sudah Terdaftar");
+        return;
+      }
+      if (value.message == "Data berhasil masuk database") {
+        Navigator.pop(context);
+        EasyLoading.showSuccess("Berhasil Menambahkan Data");
+        Navigator.pop(context);
+        initVessel();
+        initVesselCoor();
+        return;
+      }
+      if (value.message != "Data berhasil masuk database") {
+        Navigator.pop(context);
+        EasyLoading.showError(
+            "Gagal Menambahkan Kapal Karena : ${value.message}. Coba Lagi...");
+        return;
+      }
+      return;
     });
-     notifyListeners();
+    notifyListeners();
   }
 
-  void editVessel(data,context,onOff,file)async{
+  void editVessel(data, context, onOff, file) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -202,7 +221,7 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-    await Api.editVessel(data,onOff,file).then((value) {
+    await Api.editVessel(data, onOff, file).then((value) {
       print(value.message);
       if (value.message != "Data berhasil di ubah database") {
         Navigator.pop(context);
@@ -223,7 +242,7 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteVessel(callSign,context){
+  void deleteVessel(callSign, context) {
     Api.deleteVessel(callSign).then((value) {
       if (value.status == 200) {
         EasyLoading.showSuccess("Kapal Terhapus..");
@@ -231,19 +250,18 @@ class Notifier extends ChangeNotifier {
         initVessel();
         initVesselCoor();
       } else {
-        EasyLoading.showError(
-            "Gagal Menghapus Kapal..");
+        EasyLoading.showError("Gagal Menghapus Kapal..");
       }
     });
     notifyListeners();
   }
 
-/// CRUD IP
+  /// CRUD IP
   List<IpList.Data> _ipPortResult = [];
   List<IpList.Data> get ipPortResult => _ipPortResult;
 
-
-  void uploadIP(Map<String,String> data,BuildContext context, String callSign)async{
+  void uploadIP(
+      Map<String, String> data, BuildContext context, String callSign) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -269,7 +287,7 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-    await Api.uploadIP(data).then((value){
+    await Api.uploadIP(data).then((value) {
       if (value.message == "Data berhasil masuk database") {
         EasyLoading.showSuccess("Berhasil Menambahkan Data");
         Navigator.pop(context);
@@ -290,31 +308,27 @@ class Notifier extends ChangeNotifier {
   String? _type;
   String? get type => _type;
 
-  void clearType()async{
+  void clearType() async {
     _type = null;
     notifyListeners();
   }
-  void selectingType(String value)async{
+
+  void selectingType(String value) async {
     _type = value;
     notifyListeners();
   }
 
-  void deleteIP(String id,callSign,context){
+  void deleteIP(String id, callSign, context) {
     Api.deleteIP(id).then((value) {
       if (value.message == "Data berhasil di hapus database") {
         EasyLoading.showSuccess("Data Terhapus..");
         Navigator.pop(context);
       } else {
-        EasyLoading.showError(
-            "Gagal Menghapus Data..");
+        EasyLoading.showError("Gagal Menghapus Data..");
       }
     });
     notifyListeners();
   }
-
-
-
-
 
   /// CRUD PIPELINE
   List<Pipeline.Data> _getPipelineResult = [];
@@ -323,9 +337,9 @@ class Notifier extends ChangeNotifier {
   int _totalPipeline = 0;
   int get totalPipeline => _totalPipeline;
 
-  void initPipeline(BuildContext context) async{
+  void initPipeline(BuildContext context) async {
     _isLoading = true;
-    await Api.getPipeline().then((value){
+    await Api.getPipeline().then((value) {
       _getPipelineResult.clear();
       if (value.total! == 0) {
         _isLoading = false;
@@ -338,11 +352,12 @@ class Notifier extends ChangeNotifier {
         _totalPipeline = value.total!.toInt();
       }
     });
-    loadKMZData(context,_getPipelineResult);
+    loadKMZData(context, _getPipelineResult);
     notifyListeners();
   }
 
-  void submitPipeline(String idClientValue,String name,bool onOff,context,file)async{
+  void submitPipeline(
+      String idClientValue, String name, bool onOff, context, file) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -368,7 +383,7 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-    await Api.submitPipeline(idClientValue,name,onOff,file).then((value){
+    await Api.submitPipeline(idClientValue, name, onOff, file).then((value) {
       print(value.message);
       // if (value.message == "Validator Fails") {
       //   Navigator.pop(context);
@@ -392,17 +407,16 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deletePipeline(id,context){
+  void deletePipeline(id, context) {
     Api.deletePipeline(id).then((value) {
-          if (value.status == 200) {
-            EasyLoading.showSuccess("Data Terhapus..");
-            Navigator.pop(context);
-            initPipeline(context);
-          } else {
-            EasyLoading.showError(
-                "Gagal Menghapus Data..");
-          }
-        });
+      if (value.status == 200) {
+        EasyLoading.showSuccess("Data Terhapus..");
+        Navigator.pop(context);
+        initPipeline(context);
+      } else {
+        EasyLoading.showError("Gagal Menghapus Data..");
+      }
+    });
     notifyListeners();
   }
 
@@ -416,14 +430,14 @@ class Notifier extends ChangeNotifier {
   bool _isSwitched = false;
   bool get isSwitched => _isSwitched;
 
-  void switchControl(bool value)async{
+  void switchControl(bool value) async {
     _isSwitched = value;
     notifyListeners();
   }
 
-  void initClientList() async{
+  void initClientList() async {
     _isLoading = true;
-    await Api.getClientList().then((value){
+    await Api.getClientList().then((value) {
       _getClientResult.clear();
       if (value.total! == 0) {
         _isLoading = false;
@@ -439,24 +453,22 @@ class Notifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteClient(id,context){
+  void deleteClient(id, context) {
     Api.deleteClient(id).then((value) {
       if (value.message == "Data berhasil di hapus database") {
         EasyLoading.showSuccess("Data Terhapus..");
         Navigator.pop(context);
         initClientList();
-      // if (value.status == 200) {
-      //   EasyLoading.showSuccess("Data Terhapus..");
-      //   Navigator.pop(context);
-      //   initClientList();
+        // if (value.status == 200) {
+        //   EasyLoading.showSuccess("Data Terhapus..");
+        //   Navigator.pop(context);
+        //   initClientList();
       } else {
-        EasyLoading.showError(
-            "Gagal Menghapus Data..");
+        EasyLoading.showError("Gagal Menghapus Data..");
       }
     });
     notifyListeners();
   }
-
 
 /////////-----------------------------------------------------------------/////////////////
   List<LatLangCoor.Data> _latLangResult = [];
@@ -479,8 +491,8 @@ class Notifier extends ChangeNotifier {
   // String _onClickVessel = "";
   // String get onClickVessel => _onClickVessel;
 
-  // VesselCoor.Data? _searchKapal; 
-  // VesselCoor.Data? get searchKapal => _searchKapal; 
+  // VesselCoor.Data? _searchKapal;
+  // VesselCoor.Data? get searchKapal => _searchKapal;
 
   // void clickVessel(String call_sign,context){
   //   showDialog(
@@ -525,7 +537,7 @@ class Notifier extends ChangeNotifier {
   //       Navigator.pop(context);
   //   });
   //     } catch (e) {
-  //       print(e); 
+  //       print(e);
   //     }
   //   notifyListeners();
   // }
@@ -542,17 +554,19 @@ class Notifier extends ChangeNotifier {
     _predictMovementVessel++;
     notifyListeners();
   }
+
   void resetKalmanFilter() {
     _predictMovementVessel = 0;
     notifyListeners();
   }
 
-  // === Overlay Function === 
-  
+  // === Overlay Function ===
+
   List<List<KmlPolygon>> _kmlOverlayPolygons = [];
   List<List<KmlPolygon>> get kmlOverlayPolygons => _kmlOverlayPolygons;
 
-  Future<void> loadKMZData(BuildContext context, List<Pipeline.Data> files) async {
+  Future<void> loadKMZData(
+      BuildContext context, List<Pipeline.Data> files) async {
     for (var data in files) {
       String file = data.file!;
       if (data.onOff == true) {
@@ -644,34 +658,31 @@ class Notifier extends ChangeNotifier {
   }
 
   /// UTILS
-  html.File? _file ;
+  html.File? _file;
   html.File? get file => _file;
 
   String? _nameFile = "";
   String? get nameFile => _nameFile;
 
-  void selectFile(String Type)async {
-
+  void selectFile(String Type) async {
     final input = html.FileUploadInputElement()
-      ..accept =
-      (Type == "XML")?
-          'application/xml, text/xml'
-      : (Type == "KMZ")
-    ?'.kml,.kmz'
-      :'*/*';
-    input
-        .click();
+      ..accept = (Type == "XML")
+          ? 'application/xml, text/xml'
+          : (Type == "KMZ")
+              ? '.kml,.kmz'
+              : '*/*';
+    input.click();
     input.onChange.listen((e) {
       final file = input.files?.first;
       if (file != null) {
-          _file = file;
-          _nameFile = file.name;
+        _file = file;
+        _nameFile = file.name;
       }
     });
     notifyListeners();
   }
 
-  void clearFile(){
+  void clearFile() {
     _file = null;
     _nameFile = "";
     notifyListeners();
@@ -680,7 +691,7 @@ class Notifier extends ChangeNotifier {
   num? _currentZoom = 15;
   num? get currentZoom => _currentZoom;
 
-  void changeZoom(num zoom){
+  void changeZoom(num zoom) {
     _currentZoom = zoom;
     // print(zoom);
     notifyListeners();
@@ -689,10 +700,10 @@ class Notifier extends ChangeNotifier {
   String? _vesselClick = "";
   String? get vesselClick => _vesselClick;
 
-  VesselCoor.Data? _searchKapal; 
-  VesselCoor.Data? get searchKapal => _searchKapal; 
+  VesselCoor.Data? _searchKapal;
+  VesselCoor.Data? get searchKapal => _searchKapal;
 
-  void vesselClicked(String call_sign,context){
+  void vesselClicked(String call_sign, context) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -718,8 +729,8 @@ class Notifier extends ChangeNotifier {
         );
       },
     );
-      try {
-    Api.getKapalAndCoor(call_sign: call_sign).then((value){
+    try {
+      Api.getKapalAndCoor(call_sign: call_sign).then((value) {
         _searchKapal = null;
         if (value.total! == 0) {
           _searchKapal = null;
@@ -727,15 +738,16 @@ class Notifier extends ChangeNotifier {
         if (value.total! > 0) {
           _searchKapal = value.data!.first as VesselCoor.Data;
         }
-    _vesselClick = call_sign;
+        _vesselClick = call_sign;
         Navigator.pop(context);
-    });
-      } catch (e) {
-        print(e); 
-      }
+      });
+    } catch (e) {
+      print(e);
+    }
     notifyListeners();
   }
-  void removeVesselClicked(){
+
+  void removeVesselClicked() {
     _vesselClick = "";
     notifyListeners();
   }

@@ -159,6 +159,7 @@ class _ClientMapsState extends State<ClientMaps> with TickerProviderStateMixin {
   Future<void> runNotifier() async {
     final notifier = await Provider.of<Notifier>(context, listen: false);
     notifier.initLatLangCoor();
+    notifier.authCheck(context);
     Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       notifier.initKalmanFilter();
     });

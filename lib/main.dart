@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:vts_maps/api/api.dart';
 import 'package:vts_maps/auth/Authentication.dart';
+import 'package:vts_maps/auth/auth_check_response.dart';
 import 'package:vts_maps/change_notifier/change_notifier.dart';
 import 'package:vts_maps/home.dart';
 import 'package:vts_maps/maps_view.dart';
@@ -48,18 +50,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Notifier readNotifier = Notifier();
-  @override
-  void initState() {
-    readNotifier.authCheck();
-      // print("id_user 123 = ${readNotifier.userAuth!.user!.idUser}");
-
-    // print(readNotifier.userAuth!.user!.idUser);
-    // print("object123");
-
-    // authCheck();
-    super.initState();
-  }
   late final GoRouter _router = GoRouter(
     routes: <RouteBase>[
       GoRoute(
@@ -68,50 +58,31 @@ class _MyAppState extends State<MyApp> {
           // return Login();
           return VtsMaps();
         },
-        routes: <RouteBase>[
-          GoRoute(
-            path: 'login',
-            builder: (BuildContext context, GoRouterState state) {
-              return Login();
-              ClientMaps(idClient:state.pathParameters['client'].toString());
-            },
-          ),
-          GoRoute(
-            path: 'client-map-view/:client',
-            builder: (BuildContext context, GoRouterState state) {
-              return ClientMaps(
-                  idClient: state.pathParameters['client'].toString());
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (BuildContext context, GoRouterState state) {
+          return Login();
+          // ClientMaps(idClient:state.pathParameters['client'].toString());
+        },
+      ),
+      GoRoute(
+        path: '/client-map-view/:client',
+        builder: (BuildContext context, GoRouterState state) {
+          return ClientMaps(
+              idClient: state.pathParameters['client'].toString());
 
-              // ClientMaps(idClient:state.pathParameters['client'].toString());
-            },
-          ),
-          GoRoute(
-            path: 'client-map-view/:client/login',
-            builder: (BuildContext context, GoRouterState state) {
-              return Login(idClient: state.pathParameters['client'].toString());
-              // ClientMaps(idClient:state.pathParameters['client'].toString());
-            },
-          ),
-        ],
+          // ClientMaps(idClient:state.pathParameters['client'].toString());
+        },
+      ),
+      GoRoute(
+        path: '/login-client/:client',
+        builder: (BuildContext context, GoRouterState state) {
+          return Login(idClient: state.pathParameters['client'].toString());
+          // ClientMaps(idClient:state.pathParameters['client'].toString());
+        },
       ),
     ],
-    redirect: (context, state) {
-      if (!readNotifier.loggedIn) {
-        var client = state.pathParameters['client'];
-        if (client != null) {
-          return "/client-map-view/${state.pathParameters['client']}/login";
-        }
-        return '/login';
-      }
-      if(readNotifier.userAuth != null){
-        if(readNotifier.userAuth!.user!.level == "client"){
-          return "/client-map-view/${readNotifier.userAuth!.client!.idClient}";
-        }else{
-          return "/";
-        }
-      }
-      return null;
-    },
   );
 
   @override

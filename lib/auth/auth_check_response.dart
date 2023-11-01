@@ -1,14 +1,18 @@
 
 class AuthCheckResponse {
   String? message;
+  String? token;
   User? user;
   Client? client;
 
-  AuthCheckResponse({this.message, this.user, this.client});
+  AuthCheckResponse({this.message, this.token, this.user, this.client});
 
   AuthCheckResponse.fromJson(Map<String, dynamic> json) {
     if(json["message"] is String) {
       message = json["message"];
+    }
+    if(json["token"] is String) {
+      token = json["token"];
     }
     if(json["user"] is Map) {
       user = json["user"] == null ? null : User.fromJson(json["user"]);
@@ -21,6 +25,7 @@ class AuthCheckResponse {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
     _data["message"] = message;
+    _data["token"] = token;
     if(user != null) {
       _data["user"] = user?.toJson();
     }
@@ -34,7 +39,7 @@ class AuthCheckResponse {
 class Client {
   String? idClient;
   String? idUser;
-  String? status;
+  int? status;
   String? createdAt;
   String? updatedAt;
 
@@ -47,7 +52,7 @@ class Client {
     if(json["id_user"] is String) {
       idUser = json["id_user"];
     }
-    if(json["status"] is String) {
+    if(json["status"] is int) {
       status = json["status"];
     }
     if(json["created_at"] is String) {

@@ -159,6 +159,7 @@ class _VtsMapsState extends State<VtsMaps> with TickerProviderStateMixin  {
   Future<void> runNotifier() async {
     final notifier = await Provider.of<Notifier>(context, listen: false);
     notifier.initLatLangCoor();
+    notifier.authCheck(context);
     Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       notifier.initKalmanFilter();
     });
@@ -264,7 +265,6 @@ class _VtsMapsState extends State<VtsMaps> with TickerProviderStateMixin  {
   Widget build(BuildContext context) {
     return Consumer<Notifier>(
       builder: (context, value, child) {
-        var readNotifier = context.read<Notifier>();
 
         Future<void> searchVessel(String callSign) async {
           value.vesselClicked(callSign, context);
