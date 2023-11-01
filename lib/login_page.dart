@@ -130,11 +130,11 @@ class _LoginState extends State<Login> {
         title: "Identifikasi Kapal",
         description:
             "Kemudahan dalam mengakses informasi terkait Identitas Kapal seperti lokasi, arah, dan status Kapal.",
-        assets: "assets/kapal.png"),
+        assets: "assets/intro1.jpg"),
     IntroScreen(
         title: "Pelacakan Real Time",
         description: "Efisiensi dalam mengetahui lokasi kapal secara Real Time pada peta.",
-        assets: "assets/kapal.png"),
+        assets: "assets/intro2.jpg"),
   ];
 
   @override
@@ -230,7 +230,7 @@ class _LoginState extends State<Login> {
                           height: 10,
                         ),
                         Text(
-                          "Hai Welcome to Binav Avts${dataClient == null ? "" : ", "+dataClient!.clientName.toString()}\n"
+                          "Hai Welcome to Binav AVTS${dataClient == null ? "" : ", "+dataClient!.clientName.toString()}\n"
                           "Log in to your Account",
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.w600),

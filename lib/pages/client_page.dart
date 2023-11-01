@@ -18,6 +18,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ClientPage extends StatefulWidget {
   const ClientPage({super.key, this.id_client = ""});
+
   final String id_client;
 
   @override
@@ -33,6 +34,8 @@ class _ClientPageState extends State<ClientPage> {
   bool load = false;
   int page = 1;
   int perpage = 10;
+
+  bool? isSwitched;
 
   Notifier? readNotifier;
 
@@ -54,17 +57,17 @@ class _ClientPageState extends State<ClientPage> {
 
   Timer? timer;
 
-  void fetchData(){
+  void fetchData() {
     timer = Timer.periodic(Duration(milliseconds: 1000), (timer) {
       channel.sink.add(json.encode({
-        "page":page,
-        "perpage":perpage,
+        "page": page,
+        "perpage": perpage,
       }));
       load = false;
     });
   }
 
-  void stopFetchingData(){
+  void stopFetchingData() {
     if (timer != null) {
       timer!.cancel();
     }
@@ -76,6 +79,7 @@ class _ClientPageState extends State<ClientPage> {
     readNotifier = context.read<Notifier>();
     super.initState();
   }
+
   @override
   void dispose() {
     channel.sink.close();
@@ -99,9 +103,10 @@ class _ClientPageState extends State<ClientPage> {
               // var data = snapshot.data;
               // List<ClientList.Data> clientData = snapshot.data!.data!;
 
-              final data = ClientList.GetClientResponse.fromJson(jsonDecode(snapshot.data));
+              final data = ClientList.GetClientResponse.fromJson(
+                  jsonDecode(snapshot.data));
               List<ClientList.Data> clientData = data.data!;
-              
+
               return Consumer<Notifier>(builder: (context, value, child) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -155,7 +160,6 @@ class _ClientPageState extends State<ClientPage> {
                                     onPressed: () {
                                       ///FUNCTION ADD CLIENT
                                       addClientList(context);
-                                      
                                     },
                                     child: Text(
                                       "Add Client",
@@ -189,6 +193,8 @@ class _ClientPageState extends State<ClientPage> {
                                           const DataColumn(
                                               label: Text("Status")),
                                           const DataColumn(
+                                              label: Text("Send Email")),
+                                          const DataColumn(
                                               label: Text(
                                                   "View Client Only Data")),
                                           const DataColumn(
@@ -201,6 +207,13 @@ class _ClientPageState extends State<ClientPage> {
                                             DataCell(Text((data.status! == "1")
                                                 ? "ACTIVE"
                                                 : "INACTIVE")),
+                                            DataCell(ElevatedButton(
+                                              onPressed: () {
+                                                readNotifier!.sendEmailClient(data.idClient, context);
+
+                                              },
+                                              child: Text("Send Email"),
+                                            )),
                                             DataCell(
                                               SizedBox(
                                                 height: 40,
@@ -218,9 +231,10 @@ class _ClientPageState extends State<ClientPage> {
                                                                     .blueAccent)),
                                                     onPressed: () {
                                                       ///FUNCTION VIEW CLIENT ONLY DATA
-                                                      setState((){});
-                                                      context.go("/client-map-view/${data.idClient}");
-                                                      setState((){});
+                                                      setState(() {});
+                                                      context.go(
+                                                          "/client-map-view/${data.idClient}");
+                                                      setState(() {});
                                                     },
                                                     child: Text(
                                                       "View Client",
@@ -299,7 +313,8 @@ class _ClientPageState extends State<ClientPage> {
                           fontWeight: FontWeight.w700,
                         ),
                         activeBtnStyle: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(Colors.blue),
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.blue),
                           shape: MaterialStateProperty.all(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(38),
@@ -307,7 +322,8 @@ class _ClientPageState extends State<ClientPage> {
                           ),
                         ),
                         inactiveBtnStyle: ButtonStyle(
-                          shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                          shape:
+                              MaterialStateProperty.all(RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(38),
                           )),
                         ),
@@ -401,6 +417,7 @@ class _ClientPageState extends State<ClientPage> {
                             const SizedBox(
                               height: 5,
                             ),
+                            Text("Status",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w600),),
                             SizedBox(
                               height: 40,
                               child: FittedBox(
@@ -412,6 +429,7 @@ class _ClientPageState extends State<ClientPage> {
                                   },
                                   activeTrackColor: Colors.lightGreen,
                                   activeColor: Colors.green,
+
                                 ),
                               ),
                             ),
@@ -475,7 +493,6 @@ class _ClientPageState extends State<ClientPage> {
                                     confirmpasswordController.clear();
                                     readNotifier!.switchControl(false);
                                     load = true;
-            
                                   },
                                   child: Text(
                                     "Submit",
@@ -523,7 +540,8 @@ class _ClientPageState extends State<ClientPage> {
           );
         });
   }
-  void submitClient(BuildContext context,Map<String,String> data)async{
+
+  void submitClient(BuildContext context, Map<String, String> data) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -549,7 +567,7 @@ class _ClientPageState extends State<ClientPage> {
         );
       },
     );
-    await Api.createClient(data).then((value){
+    await Api.createClient(data).then((value) {
       print(value.message);
       if (value.message == "Data berhasil masuk database") {
         Navigator.pop(context);
@@ -732,7 +750,8 @@ class _ClientPageState extends State<ClientPage> {
           );
         });
   }
-  void editClient(Map <String,String> data,BuildContext context)async{
+
+  void editClient(Map<String, String> data, BuildContext context) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -764,7 +783,7 @@ class _ClientPageState extends State<ClientPage> {
         Navigator.pop(context);
         EasyLoading.showSuccess("Berhasil Edit Data");
         Navigator.pop(context);
-      }else{
+      } else {
         Navigator.pop(context);
         EasyLoading.showError("Gagal Edit Data");
       }

@@ -10,17 +10,22 @@ class IntroScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: double.infinity,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(assets),
+          fit: BoxFit.fill,
+        ),
+      ),
       // width: 1000,
-      color: Colors.blueAccent,
       padding: EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Center(child: Image.asset(assets,fit: BoxFit.cover,height: 200,)),
-
-          Text(title,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
-          Text(description,style: TextStyle(fontSize: 20),)
+          // Image.asset(assets,fit: BoxFit.cover,height: double.infinity,width: double.infinity,),
+          Text(title,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.white),),
+          SizedBox(height: 10,),
+          Text(description,style: TextStyle(fontSize: 20,color: Colors.white),)
         ],
       ),
     );

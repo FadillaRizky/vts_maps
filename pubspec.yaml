@@ -113,6 +113,12 @@ flutter:
     - assets/xml_icon2.png
     - assets/lottie/animation_delete.json
     - assets/logo.png
+    - assets/intro1.jpg
+    - assets/intro2.jpg
+    - assets/intro3.jpg
+    - assets/intro4.jpg
+
+
 
 
 
