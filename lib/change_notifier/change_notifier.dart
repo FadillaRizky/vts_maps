@@ -54,6 +54,7 @@ class Notifier extends ChangeNotifier {
           _userAuth = null;
       } else {
         _userAuth = value;
+        // print("id_user = ${_userAuth!.user!.idUser}");
         _loggedIn = true;
         EasyLoading.showSuccess("Selamat Datang Kembali ${value.user!.name}");
       }

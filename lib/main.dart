@@ -52,6 +52,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     readNotifier.authCheck();
+      // print("id_user 123 = ${readNotifier.userAuth!.user!.idUser}");
+
+    // print(readNotifier.userAuth!.user!.idUser);
+    // print("object123");
 
     // authCheck();
     super.initState();

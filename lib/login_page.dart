@@ -241,7 +241,7 @@ class _LoginState extends State<Login> {
                         Expanded(child: Container()),
                         Column(
                           children: [
-                            widget.idClient != null ? Text("Email : ${emailController.text}") : 
+                            // widget.idClient != null ? Text("Email : ${emailController.text}") : 
                             Visibility(
                               visible: _isVisible!,
                               child: Container(
