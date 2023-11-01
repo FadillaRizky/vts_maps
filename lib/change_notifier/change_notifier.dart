@@ -430,7 +430,7 @@ class Notifier extends ChangeNotifier {
   bool _isSwitched = false;
   bool get isSwitched => _isSwitched;
 
-  void switchControl(bool value) async {
+  void switchControl(bool value){
     _isSwitched = value;
     notifyListeners();
   }
@@ -469,6 +469,46 @@ class Notifier extends ChangeNotifier {
     });
     notifyListeners();
   }
+  
+  void sendEmailClient(idClient,context)async{
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                "loading ..",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    Api.sendEmail(idClient).then((value) {
+    if (value.message == "Success") {
+      EasyLoading.showSuccess("Email Terkirim...");
+      Navigator.pop(context);
+    }else{
+      EasyLoading.showError(
+          "Gagal Mengirim Email..");
+      Navigator.pop(context);
+    }
+    });
+    
+  }
+
 
 /////////-----------------------------------------------------------------/////////////////
   List<LatLangCoor.Data> _latLangResult = [];

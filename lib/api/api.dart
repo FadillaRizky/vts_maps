@@ -24,6 +24,7 @@ import 'EditPipelineResponse.dart';
 import 'GetAllVesselCoor.dart';
 import 'GetIpListResponse.dart';
 import 'GetPipelineResponse.dart';
+import 'SendEmailResponse.dart';
 import 'UploadIpAndPortResponse.dart';
 
 // const BASE_URL = "https://client-project.enricko.site/api";
@@ -508,6 +509,21 @@ class Api{
     }
     throw "Gagal Update Data:\n${response.body}";
 
+  }
+
+  static Future<SendEmailResponse> sendEmail(String idClient)async{
+    var url = "$BASE_URL/send_client_email/$idClient";
+    var response = await http.post(
+        Uri.parse(url),
+        headers: {
+          "User-Agent":"BinavAvts/1.0",
+        }
+    );
+    if (response.statusCode == 200) {
+      return SendEmailResponse.fromJson(jsonDecode(response.body));
+    }
+    //jika tidak,muncul pesan error
+    throw "Gagal send email:\n${response.body}";
   }
 
 
